@@ -1,0 +1,200 @@
+---
+title: "Project Summary and Progress"
+author: "Clay Morrow"
+date: "`r Sys.Date()`"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## data
+
+### NEON Data
+
+Files concerned with downloading and cleaning the NEON data used for this 
+project are found in the `data-curation`. The scripts are in the `R/` 
+sub-directory and were run in order of their leading number. 
+
+The eight sites that we are primarily concerned with are HARV: Harvard Forest, 
+ORNL: Oak Ridge National Laboratory, SCBI: Smithsonian Conservation Biology
+Institute, BLAN: Blandy Experimental Farm, SERC: Smithsonian Environmental 
+Research Center, STEI: Steigerwald Land Services, UNDE: University of Notre Dame
+Environmental Research Center, and MLBS: Mountain Lake Biological Station.
+
+The downloaded data products can be found in `data-curation/data/eight_sites/`
+and include:
+
+* Small mammal trapping data
+
+* small mammal tickborne pathogen status
+
+* small mammal DNA barcodes
+
+* plant presence and cover data
+
+* vegetative structure data
+
+* tick drag cloth sampling
+
+* tick pathogen status
+
+* litterfall trap data (including seed mass)
+
+* beetle pitfall trap data
+
+* precipitation
+
+* biological temperatures
+
+### Non-NEON data
+
+In addition to the data collected by NEON directly, we will utilize two 
+additional data sets collected by our groups (for a subset of NEON plots
+from 2022 to 2024):
+
+* Activity timing: We have collected
+temperature-derived estimates of when individual small mammals entered NEON 
+traps. These estimates are outlined in the [activity timing](#activity-timing)
+section below.
+
+* Refined infection estimates: Marty Martin's group (USF) has utilized a far
+more sensitive method for detecting *Borrelia* infection status of *Peromyscus*
+than the NEON protocol uses. As of 27 May 2025, these data are are not yet
+compelete.
+
+* Immune expression: Marty Martin's group has also performed gene expression
+analyses for *Peromyscus*, which indicate the immune response of individuals. 
+As of 27 May 2025, these data are not complete but we have a preliminary 
+subsample of these data to work with.
+
+## capture timing 
+
+The `activity-timing/code/scripts` folder contains the code used to generate
+the small mammal capture timing data set. The main files are those with leading
+digits (00 - 05). These analyses were completed for the 2024 data in April 
+2025 and the resultant data can be found in 
+`activity-timing/data/ibuttons/capture-time-estimates_2024.rds`. These data
+are combined with the prior years (cacluated by Ali Brehm) in the
+`capture-time-estimates_2022-2024.rds` file. These `.rds` files are R data 
+objects and can be loaded with `readRDS()`.
+
+## Progress Updates
+
+### Analysis Log
+
+<!-- TODO: Revise this -->
+
+I created a markdown file 
+(`infection-modeling/code/R/rmarkdown/01_full_model_data.Rmd`) to track the 
+initial exploration of relationships between the key NEON variables, working
+toward building a full model of *Peromyscus* infection with *Borrelia*.
+
+### Pathogen and capture time overlap
+
+One important insight from the analysis log is the number of samples that we
+have for which *both* individual mouse pathogen status (based on NEON's 
+collections) and capture time estimates (from ibuttons). As of 2025-05-15, 
+there are 354 individuals that meet this criteria in 2022, but of these only 24
+individual *Peromyscus* that tested positive for *Borrelia*. In 2023, there are
+125 total individuals, of which only 1 tested positive for *Borrelia*. Pathogen
+status data won't be available until October 2025. This likely means that we
+will need to rely on the Florida group's *Borrelia* sampling.
+
+### Seed Mass
+
+Another important insight is that within NEON's litterfall collections
+exists coarse estimates of seed biomass. This, along with beetle biomass and 
+primary productivity estimates, will allow us to estimate a proxy for resource
+availability. The caveat for this is that litterfall plots vary greatly in their
+distance from the small mammal trapping plots.
+
+Preliminary results suggest that there is no compelling correlations between
+site-level seed mass and capture timing of individuals, but this might be worth
+revisiting after better aligning the data temporally.
+
+### Infection Model
+
+I have begun to create a graphical representation of a model for factors that
+directly impact *Peromyscus* infection probability:
+
+```{r}
+knitr::include_graphics("Peromyscus-infection-model.drawio.png")
+```
+
+I expect that, a model of the probability of *Peromyscus* infection with
+*Borrelia* is most directly affected by:
+
+* Whether or not the individual has been bitten by a tick, represented by
+"Ticks attached". Within NEON, we have 4 potential variables addressing this:
+the number of ticks attached (binned: 1-5, 6-20, >20), and the presence of each
+larval, nymphal, and adult ticks. It is unclear at this time which of these will
+best predict infection - but my best guess is nymphal tick presence and number
+of ticks.
+
+* The probability that a tick is infected with *Borrelia*, represented by 
+"*Borrelia* prevalence". This information can be derived from the tick sweep
+net surveys, wherein tick populations are sampled and tested for *Borrelia*.
+
+* The immune response of an individual, represented by "immune expression". The
+expression data gathered by the S. Florida team, which contain the number of 
+RNA copies for key immunological pathways.
+
+* The sex, weight, and age of an individual; the immune response is likely to
+vary by these factors within a population. Therefore, these variables should
+explain some of the missing immune variation not captured by "immune expression".
+We may want to consider adding reproductive status to this list of factors, 
+since reproductive males may be less resistant than non-reproductive males.
+
+I have not included any environmental variables because they are not likely to
+have direct impacts on an individual's infection once it has been bitten with
+an infected tick. There is an argument that harsh temperatures and limited
+resources may reduce an individual's resistance to the pathogen, but I expect
+those factors to be accounted for by body condition. **Perhaps this is an
+inappropriate assumption.**
+
+**One important issue to consider** with these data are the timing of pathogen
+testing. Recaptured individuals that have already been tested are never retested
+to my knowledge. This means that we can only be sure of an individual's pathogen
+status the first time it is tested (which may or may not be the first time it is 
+captured).
+
+### Contact Model Conception
+
+After formulating the infection model, I realized that it makes sense to hold
+off on fitting this model, given the current data limitations (see 
+[Pathogen and capture time overlap](#Pathogen-and-capture-time-overlap)).
+Instead, I shifted towards thinking about modeling mouse contact with ticks.
+
+```{r}
+knitr::include_graphics("Tick-attachment-model.drawio.png")
+```
+The 4 possible metrics of tick attachment that are available from NEON data are
+the total (binned) number of ticks attached ("# Ticks attached"), and the
+presence of each larval ticks ("Larvae attached"), nymphal ticks ("Nymphs 
+attached"), and adult ticks ("Adults attached"). For now, I assume that the 
+factors affecting each tick attachment metric are the same, with the exception 
+of total number of ticks attached, which is affected by the other tick metrics.
+These factors are:
+
+* Tick population density, represented by "Tick density". More ticks increase
+the chances of a mouse running into one.
+
+* Mouse activity, represented by "Capture time" (when the individual
+enters the trap and, therefore, is active) and "Movement distance" 
+(the average distance between traps of recaptured individuals). We may also want
+to include the average number of times a mouse is captured and/or the number of
+unique traps it has been captured in.
+
+* Body size (or weight) and Sex, since movement behaviors vary by these factors.
+Age and reproductive status may also need to be considered for the same reasons.
+
+* Temperature and precipitation, because they may affect the behavior of ticks
+
+* habitat structure, or land cover type, which may influence how mice utilize
+the space and if/when they physically overlap with tick habitat.
+
+### Contact model fitting
+
+TBD...

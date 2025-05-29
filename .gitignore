@@ -6,3 +6,9 @@
 
 # NEON documentation
 data-curation/data/documentation
+
+# API token
+NEON-API-token*
+
+# word documents
+*.docx
