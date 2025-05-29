@@ -33,9 +33,9 @@ release <- "current"
 sites <- c("HARV", "ORNL", "SCBI", "BLAN", "SERC", "STEI", "UNDE", "MLBS")
 prov <- TRUE
 check <- FALSE
-save_dir <- "R:/morrow5_data_repo/NEON-products/eight_sites_data" 
-# save_dir <- "data/neon-data/eight_sites" # save here if lab-drive is not avail
-api_token <- readLines("docs/NEON-API-token-morrow5.txt", n = 1, warn = FALSE)
+# save_dir <- "R:/morrow5_data_repo/NEON-products/eight_sites_data" 
+save_dir <- "data-curation/data/eight_sites/"
+# api_token <- readLines("docs/NEON-API-token-morrow5.txt", n = 1, warn = FALSE)
 ncores <- 2
 check_size <- FALSE
 force_down <- FALSE
@@ -43,6 +43,9 @@ rm_after <- TRUE
 verbose  <- TRUE
 
 # ---- setup ----
+
+source("data-curation/R/00_NEON-API-token.R")
+.setNeonTokenGlobal(file = "NEON-API-token-morrow5.txt")
 
 # load packages
 pkgs <- c("neonUtilities") # packages to load
@@ -77,7 +80,7 @@ for (i in seq_len(length(products))) {
   data_object <- loadByProduct(
     dpID = prod, site = sites, startdate = start_date, enddate = end_date,
     package = pack, release = release, include.provisional = prov,
-    check.size = check_size, nCores = ncores, token = api_token
+    check.size = check_size, nCores = ncores, token = NEON_TOKEN
   )
 
   saveRDS(data_object, file = file_path)
@@ -129,7 +132,7 @@ for (i in seq_len(length(large_products))) {
     data_object <- loadByProduct(
       dpID = prod, site = site, startdate = start_date, enddate = end_date,
       package = pack, release = release, include.provisional = prov,
-      check.size = check_size, nCores = ncores, token = api_token
+      check.size = check_size, nCores = ncores, token = NEON_TOKEN
     )
     
     # save the product

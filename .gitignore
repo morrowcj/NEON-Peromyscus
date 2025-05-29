@@ -2,3 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+.Renviron
+
+# NEON documentation
+data-curation/data/documentation

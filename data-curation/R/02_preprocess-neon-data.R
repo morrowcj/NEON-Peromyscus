@@ -7,13 +7,17 @@ library(lutz)
 # ---- Script parameters ----
 
 # data where the relevant NEON data are stored
-data_dir <- "R:/morrow5_data_repo/NEON-products/eight_sites_data"
+# data_dir <- "R:/morrow5_data_repo/NEON-products/eight_sites_data"
+data_dir <- "data-curation/data/eight_sites"
 # where should the output be saved?
-out_dir <- "R:/morrow5_data_repo/NEON-products/eight_sites_data/location_data"
+# out_dir <- "R:/morrow5_data_repo/NEON-products/eight_sites_data/location_data"
+out_dir <- "data-curation/data/eight_sites/location_data"
 # path to of the mammal trapping data file
 mammal_path <- file.path(data_dir, "mammal-trap-data.rds")
 # api token string
-api_token <- readLines("docs/NEON-API-token-morrow5.txt", n = 1, warn = FALSE)
+# api_token <- readLines("docs/NEON-API-token-morrow5.txt", n = 1, warn = FALSE)
+source("data-curation/R/00_NEON-API-token.R")
+.setNeonTokenGlobal(file = "NEON-API-token-morrow5.txt")
 # should things be rebuilt even if they exists?
 force_build = FALSE 
 
@@ -49,7 +53,7 @@ if (force_build | !file.exists(site_loc_save_path)) {
   # get the site locations
   site_location_table <- sapply(
     X = sites,
-    FUN = function(x){geoNEON::getLocBySite(x, token = api_token)}
+    FUN = function(x){geoNEON::getLocBySite(x, token = NEON_TOKEN)}
   ) |> bind_rows() |> 
     tibble()
   
@@ -79,7 +83,7 @@ if (force_build | !file.exists(plot_loc_save_path)) {
   plot_location_table <- geoNEON::getLocByName(
     data = data.frame(namedLocation = unique(trap_dat$namedLocation)), 
     locCol = "namedLocation", 
-    locOnly = TRUE, history = FALSE ,token = api_token
+    locOnly = TRUE, history = FALSE ,token = NEON_TOKEN
   ) |> tibble()
   
   plot_location_table <- plot_location_table |> 
@@ -113,7 +117,7 @@ if (force_build | !file.exists(trap_save_path)) {
   
   # get the locations for the traps
   trap_locations <- geoNEON::getLocTOS(
-    trap_locations, "mam_pertrapnight", token = api_token
+    trap_locations, "mam_pertrapnight", token = NEON_TOKEN
   ) |> tibble()
   
   # add time zones
