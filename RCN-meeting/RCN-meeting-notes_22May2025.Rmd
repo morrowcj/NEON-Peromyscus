@@ -1,0 +1,89 @@
+---
+title: "RCN Notes: Day 1"
+author: "Clay Morrow"
+date: "2025-05-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# NEON contacts
+
+*Kelsey Yule* - Meta, NEON data scientist
+Laura Stegner - Mammal
+Isa Betancourt - invertabrates
+
+
+# Team Mammal
+
+## Main Questions:
+
+What are the causes and effects of population boom-bust cycles among
+NEON sites and across populations? 
+
+1) Estimate capture probability (site x year)
+
+2) Estimate population density (site x year)
+
+3) Assess variation in population fluctuation:
+  - by species
+  - by geographic range
+  - coupled cycling of co-occuring species (when and where are cycles 
+  syncronous vs. asyncronous)?
+  - how does body size covary with population (and community) dynamics
+  - are there demographic shifts at different population states?
+  
+## Next Steps
+
+- Variation in body size across sites, species, years, etc.
+
+  + weight, but also body length and hind foot length 
+  
+  + do temporal patterns of average mass over time look similar among species?
+
+- Explore synchrony a bit more:
+
+  + Correlations among species throughout time
+  
+  + differences between weight + pop size relationships?
+  
+  + use absolute AND relative abundances
+  
+  + spatial autocorrelation (Moran effect)
+  
+  + competetive exclusion?
+
+- NEON productivity data
+
+  + Rangeland analysis platform (NDVI) 
+  
+  + NEON remote sensing data?
+  
+  + Plant biomass (don't necessarily align with the mammal plots)
+
+- Better characterize environment - to classify sites with. 
+
+  + habitat structure (and composition)?
+  
+- Model the mass and population sizes as functions of the same factors?
+
+  + Do we want the focus to be theoretical???
+
+### Tangible Steps
+
+1. Plot body mass (and size-corrected mass (mass / hind foot)) over time per 
+site per species
+
+2. Look for drivers of 1) abundance, and 2) size and how they differ over time
+
+  - carrying capacity (resources, environment)
+  
+  - fecundity
+  
+  - survival
+
+3. Reconvene in a month - over Zoom
+
+  - Use slack to communitate

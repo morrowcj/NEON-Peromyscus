@@ -12,3 +12,8 @@ NEON-API-token*
 
 # word documents
 *.docx
+
+# images
+*.png
+*.jpg
+*.jpeg
