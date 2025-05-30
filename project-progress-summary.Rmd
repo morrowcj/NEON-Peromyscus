@@ -20,8 +20,8 @@ sub-directory and were run in order of their leading number.
 The eight sites that we are primarily concerned with are HARV: Harvard Forest, 
 ORNL: Oak Ridge National Laboratory, SCBI: Smithsonian Conservation Biology
 Institute, BLAN: Blandy Experimental Farm, SERC: Smithsonian Environmental 
-Research Center, STEI: Steigerwald Land Services, UNDE: University of Notre Dame
-Environmental Research Center, and MLBS: Mountain Lake Biological Station.
+Research Center, STEI: Steigerwald Land Services, UNDE: University of Notre 
+Dame Environmental Research Center, and MLBS: Mountain Lake Biological Station.
 
 The downloaded data products can be found in `data-curation/data/eight_sites/`
 and include:

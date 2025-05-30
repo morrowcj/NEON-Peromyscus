@@ -6,7 +6,7 @@
 #'
 #' @returns nothing, assigns the NEON_TOKEN global variable
 .setNeonTokenGlobal <- function(token = NA, file = NULL){
-  if (!missing(file) && !any(is.na(file)) && !is.null(file)) {
+  if (!missing(file) && !any(is.na(file)) && !is.null(file) && file.exists(file)) {
     token = readLines(file)
   } else if (missing(token) | any(is.na(token))) {
     token = NA
