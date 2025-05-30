@@ -1,0 +1,9 @@
+siteCode,siteName,type,terrain,domainCode,stateCode,latitude,longitude,color_hex
+BLAN,Blandy Experimental Farm NEON,GRADIENT,TERRESTRIAL,D02,VA,39.0337,-78.04179,#332288
+HARV,Harvard Forest & Quabbin Watershed NEON,CORE,TERRESTRIAL,D01,MA,42.53691,-72.17265,#117733
+MLBS,Mountain Lake Biological Station NEON,GRADIENT,TERRESTRIAL,D07,VA,37.37831,-80.52485,#44AA99
+ORNL,Oak Ridge NEON,CORE,TERRESTRIAL,D07,TN,35.96413,-84.28259,#88CCEE
+SCBI,Smithsonian Conservation Biology Institute NEON,CORE,TERRESTRIAL,D02,VA,38.89292,-78.13949,#DDCC77
+SERC,Smithsonian Environmental Research Center NEON,GRADIENT,TERRESTRIAL,D02,MD,38.89013,-76.56001,#CC6677
+STEI,Steigerwaldt-Chequamegon NEON,GRADIENT,TERRESTRIAL,D05,WI,45.50894,-89.58637,#AA4499
+UNDE,University of Notre Dame Environmental Research Center NEON,CORE,TERRESTRIAL,D05,MI,46.23391,-89.53725,#882255

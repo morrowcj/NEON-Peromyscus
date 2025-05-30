@@ -14,10 +14,21 @@ NEON-API-token*
 # word documents
 *.docx
 
+# PDF files
+*.pdf
+
+# emails
+*.msg
+
 # images
 *.png
 *.jpg
 *.jpeg
+*.tif
 
 # powerpoint files
 *.pptx
+
+# specific folders
+infection-modeling/docs
+infection-modeling/data/raw-data/Data-for-Clay_copy

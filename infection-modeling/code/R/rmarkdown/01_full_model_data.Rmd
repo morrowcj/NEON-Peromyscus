@@ -1,0 +1,1276 @@
+---
+title: "NEON variable associations"
+author: "Clay Morrow"
+date: "2025-05-02"
+output: 
+  bookdown::html_document2
+---
+
+# Introduction
+
+This document will track the initial steps for building an infection SEM.
+
+To enhance readability, `tidyverse` functions and syntax will be used often 
+throughout this document.
+
+# Setup 
+
+This document was last rendered: `r lubridate::now() |> as.Date()`
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+First, we load the R packages that we'll use and point to the directory
+in which NEON data are saved. Data objects will be loaded from here as needed
+throughout the rest of this document.
+
+```{r load_packages, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(lubridate) # manage dates
+library(lemon) # ggplot extension
+```
+
+```{r neon_data_dir}
+# path to NEON data directory
+neon_data_dir = "../neon-data-curation/data/eight_sites"
+
+# check that the directory exists
+stopifnot(dir.exists(neon_data_dir))
+```
+
+```{r}
+my_token <- readLines(
+  "../neon-data-curation/docs/NEON-API-token-morrow5.txt"
+)
+```
+
+
+```{r}
+NEON_sites <- read.csv("data/raw-data/NEON-SiteMap-Table.csv") |> 
+  tibble()
+```
+
+
+```{r}
+trap_locations <- readRDS(
+  file.path(
+    "../neon-data-curation/data/eight_sites",
+    "location_data/small-mammal-trap-locations.rds"
+  )
+)
+```
+
+
+# Small mammal data
+
+The small mammal data product object is a list of multiple data and metadata
+tables. The `$readme*` object describes the product and `$variables*` table
+describes the different fields of each table. The primary table we want is 
+called `mam_pertrapnight`, which has one row for each capture (or lack thereof) 
+per trap per night. We'll simply the name of this dataset to `mammals` from
+here on out.
+
+```{r mammal-data}
+# load the small mammal trapping data products
+mammal_prods <- readRDS(file.path(neon_data_dir, "mammal-trap-data.rds"))
+
+# Extract a tibble of the "mammals per trap night" data object
+mammals <- mammal_prods$mam_pertrapnight |> tibble()
+
+# number of observations in the mammal table 
+n_mammals <- nrow(mammals)
+```
+
+The field descriptions of the `mammals` data are contained within the 
+`$variables*` object:
+
+```{r mammal_variable_lookup}
+# Get a variable lookup metadata table, for our mammal data
+mammal_var_lookup <- mammal_prods$variables_10072 |> 
+  filter(table == "mam_pertrapnight") |> 
+  tibble()
+
+# Print the variable lookup table
+mammal_var_lookup |> select(fieldName, units, description)
+```
+
+We will next clean up `mammals` a bit to make it easier to use. Notably, 
+many of the columns that we probably won't use get collapsed into a single
+list-column (via `tibble`). This allows removal of some clutter without losing
+any data.
+
+```{r remove_mammal_prod, include = FALSE}
+rm(mammal_prods)
+gc()
+```
+
+
+```{r, collapse_mammals}
+# collapse some variables that we are unlikely to use
+mammals <- mammals |> 
+  arrange(collectDate, plotID, nightuid, trapCoordinate, uid) |> 
+  ungroup() |>
+  mutate(cap_id_num = row_number()) |> # create a row ID to simplify uid.
+  relocate(cap_id_num, .before = 1) |> 
+  group_by(uid) |> 
+  nest(
+    other_mammal_vars = c(
+      namedLocation, domainID, plotType, nlcdClass, geodeticDatum,
+      coordinateUncertainty, elevationUncertainty, trapType, individualCode,
+      taxonRank:nativeStatusCode, replacedTag, frozenSamplePrepMethod, 
+      bloodSampleID, bloodSampleMethod, fecalSampleID, fecalSampleCondition, 
+      earSampleID, hairSampleID, hairSampleContents, voucherSampleID:release
+    )
+  ) |> ungroup()
+
+# ensure n hasn't changed - this check will be repeated periodically
+stopifnot(nrow(mammals) == n_mammals)
+```
+
+We'll also get some extra information about year, month, day, and Julian day 
+(`DOY`: day-of-year). We're going to hold off on formatting the actual date 
+columns (`collectDate` and `endDate`) for now because they may be used for 
+joining with other data tables.
+
+```{r, mammal_DOY}
+# add new time variables
+mammals <- mammals |> 
+  mutate(
+    year = year(collectDate),
+    month = month(collectDate),
+    day = day(collectDate),
+    DOY = yday(collectDate)
+  ) |> 
+  relocate(year, month, day, DOY, .before = collectDate)
+```
+
+And we'll also refactor some of the categorical variables to be more useful
+in modeling
+
+```{r relevel_columns}
+# refactor the tick info
+mammals <- mammals |> 
+  mutate(
+    tickNumber = if_else(
+      larvalTicksAttached != "Y" & 
+        nymphalTicksAttached != "Y" & 
+        adultTicksAttached != "Y" & 
+        tickNumber != "No count performed", true = "0", false = tickNumber
+    ),
+    tickNumber = factor(
+      tickNumber, levels = c("0", "1-5", "6-20", ">20"), ordered = TRUE
+    ),
+    nymphalTicksAttached = factor(
+      nymphalTicksAttached, levels = c("N", "Y"), ordered = TRUE
+    ),
+    larvalTicksAttached = factor(
+      larvalTicksAttached, levels = c("N", "Y"), ordered = TRUE
+    ),
+    adultTicksAttached = factor(
+      adultTicksAttached, levels = c("N", "Y"), ordered = TRUE
+    )
+  )
+
+mammals$tickNumber |> table()
+```
+
+
+# Pathogens
+
+### tick-borne
+
+Next, we'll load the tick-borne pathogens neon data product. As with the small
+mammal product, there are multiple tables contained within this product. The
+main data is stored in `rpt2_pathogentesting`, which we will rename to 
+`pathogens`.
+
+```{r tickborne-data}
+# read the NEON tick-borne pathogen product object
+pathogen_prods <- readRDS(
+  file.path(neon_data_dir, "rodent-tickborne-pathogen-status.rds")
+)
+
+# extract the main pathogen testing table
+pathogens <- pathogen_prods$rpt2_pathogentesting |> tibble()
+
+n_pathogens <- length(unique(pathogens$testPathogenName))
+
+# get a variable lookup metadata table for this dataset
+pathogen_var_lookup <- pathogen_prods$variables_10064 |> 
+  filter(table == "rpt2_pathogentesting") |> tibble()
+
+# view the lookup table
+pathogen_var_lookup |> select(fieldName, units, description)
+```
+
+```{r rm_pathogen_prods, include=FALSE}
+rm(pathogen_prods)
+gc()
+```
+
+
+The `pathogens` data has 1 row per test (ear and/or blood) per pathogen 
+(`r n_pathogens` possible) per individual. Linking these samples to an 
+individual capture (`mammals$uid`) requires matching the `sampleCode` variable 
+with either `bloodSampleBarcode` or `earSampleBarcode` from the `mammal` table,
+depending on whether `sampleID` ends with ".E" (ear) or ".B" (blood). 
+
+```{r match_pathogen_mammal}
+# add in an indicator of "blood" or "ear" for sampling and matched mammal row
+pathogens <- pathogens |> 
+  mutate(
+    year = year(.data$collectDate),
+    sample_method = dplyr::case_when(
+      grepl(".*\\.E$", sampleID) ~ "ear",
+      grepl(".*\\.B$", sampleID) ~ "blood",
+      .default = NA
+    ),
+    matched_mammal_index = dplyr::case_when(
+      sample_method == "ear" ~ match(sampleCode, mammals$earSampleBarcode),
+      sample_method == "blood" ~ match(sampleCode, mammals$bloodSampleBarcode),
+      .default = NA
+    ),
+    mammal_uid = mammals$uid[.data$matched_mammal_index],
+  )
+
+# check that all samples had a match (ear subset)
+pathogens |> filter(sample_method == "ear") |> 
+  pull(.data$sampleCode) %in% mammals$earSampleBarcode |> all() |> 
+  stopifnot()
+
+# (blood subset)
+pathogens |> filter(sample_method == "blood") |> 
+  pull(.data$sampleCode) %in% mammals$bloodSampleBarcode |> all() |> 
+  stopifnot()
+```
+
+The `pathogen` data is then transformed such that there is one row for each
+individual (`mammal_uid`), with the results converted logical (`TRUE` if
+"Positive" results from *either* blood or ear samples). We will also collapse
+the original data into a list column to avoid clutter.
+
+```{r}
+# collapse unneeded columns into a list column, by mammal_uid, for later use
+pathogens_nested <- pathogens |> 
+  group_by(mammal_uid) |> 
+  nest(all_tickborne_data = -c(mammal_uid))
+
+# get a column for each pathogen, indicating whether it was found
+pathogens <- pathogens |> 
+  select(
+    mammal_uid, sample_method, sampleID, sampleCode, testPathogenName, 
+    testResult
+  ) |> 
+  group_by(mammal_uid, testPathogenName) |> 
+  summarize(
+    # n_tests = n(), 
+    pathogen_positive = "Positive" %in% testResult,
+    .groups = "drop"
+  ) |> 
+  group_by(mammal_uid) |> 
+  pivot_wider(
+    names_from = testPathogenName, values_from = pathogen_positive
+  ) |> ungroup()
+
+# get the observation number from the pathogen data
+n_tickborne_obs <- nrow(pathogens)
+
+# check that there's only 1 row per individual
+stopifnot(n_tickborne_obs == length(unique(pathogens$mammal_uid)))
+
+# re-join with the nested full data
+pathogens <- left_join(pathogens, pathogens_nested, by = "mammal_uid") |> 
+  relocate(all_tickborne_data, .after = mammal_uid)
+```
+
+```{r rm_nested_pathogens, include = FALSE}
+rm(pathogens_nested)
+gc()
+```
+
+
+## Hanta virus
+
+We will also extract the hantavirus data -- which are temporally 
+non-overlapping with the tick-borne data but still interesting -- and join it
+into our `pathogen` dataset.
+
+```{r hanta}
+# get the hanta virus product
+hanta_prods <- readRDS(
+  file.path(neon_data_dir, "rodent-hanta-virus.rds")
+)
+
+# extract the hanta virus data and match the mammal uid
+hanta <- hanta_prods$rpt_bloodtesting |> 
+  mutate(
+    matched_mammal_index = match(
+      bloodSampleBarcode, mammals$bloodSampleBarcode
+    ),
+    mammal_uid = mammals$uid[matched_mammal_index]
+  )
+
+# collapse full hanta data into a list column, by mammal_uid, for later use
+hanta_nested <- hanta |> 
+  group_by(mammal_uid) |> 
+  nest(all_hanta_data = -c(mammal_uid))
+
+# transpose to the same shape as the pathogen table (for consistency)
+hanta <- hanta |> 
+  select(
+    mammal_uid, bloodSampleBarcode, testPathogenName, testResult
+  ) |> 
+  group_by(mammal_uid, testPathogenName) |> 
+  summarize(
+    pathogen_positive = "Positive" %in% testResult,
+    .groups = "drop"
+  ) |> 
+  group_by(mammal_uid) |> 
+  pivot_wider(
+    names_from = testPathogenName, values_from = pathogen_positive
+  ) |> ungroup()
+
+# number of individual observations for hanta data
+n_hanta_obs <- nrow(hanta)
+
+# check that the dimensions are correct
+stopifnot(n_hanta_obs == nrow(hanta_nested))
+
+# rejoin the nested full data into the hanta object
+hanta <- left_join(hanta, hanta_nested, by = "mammal_uid")
+
+stopifnot(nrow(hanta) == n_hanta_obs)
+
+# join the hanta into the pathogen results
+pathogens <- full_join(
+  pathogens, hanta, by = "mammal_uid"
+)  |> 
+  relocate(all_hanta_data, .after = all_tickborne_data)
+
+# note: hanta was only tested for in years prior to tick-borne pathogens:
+stopifnot(nrow(pathogens) == n_tickborne_obs + n_hanta_obs)
+```
+
+```{r rm_hanta_prods, include = FALSE}
+rm(hanta_prods)
+rm(hanta)
+gc()
+```
+
+
+## Collapse pathogen data
+
+Before joining the updated `pathogens` data into `mammals`, we'll first 
+collapse the data as we've done previously -- keeping only the key columns.
+The main pathogens that we'll keep as individual columns are hanta virus 
+(`hanta`), *Borrelia burgdorferi* (`B_burgdorferi`), and all *Borrelia*
+combined (`any_borrelia`).
+
+```{r main_pathogen_columns}
+# copy of the "Hantaan virus" column
+pathogens$hanta <- pathogens$`Hantaan virus`
+
+# add a column indicating if there was any borrelia infection
+pathogens$any_borrelia <- pathogens |> 
+  select(contains("borrelia", ignore.case = TRUE)) |> 
+  apply(1, function(x) {
+    if (all(is.na(x))) {return(NA)} else {return(any(x, na.rm = TRUE))}
+  })
+
+# copy of the column indicating confirmed Borrelia burgdorferi
+pathogens$B_burgdorferi <- pathogens |> 
+  pull(contains("burgdorferi", ignore.case = TRUE))
+```
+
+```{r collapse_pathogens}
+# collapse the larger results matrix into a list column  
+pathogens <- pathogens |> 
+  relocate(c(hanta:B_burgdorferi), .after = "mammal_uid") |> 
+  group_by(mammal_uid) |> 
+  nest(all_infections_matrix = -c(mammal_uid:all_hanta_data)) |> 
+  relocate(all_infections_matrix, .before = all_tickborne_data)
+
+# check dimensions
+stopifnot(nrow(pathogens) == n_tickborne_obs + n_hanta_obs)
+```
+
+Joining the pathogen data into the mammal data results in our `full_data`
+object, that will serve as our primary data for models. We will continue adding
+data from various sources into this object.
+
+```{r full_data}
+# join the pathogen table into the mammal table
+full_data <- mammals |> full_join(pathogens, by = c("uid" = "mammal_uid"))
+
+# check that it is the same size as the mammals table
+stopifnot(nrow(full_data) == nrow(mammals))
+
+# and check that the non-null list-column values are equal to the pathogen size
+n_tested = full_data |> 
+  rowwise() |> 
+  filter(!is.null(all_infections_matrix)) |> 
+  nrow()
+stopifnot(n_tested == nrow(pathogens))
+```
+
+```{r rm_previous_sets, include = FALSE}
+rm(pathogens, mammals)
+gc()
+```
+
+
+
+# Capture times
+
+This section focuses on adding the capture time data that we calculated 
+previously (see code in the  "../activity-timing/" folder).
+
+```{r, fig.asp = 1, out.width="50%", fig.width=6}
+# load and trim the capture time data
+captimes <- readRDS(
+  file.path(
+    "../activity-timing/data/ibuttons",
+    "capture-time-trapping-data_2022-2024.rds"
+  )
+) |> 
+  hoist(neon_trap_data, "uid") |> # pull the uid column out for matching
+  select(
+    uid, bout_label, plot_bout, local_midnight, sunset, sunrise,
+    trapping_interval, night_length:cap_prop_night,  ibutton_pair, 
+    SN_In, SN_Out, ibutton_data, possible_cap_times:scientificName.update
+  ) |> 
+  filter(!is.na(uid))
+
+# combine the captimes
+full_data <- full_data |> 
+  mutate(collectDate = as_datetime(.data$collectDate)) |> 
+  left_join(captimes, by = "uid")
+
+# check the merge was right
+stopifnot(nrow(full_data) == n_mammals)
+stopifnot(
+  nrow(full_data |> filter(!is.na(cap_prop_night))) == 
+    nrow(captimes |> filter(!is.na(cap_prop_night)))
+)
+```
+
+```{r rm_captimes, include = FALSE}
+rm(captimes)
+gc()
+```
+
+## Key pathogen x Capture time summaries
+
+Let's quickly look at the breakdown of the 3 key pathogens:
+
+```{r}
+# sample size for Bb infection
+n_bb_samples = full_data |> filter(!is.na(B_burgdorferi)) |> nrow()
+
+# sample size for capture times
+n_captimes = full_data |> filter(!is.na(cap_prop_night)) |> nrow()
+
+# sample size for both Bb infection and capture times
+n_complete = full_data |> 
+  filter(!is.na(B_burgdorferi), !is.na(cap_prop_night)) |> 
+  nrow()
+
+full_data |> 
+  filter(!is.na(B_burgdorferi), !is.na(cap_prop_night), B_burgdorferi) |> 
+  nrow()
+
+c(Bb = n_bb_samples, captimes = n_captimes, complete = n_complete)
+
+# Borrelia infection table, by year
+full_data |> 
+  filter(!is.na(B_burgdorferi)) |> 
+  group_by(year, B_burgdorferi) |> 
+  tally() |> pivot_wider(names_from = B_burgdorferi, values_from = n)
+```
+
+
+```{r, eval = FALSE, echo = FALSE}
+# borrelia table
+full_data |> 
+  filter(!is.na(any_borrelia)) |> 
+  group_by(year, siteID, any_borrelia) |> 
+  tally() |> 
+  pivot_wider(names_from = year, values_from = n) |> 
+  arrange(siteID)
+
+# B. burgdorferi table
+full_data |> 
+  filter(!is.na(B_burgdorferi)) |> 
+  group_by(year, siteID, B_burgdorferi) |> 
+  tally() |> 
+  pivot_wider(names_from = year, values_from = n) |> 
+  arrange(siteID)
+
+# hanta table
+full_data |> 
+  filter(!is.na(hanta)) |> 
+  group_by(year, siteID, hanta) |> 
+  tally() |> 
+  pivot_wider(names_from = year, values_from = n) |> 
+  arrange(siteID)
+```
+
+
+```{r, fig.width = 4.5, fig.asp = 1}
+tmp <- full_data |> 
+  mutate(
+    Bb_missing = is.na(B_burgdorferi),
+    captime_missing = if_else(is.na(cap_prop_night), "no captime", "captime"),
+    B_burgdorferi = case_when(
+      is.na(B_burgdorferi) ~ "not sampled",
+      B_burgdorferi == TRUE ~ "positive",
+      B_burgdorferi == FALSE ~ "negative"
+    )
+  ) |> 
+  group_by(year, siteID, captime_missing, B_burgdorferi) |> tally()
+
+pd = position_dodge(0.8)
+
+theme_set(theme_classic())
+
+tmp |> 
+  filter(year %in% 2022:2024, B_burgdorferi != "not sampled", captime_missing == "captime") |> 
+  ggplot(aes(x = siteID, y = n, fill = B_burgdorferi)) + 
+  facet_rep_wrap(~year, ncol = 1) + 
+  geom_col(position = pd) + 
+  theme(legend.position = "bottom", strip.background = element_blank()) +
+  labs(x = "Site", y = "Count", title = "+captime +pathogens", fill = "Borrelia") +
+  geom_text(aes(label = n), position = pd, vjust = 0) + 
+  scale_y_continuous(limits = c(0, 90)) + 
+  scale_fill_manual(values = c("orange", "cornflowerblue"))
+
+ggsave("cap_path_counts.jpg", width = 4.5, height = 4.5)
+
+tmp |> 
+  filter(year %in% 2022:2024, B_burgdorferi != "not sampled", captime_missing != "captime") |> 
+  ggplot(aes(x = siteID, y = n, fill = B_burgdorferi)) + 
+  facet_rep_wrap(~year, ncol = 1) + 
+  geom_col(position = pd) + 
+  theme(legend.position = "bottom", strip.background = element_blank()) +
+  labs(x = "Site", y = "Count", title = "-captime +pathogens", fill = "Borrelia") +
+  geom_text(aes(label = n), position = pd, vjust = 0) + 
+  scale_y_continuous(limits = c(0, 180)) +
+  scale_fill_manual(values = c("orange", "cornflowerblue"))
+
+ggsave("nocap_path_counts.jpg", width = 4.5, height = 4.5)
+
+tmp |> 
+  filter(year %in% 2022:2024, B_burgdorferi == "not sampled", captime_missing == "captime") |> 
+  ggplot(aes(x = siteID, y = n, fill = B_burgdorferi)) + 
+  facet_rep_wrap(~year, ncol = 1) + 
+  geom_col(position = pd) + 
+  theme(legend.position = "bottom", strip.background = element_blank()) +
+  labs(x = "Site", y = "Count", title = "+captime -pathogens", fill = "Borrelia") +
+  geom_text(aes(label = n), position = pd, vjust = 0) + 
+  scale_y_continuous(limits = c(0, 450)) +
+  scale_fill_manual(values = "darkgreen")
+
+ggsave("cap_nopath_counts.jpg", width = 4.5, height = 4.5)
+
+tmp |> 
+  filter(year %in% 2022:2024, B_burgdorferi == "not sampled", captime_missing != "captime") |> 
+  ggplot(aes(x = siteID, y = n, fill = B_burgdorferi)) + 
+  facet_rep_wrap(~year, ncol = 1) + 
+  geom_col(position = pd) + 
+  theme(legend.position = "bottom", strip.background = element_blank()) +
+  labs(x = "Site", y = "Count", title = "-captime -pathogens", fill = "Borrelia") +
+  geom_text(aes(label = n), position = pd, vjust = 0) + 
+  scale_y_continuous(limits = c(0, 8500)) + 
+  scale_fill_manual(values = "darkgreen")
+
+ggsave("nocap_nopath_counts.jpg", width = 4.5, height = 4.5)
+
+
+```
+
+
+```{r}
+full_data |> filter(year %in% 2022) |> 
+  mutate(
+    Bb_missing = is.na(B_burgdorferi), 
+    captime_missing = is.na(cap_prop_night),
+    state = case_when(
+      !captime_missing & !Bb_missing ~ "timing_pathogens",
+      !captime_missing & Bb_missing ~ "timing_noPathogens",
+      captime_missing & !Bb_missing ~ "noTiming_pathogens",
+      captime_missing & Bb_missing ~ "noTiming_noPathogens"
+    )
+  ) |> 
+  group_by(year, siteID, state) |> 
+  tally() |> 
+  arrange(state) |> 
+  pivot_wider(names_from = state, values_from = n) |> 
+  write.csv(file = "state_table_2022.csv", row.names = FALSE)
+
+full_data |> filter(year %in% 2023) |> 
+  mutate(
+    Bb_missing = is.na(B_burgdorferi), 
+    captime_missing = is.na(cap_prop_night),
+    state = case_when(
+      !captime_missing & !Bb_missing ~ "timing_pathogens",
+      !captime_missing & Bb_missing ~ "timing_noPathogens",
+      captime_missing & !Bb_missing ~ "noTiming_pathogens",
+      captime_missing & Bb_missing ~ "noTiming_noPathogens"
+    )
+  ) |> 
+  group_by(year, siteID, state) |> 
+  tally() |> 
+  arrange(state) |> 
+  pivot_wider(names_from = state, values_from = n)|> 
+  write.csv(file = "state_table_2023.csv", row.names = FALSE)
+```
+
+
+# Weather
+
+```{r}
+
+```
+
+
+# Ticks 
+
+```{r ticks}
+# read in tick object
+tick_obj <- readRDS(
+  file.path(neon_data_dir, "tick-drag-cloth-sampling.rds")
+)
+
+# Get the tick table
+ticks <- tick_obj$tck_taxonomyProcessed |> tibble() |> 
+  mutate(
+    year = year(collectDate), month = month(collectDate),
+    date = date(collectDate), week = week(collectDate),
+    siteID = gsub("(.*)_.*", "\\1", plotID)
+  ) |> 
+  group_by(siteID, plotID, year, month, sexOrAge) |> 
+  mutate(total_tickgrp_count = sum(individualCount)) |> 
+  group_by(siteID, plotID, year, month) |> 
+  arrange(siteID, plotID, year, month, collectDate) |> 
+  mutate(
+    tck_samp_interval = interval(first(date), last(date)),
+    tck_samp_days = time_length(tck_samp_interval, "days") + 1
+  ) |> 
+  ungroup() |> 
+  mutate(
+    tck_density = individualCount / tck_samp_days
+  )
+
+# Get the variable lookup table
+tick_vars <- tick_obj$variables_10093 |> tibble() |> 
+  filter(table == "tck_taxonomyProcessed") |> 
+  select(fieldName, units, description)
+```
+
+```{r tick_counts}
+# total ticks by site by year (all species)
+ticks |> 
+  filter(year %in% 2021:2024) |> 
+  select(
+    siteID, plotID, year, month, sexOrAge, genus, scientificName,
+    individualCount
+  ) |> 
+  group_by(year, siteID) |> 
+  summarise(n_ticks = sum(individualCount, na.rm = TRUE), .groups = "keep") |> 
+  pivot_wider(names_from = year, values_from = n_ticks) |> 
+  mutate(total = rowSums(across(`2021`:`2024`))) |> 
+  arrange(desc(total))
+```
+
+```{r ixodes}
+# get monthly plot densities of Ixodes (or larval) ticks from 2021 - 2024 for each group
+ixodes <- ticks |> 
+  filter(sexOrAge == "Larva" | genus == "Ixodes", year %in% 2021:2024) |> 
+  group_by(siteID, plotID, year, month, sexOrAge) |> 
+  mutate(
+    count = sum(individualCount),
+    ixodes_prop = if_else(
+      sexOrAge == "Larva", NA, count/total_tickgrp_count
+    )
+  ) |> 
+  select(
+    siteID, plotID, year, month, sexOrAge, tck_samp_interval, 
+    tck_samp_days, count, total_tickgrp_count, ixodes_prop
+  ) |> 
+  distinct() |> 
+  ungroup(sexOrAge) |> 
+  mutate(
+    # density = count / tck_samp_days,
+    # # trying to estimate larval tick ixodes props.
+    mean_ixodes_prop = mean(ixodes_prop, na.rm = TRUE),
+  ) |> 
+  rowwise() |> 
+  mutate(
+    count = round(total_tickgrp_count * mean_ixodes_prop),
+    # count = if_else(
+    #   sexOrAge == "Larva", 
+    #   round(count * mean_ixodes_prop),
+    #   round(total_tickgrp_count * mean_ixodes_prop)
+    # ),
+    density = count / tck_samp_days
+  ) |> 
+  ungroup()
+
+tick_table <- ixodes |> 
+  pivot_wider(
+    names_from = sexOrAge, values_from = c(count, density)
+  ) |> 
+  mutate(
+    across(count_Larva:density_Female, ~replace_na(.x, 0)), # NA actually 0
+    count_Ixodes = rowSums(across(contains("count_"))),
+    density_Ixodes = count_Ixodes / tck_samp_days,
+    count_Adult = count_Male + count_Female,
+    density_Adult = count_Adult / tck_samp_days,
+    count_AllTicks = total_tickgrp_count,
+    density_AllTicks = total_tickgrp_count / tck_samp_days
+  ) |> 
+  relocate(c(count_Adult, count_Ixodes), .after = count_Female) |> 
+  relocate(c(density_Adult, density_Ixodes), .after = density_Female) |> 
+  select(-total_tickgrp_count)
+
+# Total counts
+tick_table |> 
+  group_by(year) |> 
+  summarize(across(contains("count"), ~sum(.x, na.rm = TRUE)))
+
+# Total densities
+tick_table |> 
+  group_by(year) |> 
+  summarize(across(contains("density"), ~mean(.x, na.rm = TRUE)))
+
+## NOTE These larvae are from ALL ticks. Should I assume the proportion of Ixodes
+## adults is comparable to the proportion of ixodes larvae?
+```
+## Tick pathogens
+
+```{r tick_pathogens}
+tick_pathogen_obj <- readRDS(
+  file.path(neon_data_dir, "tick-pathogen-status.rds")
+)
+
+tick_pathogens <- tick_pathogen_obj$tck_pathogen |> tibble() |> 
+  mutate(year = year(collectDate), month = month(collectDate))
+
+# get only B.b. results from 2021-2024
+borrelia <- tick_pathogens |> 
+  filter(
+    grepl("burgdorferi", testPathogenName),
+    year %in% 2021:2024
+  ) |> select(
+    year, month, collectDate, plotID, individualCount, testResult
+  )
+
+# calculate some basic values
+borrelia <- borrelia |> group_by(year, month, plotID) |> 
+  mutate(
+    n_testticks_plotmonth = sum(individualCount, na.rm = TRUE),
+    n_Bbpos_plotmonth = sum(testResult == "Positive", na.rm = TRUE),
+    Bb_tickrate_plotmonth = n_Bbpos_plotmonth / n_testticks_plotmonth
+  ) |> 
+  group_by(year) |> 
+  mutate(
+    n_testticks_plotyear = sum(individualCount, na.rm = TRUE),
+    n_Bbpos_plotyear = sum(testResult == "Positive", na.rm = TRUE),
+    Bb_tickrate_plotyear = n_Bbpos_plotyear / n_testticks_plotyear
+  ) |> 
+  ungroup()
+
+# join the new Borrelia tick columns into the 
+full_data <- left_join(
+  full_data,
+  borrelia |> 
+    select(year, month, plotID, n_testticks_plotmonth:Bb_tickrate_plotyear) |> 
+    distinct(),
+  by = c("plotID", "year", "month")
+)
+
+# check the merge
+stopifnot(nrow(full_data) == n_mammals)
+```
+
+# Genetics (resistance)
+
+# Plant communities
+
+```{r}
+tree_prods <- readRDS(
+  file.path(neon_data_dir, "litterfall-data.rds")
+)
+```
+
+
+# Litterfall
+
+```{r}
+litter_prod <- readRDS(
+  file.path(neon_data_dir, "litterfall-data.rds")
+)
+
+names(litter_prod)
+
+litter_lookup <- litter_prod$variables_10033 |> tibble()
+
+litter_lookup |> 
+  filter(table == "ltr_massdata") |> 
+  select(fieldName, description)
+
+litter_loc_path = "data/litter-trap-locations.rds"
+if (!file.exists(litter_loc_path)) {
+  litter_locations <- litter_prod$ltr_pertrap |> 
+    select(
+      trapID, namedLocation, decimalLatitude, decimalLongitude, elevation
+    ) |> 
+    geoNEON::getLocByName(token = my_token) |> 
+    mutate(elevation = as.numeric(elevation))
+  saveRDS(litter_locations, litter_loc_path)
+} else {litter_locations <- readRDS(litter_loc_path)}
+
+litter <- litter_prod$ltr_massdata |> 
+  tibble() |> 
+  left_join(litter_locations) |>
+  mutate(
+    year = year(collectDate), month = month(collectDate),
+    trapping_days = time_length(collectDate - setDate, "days"),
+    mass_per_trapdays = dryMass / trapping_days
+  ) 
+```
+
+```{r, fig.asp = 0.7, fig.width = 6}
+# plot average monthly seed mass across years
+litter |> 
+  filter(functionalGroup == "Seeds", year %in% 2021:2024) |> 
+  ggplot(aes(x = month, y = dryMass, col = siteID)) + 
+  facet_wrap(~year, scales = "free_y") +
+  stat_summary(fun.data = mean_se, size = 0.25, show.legend = FALSE) +
+  stat_summary(fun = mean, geom = "line", linewidth = 0.75) + 
+  labs(
+    y = "Mean seed mass in litterfall per trap day", 
+    x = "Month collected",
+    col = NULL
+  ) + 
+  scale_color_manual(values = NEON_sites$color_hex) + 
+  theme_bw() + 
+  theme(legend.margin = margin(l = -2)) + 
+  scale_x_continuous(breaks = 1:12)
+
+ggsave(
+  file.path("graphics", "siteMonthlySeedMass_2021-2024.jpg"), 
+  width = 6, height = 0.7*6
+)
+```
+
+```{r, fig.asp=0.66, fig.width = 8}
+ggplot() +
+  facet_wrap(~siteID, scales = "free") + 
+  geom_point(
+    data = trap_locations, 
+    aes(x = adjDecimalLongitude, y = adjDecimalLatitude, col = "mammal")
+  ) +
+  geom_point(
+    data = litter_locations, 
+    aes(x = decimalLongitude, y = decimalLatitude, col = "litter")
+  ) + 
+  theme_bw() +
+  theme(
+    legend.position = "inside", legend.position.inside = c(0.9, 0),
+    legend.justification = c(1, 0),
+    # axis.text = element_blank()
+  ) +
+  labs(x = "Longitude", y = "Latitude", col = "Plot") #+ 
+# scale_x_continuous(
+#   breaks = seq(-100, -50, by = 0.1), 
+#   minor_breaks = seq(-100, -50, by = 0.05)
+# )
+
+ggsave(
+  file.path("graphics", "litterfall-mammal-trap-proximity.jpg"),
+  width = 8, height = 0.66*8
+)
+```
+
+```{r collapse_litter}
+# summarize the seed mass by site, plot, year, and month and add it to full data
+full_data <- litter |> 
+  group_by(siteID, year, month) |> 
+  mutate(
+    nSeedSamples_siteMean = n(),
+    seedMass_perTrapDays_siteMean = mean(mass_per_trapdays, na.rm = TRUE),
+    seedTrapDays_siteMean = mean(trapping_days, na.rm = TRUE)
+  ) |> 
+  # group_by(plotID, .add = TRUE) |> 
+  # mutate(
+  #   seedMass_perTrapDays_plotMean = mean(mass_per_trapdays, na.rm = TRUE),
+  #   seedTrapDays_plotMean = mean(trapping_days, na.rm = TRUE)
+  # ) |> 
+  group_by(siteID, year, .add = FALSE) |> 
+  mutate(
+    nSeedSamples_siteMeanYear = n(),
+    seedMass_perTrapDays_siteMeanYear = mean(mass_per_trapdays, na.rm = TRUE),
+    seedTrapDays_siteMeanYear = mean(trapping_days, na.rm = TRUE)
+  ) |> 
+  # group_by(plotID, .add = TRUE) |> 
+  # mutate(
+  #   seedMass_perTrapDays_plotMeanYear = mean(mass_per_trapdays, na.rm = TRUE),
+  #   seedTrapDays_plotMeanYear = mean(trapping_days, na.rm = TRUE)
+  # ) |> 
+  select(
+    siteID, year, month,
+    seedMass_perTrapDays_siteMean, seedTrapDays_siteMean,
+    seedMass_perTrapDays_siteMeanYear, seedTrapDays_siteMeanYear,
+    nSeedSamples_siteMean, nSeedSamples_siteMeanYear
+  ) |> 
+  distinct() |> 
+  right_join(full_data)
+```
+
+```{r seedmass_captime, fig.asp = 1, fig.width=6}
+full_data |> 
+  filter(!is.na(cap_prop_night), !is.na(seedMass_perTrapDays_siteMean)) |> 
+  ggplot(
+    aes(
+      x = seedMass_perTrapDays_siteMean, y = cap_prop_night, col = siteID
+    )
+  ) +
+  facet_wrap(~siteID, scales = "free") +
+  geom_smooth(
+    method = "lm", formula = "y ~ x", se = FALSE, #show.legend = FALSE,
+    size = 0.5, # linetype = "dashed", 
+    aes(group = interaction(siteID, year), linetype = factor(year))
+  ) + 
+  geom_smooth(
+    method = "lm", formula = "y ~ x", fill = "grey80", size = 1,
+    #show.legend = FALSE,
+    aes(group = siteID)
+  ) + 
+  stat_summary(
+    fun.data = mean_se, fill = "white", # size = 0.4, # show.legend = FALSE, 
+    aes(group = interaction(siteID, year, month), shape = factor(year))
+  ) + 
+  # geom_smooth(method = "lm", aes(group = 1), col = "black") + 
+  labs(
+    x = "Seed mass per trapping day (monthly average)", 
+    y = "Relative capture time (mean ± SE within site and year)"
+  ) + 
+  scale_color_manual(guide = "none", values = NEON_sites$color_hex) + 
+  scale_shape_manual(
+    name = "Year", labels = c(2022:2024), values = c(21, 22, 24)
+  ) + 
+  scale_linetype_manual(name = "Year", values = c(2:4), guide = FALSE) + 
+  theme_bw() + 
+  theme(
+    legend.position.inside = c(4/5, 0), legend.position = "inside", 
+    legend.justification = c(0.5, 0),
+    strip.background = element_blank()
+  )
+
+ggsave(
+  file.path("graphics", "captureTime-vs-seedMass.jpg"),
+  width = 6, height = 6, dpi = 300
+)
+```
+
+```{r fig.asp = 1, fig.width=6}
+pd = position_dodge(0.8)
+
+tmp <- full_data |> 
+  filter(!is.na(cap_prop_night)) |> 
+  group_by(siteID, year) |> arrange(year, month) |> 
+  summarize(first_month = first(month), last_month = last(month))
+
+
+litter |> 
+  filter(year %in% 2022:2024) |> 
+  group_by(siteID, year, month) |> 
+  summarize(n = length(unique(collectDate)), .groups = "drop") |>
+  complete(siteID, year, month) |> 
+  mutate(n = replace_na(n, 0)) |> 
+  ggplot(aes(x = month, y = n, fill = factor(year))) + 
+  geom_rect(
+    data = tmp, inherit.aes = FALSE, alpha = 0.25, col = "grey50",
+    aes(
+      xmin = first_month, xmax = last_month, 
+      ymin = year - 2019, ymax = year - 2018, 
+      fill = factor(year)
+    )
+  ) + 
+  # geom_line(aes(col = factor(year)), position = pd, linetype = "dotted") +
+  geom_col(position = pd, alpha = 1, width = 0.8) +
+  # geom_point(aes(col = factor(year)), position = pd) + 
+  facet_wrap(~siteID) + 
+  scale_x_continuous(breaks = 1:12) + 
+  labs(
+    y = "Litter collections per month", x = "Month", fill = "Year", color = "Year"
+  ) + 
+  theme_bw() + 
+  theme(
+    legend.position.inside = c(0.9, 0), legend.position = "inside",
+    legend.justification = c(1, 0),
+    strip.background = element_blank()
+  )
+
+ggsave(
+  file.path("graphics", "monthly-litter-captures_with-capture-time-windows.jpg")
+)
+```
+
+```{r, fig.asp = 0.35, fig.width=7}
+full_data |> 
+  filter(!is.na(cap_prop_night), !is.na(seedMass_perTrapDays_siteMean)) |> 
+  ggplot(
+    aes(
+      x = seedMass_perTrapDays_siteMean, y = cap_prop_night
+    )
+  ) + 
+  facet_wrap(~year, scales = "free_x", ncol = 3) + 
+  geom_point(
+    shape = 16, size = 0.75, #col = "grey50"
+    aes(col = siteID)
+  ) + 
+  geom_smooth(
+    method = "lm", formula = "y ~ x", aes(group = 1), col = "grey50", 
+    fill = "grey80", linewidth = 0.75
+  ) + 
+  stat_summary(
+    fun.data = mean_se, shape = 21, size = 0.5, alpha = 1, stroke = 0.5, 
+    linewidth = 0.5, 
+    aes(fill = siteID)
+  ) + 
+  theme_bw() + 
+  theme(strip.background = element_blank()) +
+  scale_fill_manual(values = NEON_sites$color_hex) + 
+  scale_color_manual(values = NEON_sites$color_hex, guide = FALSE) + 
+  labs(
+    fill = NULL, x = "Average seed mass (per trapping day per bout)",
+    y = "Relative capture time"
+  )
+
+ggsave(
+  file.path(
+    "graphics", "Capture-time-by-seedmass_within-year.jpg"
+  ),
+  width = 7, height = 0.35*7, dpi = 300
+)
+```
+
+
+# Beetles
+
+# Updated *Borrelia* infection status (USF)
+
+# Distances
+
+```{r, fig.asp = 0.5, fig.width=7}
+location_dir = file.path(neon_data_dir, "location_data")
+
+plot_locs <- readRDS(
+  file.path(location_dir, "plot-centroid-locations.rds")
+) |> tibble()
+
+plot_locs |> 
+  select(
+    siteID, plotID, decimalLatitude, decimalLongitude, elevation,
+    xOffset, yOffset, zOffset
+  ) 
+
+# use BLAN as an example to get distances among plots
+BLAN_dists <- plot_locs |> 
+  filter(siteID == "BLAN") |> 
+  select(decimalLongitude, decimalLatitude) |> 
+  geosphere::distm()
+
+colnames(BLAN_dists) <- plot_locs |> filter(siteID == "BLAN") |> pull(plotID)
+rownames(BLAN_dists) <- plot_locs |> filter(siteID == "BLAN") |> pull(plotID)
+
+BLAN_dists
+
+max(BLAN_dists) # 2.2 km
+min(BLAN_dists[lower.tri(BLAN_dists)]) # 0.4 km
+
+# look at the plot distribution within sites
+plot_locs |> 
+  ggplot(aes(x = decimalLongitude, y = decimalLatitude, col = elevation)) + 
+  geom_point() + 
+  facet_wrap(~siteID, scales = "free", ncol = 4) + 
+  theme(
+    legend.position = "none", strip.background = element_blank(),
+    axis.text.x = element_blank()
+  )
+```
+
+
+# Summary variables
+
+```{r mouse_population}
+# estimate population size and
+full_data <- full_data |> 
+  group_by(year, taxonID, plotID) |> 
+  mutate(
+    year_popsize = n(),
+    Bb_mouserate_yr = sum(B_burgdorferi, na.rm = TRUE) / year_popsize
+  ) |> 
+  group_by(year, month, plotID) |> 
+  mutate(
+    month_popsize = n(),
+    Bb_mouserate_mnth = sum(B_burgdorferi, na.rm = TRUE) / month_popsize
+  )
+```
+
+
+# Preliminary infection modeling
+
+This should probably be in a new file...
+
+```{r}
+names(full_data)
+```
+
+```{r}
+glm.Bb <- glm(
+  B_burgdorferi ~ weight + sex + 
+    # decimalLatitude + decimalLongitude + # not affected by lat, long
+    # taxonID + # not affected by species (among Peromyscus)
+    # larvalTicksAttached + nymphalTicksAttached +
+    # tickNumber +
+    # (as.numeric(tickNumber) > 2) + # more than 1-5 ticks 
+    # month_popsize + 
+    # Bb_mouserate_mnthformula + 
+    year_popsize +
+    Bb_mouserate_yr +
+    year_popsize:Bb_mouserate_yr +
+    # Bb_tickrate_plotmonth +
+    # Bb_tickrate_plotyear +
+    year +
+    month, # + # + hindfootLength + DOY + month + year,
+  # DOY, 
+  data = full_data |> 
+    filter(taxonID %in% c("PELE", "PEMA", "PELEPEMA"), sex != "U"), 
+  family = "binomial"
+)
+
+# model results
+summary(glm.Bb)
+
+# sample size of fit
+glm.Bb$model |> nrow()
+```
+
+```{r}
+# which columns are the limitting factors (most NAs)?
+glm.Bb$data[, names(glm.Bb$model)] |> 
+  filter(year %in% 2021:2024) |> 
+  summary()
+
+# which plots are not represented in the tick pathogen data?
+tibble(
+  plotID = unique(full_data$plotID), 
+  in_borrelia_dat = plotID %in% borrelia$plotID
+)
+```
+
+The above model still needs:
+* [ ] weather (temp and precip)
+* [x] *Borrelia* prevelance (tick and mice populations)
+* [ ] genetic resistance
+* [ ] population density
+* [ ] movement
+
+<!-- # OLDER -->
+
+<!-- ```{r} -->
+<!-- full_data |>  -->
+<!--   filter(!is.na(B_burgdorferi), !is.na(cap_prop_night)) |>  -->
+<!--   mutate(year = factor(year(collectDate))) |>  -->
+<!--   group_by(siteID, B_burgdorferi, year) |>  -->
+<!--   count(.drop = FALSE) |>  -->
+<!--   ggplot(aes(x = B_burgdorferi, y = n, group = year)) + -->
+<!--   facet_wrap(~ siteID, scales = "free_y") + -->
+<!--   geom_col(aes(fill = year), position = pd) + -->
+<!--   geom_text(aes(label = n)) +  -->
+<!--   theme_bw() +  -->
+<!--   theme(strip.background = element_blank()) +  -->
+<!--   labs(x = "B. burgdorferi infection", y = "count") -->
+<!-- ``` -->
+
+<!-- From the above, it appears that there is only overlap between tested -->
+<!-- individuals and activity timings for 2022 - with very few samples (93). -->
+
+<!-- There appear to be only 603 small mammal pathogen samples in total at the 8  -->
+<!-- sites. Of those, only 93 correspond to trappings where ibuttons were present.  -->
+<!-- Among these, all the overlap was in 2022 (note that 2024 data is not yet  -->
+<!-- available) and only 14 mice tested positive for *B. burgdorferi*. In total,  -->
+<!-- only 136 of the 603 small mammals (22%) tested positive for *B. burgdorferi*. -->
+
+<!-- ```{r} -->
+<!-- library("GGally") -->
+<!-- mammals |>  -->
+<!--   filter(taxonID %in% c("PELE", "PEMA", "PELEPEMA")) |>  -->
+<!--   ungroup() |>  -->
+<!--   # group_by(siteID) |>  -->
+<!--   select( -->
+<!--     bb_result, weight, hindfootLength, tailLength, earLength, sex -->
+<!--   ) |>  -->
+<!--   ggpairs() -->
+<!-- ``` -->
+
+
+<!-- ```{r} -->
+<!-- library(lme4) -->
+
+<!-- mammals <- mammals |>  -->
+<!--   mutate(row_ID = row_number()) -->
+
+<!-- model_data <- mammals |>  -->
+<!--   filter( -->
+<!--     taxonID %in% c("PELE", "PEMA", "PELEPEMA"),  -->
+<!--   ) |>  -->
+<!--   select( -->
+<!--     row_ID, B_burgdorferi, weight, sex, taxonID, plotID, siteID, decimalLatitude, -->
+<!--     decimalLongitude, elevation, larvalTicksAttached, recapture, fate,  -->
+<!--     collectDate -->
+<!--   ) %>% -->
+<!--   mutate( -->
+<!--     lat = scale(decimalLatitude), lon = scale(decimalLongitude),  -->
+<!--     elev = scale(elevation), captureMonth = month(collectDate),  -->
+<!--     year = year(collectDate) -->
+<!--   ) %>% -->
+<!--   filter(complete.cases(.)) -->
+
+<!-- gfm <- glmer( -->
+<!--   B_burgdorferi ~ weight + sex + taxonID + captureMonth + larvalTicksAttached + # lon + lat + -->
+<!--     (1|plotID),  -->
+<!--   family = "binomial", -->
+<!--   data = model_data -->
+<!-- ) -->
+<!-- model_data$resid = residuals(gfm) -->
+<!-- model_data$fitted = fitted(gfm) -->
+<!-- model_data$resid_group = model_data$resid > 0  -->
+
+<!-- summary(gfm) -->
+
+<!-- hist(residuals(gfm)) -->
+
+<!-- ggplot(model_data, aes(x = resid, y = fitted, col = resid_group)) + -->
+<!--   geom_point() -->
+
+<!-- tmp <- mammals |> left_join(model_data) -->
+
+<!-- tmp |> filter(resid_group) -->
+
+<!-- tmp |> filter(!resid_group) -->
+
+<!-- tmp |>  -->
+<!--   filter(!is.na(resid_group), !is.na(B_burgdorferi)) |>  -->
+<!--   mutate(collectMonth = month(collectDate)) |>  -->
+<!--   select( -->
+<!--     resid_group, decimalLatitude, decimalLongitude, elevation, collectMonth,  -->
+<!--     sex:fate -->
+<!--   ) |>  -->
+<!--   ggpairs() -->
+<!-- ``` -->
+
