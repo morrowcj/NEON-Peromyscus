@@ -6,7 +6,7 @@
 .Renviron
 
 # NEON documentation
-data-curation/data/documentation
+neon-data/data/documentation
 
 # API token
 NEON-API-token*
@@ -32,3 +32,7 @@ NEON-API-token*
 # specific folders
 infection-modeling/docs
 infection-modeling/data/raw-data/Data-for-Clay_copy
+meeting-notes/
+neon-data/data/eight_sites/biological-temperatures/
+neon-data/data/eight_sites/relative-humidity/
+neon-data/data/eight_sites/precipitation/

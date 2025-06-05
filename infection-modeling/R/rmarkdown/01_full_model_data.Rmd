@@ -33,21 +33,23 @@ library(lemon) # ggplot extension
 
 ```{r neon_data_dir}
 # path to NEON data directory
-neon_data_dir = "../neon-data-curation/data/eight_sites"
+neon_data_dir = "data-curation/data/eight_sites"
 
 # check that the directory exists
 stopifnot(dir.exists(neon_data_dir))
 ```
 
 ```{r}
-my_token <- readLines(
-  "../neon-data-curation/docs/NEON-API-token-morrow5.txt"
-)
+# set global neon token variable
+source("data-curation/R/00_NEON-API-token.R")
+.setNeonTokenGlobal("NEON-API-token-morrow5.txt")
 ```
 
 
 ```{r}
-NEON_sites <- read.csv("data/raw-data/NEON-SiteMap-Table.csv") |> 
+NEON_sites <- read.csv(
+  "infection-modeling/data/raw-data/NEON-SiteMap-Table.csv"
+) |> 
   tibble()
 ```
 
@@ -55,7 +57,7 @@ NEON_sites <- read.csv("data/raw-data/NEON-SiteMap-Table.csv") |>
 ```{r}
 trap_locations <- readRDS(
   file.path(
-    "../neon-data-curation/data/eight_sites",
+    neon_data_dir,
     "location_data/small-mammal-trap-locations.rds"
   )
 )
@@ -80,6 +82,23 @@ mammals <- mammal_prods$mam_pertrapnight |> tibble()
 
 # number of observations in the mammal table 
 n_mammals <- nrow(mammals)
+
+# add in bout eventID
+mammals <- mammal_prods$mam_perplotnight |> 
+  tibble() |> 
+  mutate(
+    year = year(collectDate), date = date(collectDate), boutID = eventID
+  ) |> 
+  separate_wider_delim(
+    eventID, delim = ".", names = c("IDsite", "IDyear", "IDnum")
+  ) |> 
+  mutate(IDyear = as.numeric(IDyear), IDnum = as.numeric(IDnum)) |>
+  arrange(year, siteID, IDnum) |> 
+  mutate(boutID = factor(boutID, levels = unique(boutID))) |> 
+  select(nightuid, siteID, plotID, boutID, boutNum = IDnum) |> 
+  right_join(mammals, by = c("nightuid", "siteID", "plotID"))
+
+stopifnot(nrow(mammals) == n_mammals)
 ```
 
 The field descriptions of the `mammals` data are contained within the 
@@ -140,7 +159,8 @@ mammals <- mammals |>
     year = year(collectDate),
     month = month(collectDate),
     day = day(collectDate),
-    DOY = yday(collectDate)
+    DOY = yday(collectDate),
+    date = date(collectDate)
   ) |> 
   relocate(year, month, day, DOY, .before = collectDate)
 ```
@@ -175,6 +195,58 @@ mammals <- mammals |>
 mammals$tickNumber |> table()
 ```
 
+## Event/Bouts
+
+Let's look at the number of bouts per site per year:
+
+```{r}
+mammals |> 
+  group_by(year, siteID) |> 
+  summarize(n_bouts = length(unique(boutID))) |> 
+  ggplot(aes(x = year, y = n_bouts, fill = siteID)) + 
+  geom_col(position = "dodge", col = "black") +
+  scale_y_continuous(breaks = seq(0, 10, by = 2))
+```
+
+On average, it seems that there are 4 trapping bouts per year at most sites.
+
+And it also appears that the same number of plots are usually 
+included in each bout within a site:
+
+```{r}
+mammals |> 
+  group_by(year, siteID, boutID) |> 
+  summarize(plots_per_bout = length(unique(plotID))) |> 
+  ggplot(aes(x = year, y = plots_per_bout, col = siteID)) + 
+  stat_summary(size = 0.33) +
+  stat_summary(geom = "line", aes(group = siteID)) + 
+  scale_y_continuous(breaks = seq(0, 10, by = 2)) + 
+  scale_x_continuous(breaks = seq(2000, 2030, by = 2))
+```
+
+and while the bout lengths vary, they are generally 2-3 days long, with 
+some notable outliers:
+
+```{r}
+# add information about bout length
+mammals <- mammals |> 
+  group_by(siteID, boutID) |> 
+  arrange(boutID, date) |> 
+  summarize(
+    boutStart = first(date), boutEnd = last(date), 
+    boutLength = time_length(boutEnd - boutStart, unit = "day"),
+    .groups = "drop"
+  ) |> 
+  right_join(mammals, by = c("siteID", "boutID"))
+
+# plot bout length
+mammals |> 
+  filter(boutLength <= 100) |>  # remove outlier
+  ggplot(aes(y = boutLength, x = siteID)) +
+  scale_y_continuous(breaks = seq(0, 10, by = 2)) + 
+  geom_boxplot() +
+  labs(y = "bout length (days)")
+```
 
 # Pathogens
 
@@ -430,7 +502,7 @@ previously (see code in the  "../activity-timing/" folder).
 # load and trim the capture time data
 captimes <- readRDS(
   file.path(
-    "../activity-timing/data/ibuttons",
+    "activity-timing/data/ibuttons",
     "capture-time-trapping-data_2022-2024.rds"
   )
 ) |> 
@@ -449,10 +521,10 @@ full_data <- full_data |>
 
 # check the merge was right
 stopifnot(nrow(full_data) == n_mammals)
-stopifnot(
-  nrow(full_data |> filter(!is.na(cap_prop_night))) == 
-    nrow(captimes |> filter(!is.na(cap_prop_night)))
-)
+# stopifnot(
+#   nrow(full_data |> filter(!is.na(cap_prop_night))) == 
+#     nrow(captimes |> filter(!is.na(cap_prop_night)))
+# )
 ```
 
 ```{r rm_captimes, include = FALSE}
@@ -545,7 +617,10 @@ tmp |>
   scale_y_continuous(limits = c(0, 90)) + 
   scale_fill_manual(values = c("orange", "cornflowerblue"))
 
-ggsave("cap_path_counts.jpg", width = 4.5, height = 4.5)
+ggsave(
+  "infection-modeling/graphics/cap_path_counts.jpg", 
+  width = 4.5, height = 4.5
+)
 
 tmp |> 
   filter(year %in% 2022:2024, B_burgdorferi != "not sampled", captime_missing != "captime") |> 
@@ -558,7 +633,10 @@ tmp |>
   scale_y_continuous(limits = c(0, 180)) +
   scale_fill_manual(values = c("orange", "cornflowerblue"))
 
-ggsave("nocap_path_counts.jpg", width = 4.5, height = 4.5)
+ggsave(
+  "infection-modeling/graphics/nocap_path_counts.jpg", 
+  width = 4.5, height = 4.5
+)
 
 tmp |> 
   filter(year %in% 2022:2024, B_burgdorferi == "not sampled", captime_missing == "captime") |> 
@@ -571,7 +649,10 @@ tmp |>
   scale_y_continuous(limits = c(0, 450)) +
   scale_fill_manual(values = "darkgreen")
 
-ggsave("cap_nopath_counts.jpg", width = 4.5, height = 4.5)
+ggsave(
+  "infection-modeling/graphics/cap_nopath_counts.jpg", 
+  width = 4.5, height = 4.5
+)
 
 tmp |> 
   filter(year %in% 2022:2024, B_burgdorferi == "not sampled", captime_missing != "captime") |> 
@@ -584,7 +665,10 @@ tmp |>
   scale_y_continuous(limits = c(0, 8500)) + 
   scale_fill_manual(values = "darkgreen")
 
-ggsave("nocap_nopath_counts.jpg", width = 4.5, height = 4.5)
+ggsave(
+  "infection-modeling/graphics/nocap_nopath_counts.jpg", 
+  width = 4.5, height = 4.5
+)
 
 
 ```
@@ -646,21 +730,49 @@ tick_obj <- readRDS(
 ticks <- tick_obj$tck_taxonomyProcessed |> tibble() |> 
   mutate(
     year = year(collectDate), month = month(collectDate),
-    date = date(collectDate), week = week(collectDate),
+    date = date(collectDate),
+    dateTime = as_datetime(collectDate),
+    week = week(collectDate),
     siteID = gsub("(.*)_.*", "\\1", plotID)
   ) |> 
-  group_by(siteID, plotID, year, month, sexOrAge) |> 
-  mutate(total_tickgrp_count = sum(individualCount)) |> 
-  group_by(siteID, plotID, year, month) |> 
-  arrange(siteID, plotID, year, month, collectDate) |> 
+  filter(!is.na(acceptedTaxonID)) # remove something that isn't a tick
+
+n_ticks = nrow(ticks)
+
+# get bout and field observation info, to attach to the tick table
+fieldticks <- tick_obj$tck_fielddata |> tibble() |> 
+  filter(!is.na(sampleID)) |>  # remove rows without corresponding lab count
+  mutate(year = year(collectDate), DateTime = as_datetime(collectDate)) |> 
+  arrange(plotID, DateTime) |> 
   mutate(
-    tck_samp_interval = interval(first(date), last(date)),
-    tck_samp_days = time_length(tck_samp_interval, "days") + 1
+    eventID = factor(eventID, levels = unique(eventID)),
   ) |> 
-  ungroup() |> 
-  mutate(
-    tck_density = individualCount / tck_samp_days
+  select(
+    plotID, eventID, sampleID, collectDate,
+    fieldAdultCount = adultCount, fieldLarvaCount = larvaCount, 
+    fieldNymphCount = nymphCount
   )
+
+# join with the tick table
+ticks <- fieldticks |>   
+  right_join(ticks, by = c("plotID", "sampleID", "collectDate")) |> 
+  tibble()
+
+  # group_by(siteID, plotID, year, month, sexOrAge) |> 
+  # mutate(total_tickgrp_count = sum(individualCount)) |> 
+  # group_by(siteID, plotID, year, month) |> 
+  # arrange(siteID, plotID, year, month, collectDate) |> 
+  # mutate(
+  #   tck_samp_interval = interval(first(date), last(date)),
+  #   # tck_samp_days = time_length(tck_samp_interval, "days") + 1
+  #   tck_samp_days = length(unique(collectDate))
+  # ) |> 
+  # ungroup() |> 
+  # mutate(
+  #   tck_density = individualCount / tck_samp_days
+  # )
+
+stopifnot(nrow(ticks) == n_ticks)
 
 # Get the variable lookup table
 tick_vars <- tick_obj$variables_10093 |> tibble() |> 
@@ -683,7 +795,67 @@ ticks |>
   arrange(desc(total))
 ```
 
-```{r ixodes}
+```{r}
+tick_densities <- ticks |> 
+  mutate(genus = replace_na(genus, "UNK")) |> 
+  group_by(siteID, eventID) |> 
+  mutate(
+    eventStart = first(dateTime), eventEnd = last(dateTime),
+    sweeps = length(unique(interaction(plotID, dateTime))),
+  ) |> 
+  group_by(siteID, eventID, eventStart, eventEnd, genus, sexOrAge) |> 
+  arrange(date) |> 
+  summarize(
+    count = sum(individualCount),
+    sweeps = unique(sweeps),
+    density = count / sweeps, 
+    .groups = "drop"
+  ) |> 
+  relocate(eventStart, eventEnd, .after = eventID)
+
+# create a table with all the unique genus and age combos
+genusAges <- tick_densities |> 
+  select(eventID, genus, sexOrAge) |> 
+  distinct() |> 
+  complete(eventID, genus, sexOrAge)
+
+# add in sweeps sweeps
+genusAges <- tick_densities |> 
+  select(siteID, eventID, eventStart, eventEnd, sweeps) |> 
+  distinct() |> 
+  full_join(genusAges, by = "eventID")
+  
+# add these combos back into the tick densities
+tick_densities <- tick_densities |> 
+  full_join(genusAges) |> 
+  mutate(
+    count = replace_na(count, replace = 0),
+    density = replace_na(density, replace = 0)
+  ) |> arrange(siteID, eventStart)
+
+tick_densities
+```
+
+Do the mammal trapping events line up with the tick trapping events? The below
+figure suggests "yes"!
+
+```{r}
+tick_densities |> 
+  select(eventID, eventStart, eventEnd) |> 
+  distinct() |> 
+  inner_join(
+    mammals |> select(boutID, boutStart, boutEnd), by = c("eventID" = "boutID")
+  ) |> 
+  mutate(year = year(eventStart)) %>%
+  filter(complete.cases(.)) |> 
+  ggplot(aes(x = eventStart, y = boutStart)) + 
+  facet_wrap(~year, scales = "free") +
+  geom_abline(intercept = 0, slope = 1, col = "blue") + 
+  geom_point() + 
+  labs(x = "Tick bout start", y = "Mammal bout start") 
+```
+
+```{r ixodes, eval = FALSE}
 # get monthly plot densities of Ixodes (or larval) ticks from 2021 - 2024 for each group
 ixodes <- ticks |> 
   filter(sexOrAge == "Larva" | genus == "Ixodes", year %in% 2021:2024) |> 
@@ -794,6 +966,208 @@ full_data <- left_join(
 stopifnot(nrow(full_data) == n_mammals)
 ```
 
+## Factors affecting tick attachment
+### Sex and Age
+
+```{r, fig.asp=0.33, fig.width=7}
+full_data |> 
+  filter(
+    taxonID %in% c("PEMA", "PELE", "PELEPEMA"),
+    sex != "U", !is.na(sex), lifeStage != "unknown",
+  ) |> 
+  group_by(larvalTicksAttached, sex) |> 
+  pivot_longer(
+    c(larvalTicksAttached, nymphalTicksAttached, adultTicksAttached),
+    names_to = "tickStage", values_to = "attached"
+  ) |> 
+  filter(!is.na(attached)) |> 
+  mutate(
+    sexM = as.numeric(sex == "M"),
+    tickStage = gsub("TicksAttached", "", tickStage),
+    attached = as.numeric(attached == "Y")
+  ) |> 
+  ggplot(aes(x = sex, y = attached, col = lifeStage)) + 
+  facet_rep_wrap(~tickStage, scales = "free_y") +
+  stat_summary(
+    fun.data = mean_cl_normal, size = 0.3, position = position_dodge(.2)
+  ) + 
+  stat_summary(fun = "mean",
+    geom = "line", aes(group = lifeStage), 
+    alpha = 0.5, linetype = "dashed"
+  ) +
+  labs(y = "Proporiton of mice\nwith ticks (± SE)", x = "Sex",
+       col = "Age") + 
+  theme_bw() + 
+  theme(strip.background = element_blank())
+
+ggsave(
+  "infection-modeling/graphics/tick-attachment-by-sex-and-age.jpg",
+  width = 7, height = 7*.33, dpi = 200
+)
+```
+
+* Among adults, males more likely to have all tick life stages attached 
+
+* Among subadults, males are slightly more likely to have adult and nymphal 
+ticks attached, but females are sligthly more likely to have larval ticks
+attached.
+
+* Among jeveniles, females are slightly (likely insignificant) more likely to
+have ticks attached
+
+### size
+
+```{r, fig.asp=0.33, fig.width=7}
+full_data |> 
+  filter(
+    taxonID %in% c("PEMA", "PELE", "PELEPEMA"),
+    !is.na(weight), weight <= 75
+  ) |> 
+  group_by(larvalTicksAttached, sex) |> 
+  pivot_longer(
+    c(larvalTicksAttached, nymphalTicksAttached, adultTicksAttached),
+    names_to = "tickStage", values_to = "attached"
+  ) |> 
+  filter(!is.na(attached)) |> 
+  mutate(
+    tickStage = gsub("TicksAttached", "", tickStage),
+    attached = as.numeric(attached == "Y")
+  ) |> 
+  ggplot(aes(x = weight, y = attached)) + 
+  facet_rep_wrap(~tickStage, scales = "free_y") +
+  geom_point(size = 1) + 
+  geom_smooth(method = "glm", method.args = list(family = "binomial")) + 
+  labs(y = "Ticks are attached\n(logistic regression)", x = "Weight",
+       col = "Age") + 
+  theme_bw() + 
+  theme(strip.background = element_blank())
+
+ggsave(
+  "infection-modeling/graphics/tick-attachment-by-weight.jpg",
+  width = 7, height = 7*.33, dpi = 200
+)
+```
+
+And larger individuals are more likely to have ticks attached (at least 
+larvae and nymphs).
+
+### Capture timing
+
+```{r, fig.asp=0.33, fig.width=7}
+full_data |> 
+  filter(
+    taxonID %in% c("PEMA", "PELE", "PELEPEMA"),
+    !is.na(cap_prop_night)
+  ) |> 
+  group_by(larvalTicksAttached, sex) |> 
+  pivot_longer(
+    c(larvalTicksAttached, nymphalTicksAttached, adultTicksAttached),
+    names_to = "tickStage", values_to = "attached"
+  ) |> 
+  filter(!is.na(attached)) |> 
+  mutate(
+    tickStage = gsub("TicksAttached", "", tickStage),
+    attached = as.numeric(attached == "Y")
+  ) |> 
+  ggplot(aes(x = cap_prop_night, y = attached)) + 
+  facet_rep_wrap(~tickStage, scales = "free_y") +
+  geom_point(size = 1) + 
+  geom_smooth(method = "glm", method.args = list(family = "binomial")) + 
+  labs(
+    y = "Ticks are attached\n(logistic regression)", 
+    x = "Relative capture time",
+    col = "Age"
+  ) + 
+  theme_bw() + 
+  theme(strip.background = element_blank())
+
+ggsave(
+  "infection-modeling/graphics/tick-attachment-by-capture-timing.jpg",
+  width = 7, height = 7*.33, dpi = 200
+)
+```
+
+It also appears that individuals that are captured later in the night are less
+likely to have larval ticks attached.
+
+### tick density
+
+```{r, fig.asp=0.8, fig.width=6}
+event_tick_densities <- tick_densities |> 
+  group_by(eventID, sexOrAge) |> 
+  summarize(
+    density = sum(density), sweeps = mean(sweeps), 
+    count = sum(count), # density = count/sweeps
+    .groups = "drop"
+  ) # |> 
+  # pivot_wider(names_from = sexOrAge, values_from = c(density, count))
+
+full_data |> 
+  filter(
+    taxonID %in% c("PEMA", "PELE", "PELEPEMA"),
+    # !is.na(cap_prop_night)
+  ) |> 
+  group_by(larvalTicksAttached, sex) |> 
+  pivot_longer(
+    c(larvalTicksAttached, nymphalTicksAttached, adultTicksAttached),
+    names_to = "tickStage", values_to = "attached"
+  ) |> 
+  filter(!is.na(attached)) |> 
+  mutate(
+    tickStage = gsub("TicksAttached", "", tickStage),
+    attached = as.numeric(attached == "Y")
+  ) |> 
+  left_join(
+    event_tick_densities, 
+    by = c("boutID" = "eventID"), relationship = "many-to-many"
+  ) |> 
+  filter(!is.na(sexOrAge), !sexOrAge %in% c("Adult", "NA")) |> 
+  mutate(
+    sexOrAge = factor(
+      sexOrAge, levels = c("Male", "Female", "Nymph", "Larva")
+    ),
+    sexOrAge = forcats::fct_relabel(
+      sexOrAge, function(lvl){gsub("(.*)", "\\1 density", lvl)}
+    ),
+    tickStage = factor(tickStage, levels = c("adult", "nymphal", "larval")),
+    tickStage = forcats::fct_relabel(
+      tickStage, function(lvl){
+        gsub("(.*)", "P\\(\\1 attachment\\)", str_to_sentence(lvl))
+      }
+    )
+  ) |> 
+  ggplot(aes(x = density, y = attached)) +
+  facet_rep_grid(tickStage ~ sexOrAge, scales = "free_x", switch = "both") + 
+  geom_point(size = 1) +
+  geom_smooth(
+    formula = "y~x", method = "glm", method.args = list(family = "binomial")
+  ) + 
+  theme_bw() + 
+  theme(
+    strip.placement = "outside", axis.title = element_blank(),
+    strip.background = element_blank(),
+    panel.spacing.y = unit(-0.5, "lines")
+  ) + 
+  scale_y_continuous(breaks = seq(0, 1, by = 0.2))
+
+ggsave(
+  "infection-modeling/graphics/tick-attachment-by-tick-density.jpg",
+  width = 6, height = 6*0.8, dpi = 200
+)
+```
+
+* The only apparent relationship between tick density and tick attachment, is
+with larvae: larval tick density is strongly correlated with the probability
+of a mouse having a tick attached when captured.
+
+### temperature
+
+### precipitiation
+
+### movement distance
+
+### Models of tick attachment
+
 # Genetics (resistance)
 
 # Plant communities
@@ -820,13 +1194,13 @@ litter_lookup |>
   filter(table == "ltr_massdata") |> 
   select(fieldName, description)
 
-litter_loc_path = "data/litter-trap-locations.rds"
+litter_loc_path = "infection-modeling/data/litter-trap-locations.rds"
 if (!file.exists(litter_loc_path)) {
   litter_locations <- litter_prod$ltr_pertrap |> 
     select(
       trapID, namedLocation, decimalLatitude, decimalLongitude, elevation
     ) |> 
-    geoNEON::getLocByName(token = my_token) |> 
+    geoNEON::getLocByName(token = NEON_TOKEN) |> 
     mutate(elevation = as.numeric(elevation))
   saveRDS(litter_locations, litter_loc_path)
 } else {litter_locations <- readRDS(litter_loc_path)}
@@ -860,7 +1234,10 @@ litter |>
   scale_x_continuous(breaks = 1:12)
 
 ggsave(
-  file.path("graphics", "siteMonthlySeedMass_2021-2024.jpg"), 
+  file.path(
+    "infection-modeling/graphics/", 
+    "siteMonthlySeedMass_2021-2024.jpg"
+  ), 
   width = 6, height = 0.7*6
 )
 ```
@@ -889,7 +1266,10 @@ ggplot() +
 # )
 
 ggsave(
-  file.path("graphics", "litterfall-mammal-trap-proximity.jpg"),
+  file.path(
+    "infection-modeling/graphics/",
+    "litterfall-mammal-trap-proximity.jpg"
+  ),
   width = 8, height = 0.66*8
 )
 ```
@@ -970,7 +1350,10 @@ full_data |>
   )
 
 ggsave(
-  file.path("graphics", "captureTime-vs-seedMass.jpg"),
+  file.path(
+    "infection-modeling/graphics/", 
+    "captureTime-vs-seedMass.jpg"
+  ),
   width = 6, height = 6, dpi = 300
 )
 ```
@@ -1015,7 +1398,10 @@ litter |>
   )
 
 ggsave(
-  file.path("graphics", "monthly-litter-captures_with-capture-time-windows.jpg")
+  file.path(
+    "infection-modeling/graphics/",
+    "monthly-litter-captures_with-capture-time-windows.jpg"
+  )
 )
 ```
 
@@ -1052,7 +1438,8 @@ full_data |>
 
 ggsave(
   file.path(
-    "graphics", "Capture-time-by-seedmass_within-year.jpg"
+    "infection-modeling/graphics/", 
+    "Capture-time-by-seedmass_within-year.jpg"
   ),
   width = 7, height = 0.35*7, dpi = 300
 )
@@ -1119,6 +1506,12 @@ full_data <- full_data |>
     month_popsize = n(),
     Bb_mouserate_mnth = sum(B_burgdorferi, na.rm = TRUE) / month_popsize
   )
+```
+
+# Save Data
+
+```{r}
+saveRDS(full_data, file = "infection-modeling/data/full-data.rds")
 ```
 
 
