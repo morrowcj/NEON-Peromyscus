@@ -20,7 +20,8 @@ prod_names <- names(products)
 large_products <- c(
   "relative-humidity" = "DP1.00098.001",
   "precipitation" = "DP1.00006.001",
-  "biological-temperatures" = "DP1.00005.001"
+  "biological-temperatures" = "DP1.00005.001",
+  "air-temperatures" = "DP1.00003.001"
   # "meteorological-products" = "DP4.00200.001", # bundled eddy-covariance (very large)
   # "phenology-images" = "DP1.00033.001", # TODO need to download from different source?
 )
@@ -34,7 +35,7 @@ sites <- c("HARV", "ORNL", "SCBI", "BLAN", "SERC", "STEI", "UNDE", "MLBS")
 prov <- TRUE
 check <- FALSE
 # save_dir <- "R:/morrow5_data_repo/NEON-products/eight_sites_data" 
-save_dir <- "data-curation/data/eight_sites/"
+save_dir <- "neon-data/data/eight_sites/"
 # api_token <- readLines("docs/NEON-API-token-morrow5.txt", n = 1, warn = FALSE)
 ncores <- 2
 check_size <- FALSE
@@ -44,7 +45,7 @@ verbose  <- TRUE
 
 # ---- setup ----
 
-source("data-curation/R/00_NEON-API-token.R")
+source("neon-data/R/00_NEON-API-token.R")
 .setNeonTokenGlobal(file = "NEON-API-token-morrow5.txt")
 
 # load packages

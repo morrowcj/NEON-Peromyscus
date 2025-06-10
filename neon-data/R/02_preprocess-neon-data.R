@@ -8,15 +8,15 @@ library(lutz)
 
 # data where the relevant NEON data are stored
 # data_dir <- "R:/morrow5_data_repo/NEON-products/eight_sites_data"
-data_dir <- "data-curation/data/eight_sites"
+data_dir <- "neon-data/data/eight_sites"
 # where should the output be saved?
 # out_dir <- "R:/morrow5_data_repo/NEON-products/eight_sites_data/location_data"
-out_dir <- "data-curation/data/eight_sites/location_data"
+out_dir <- "neon-data/data/eight_sites/location_data"
 # path to of the mammal trapping data file
 mammal_path <- file.path(data_dir, "mammal-trap-data.rds")
 # api token string
 # api_token <- readLines("docs/NEON-API-token-morrow5.txt", n = 1, warn = FALSE)
-source("data-curation/R/00_NEON-API-token.R")
+source("neon-data/R/00_NEON-API-token.R")
 .setNeonTokenGlobal(file = "NEON-API-token-morrow5.txt")
 # should things be rebuilt even if they exists?
 force_build = FALSE 
