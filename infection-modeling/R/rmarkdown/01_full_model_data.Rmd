@@ -1511,7 +1511,9 @@ full_data <- full_data |>
 # Save Data
 
 ```{r}
-saveRDS(full_data, file = "infection-modeling/data/full-data.rds")
+# saveRDS(full_data, file = "infection-modeling/data/full-data.rds")
+# TODO: update this... see file "00_big-table-prep.Rmd"
+warning("UPDATE THIS FILE... RECONCILE WITH '00_big-table-prep.Rmd'")
 ```
 
 

@@ -31,8 +31,12 @@ NEON-API-token*
 
 # specific folders
 infection-modeling/docs
+infection-modeling/R/rmarkdown/cache
+infection-modeling/graphical-models
+infection-modeling/graphics
 infection-modeling/data/raw-data/Data-for-Clay_copy
 meeting-notes/
 neon-data/data/eight_sites/biological-temperatures/
 neon-data/data/eight_sites/relative-humidity/
 neon-data/data/eight_sites/precipitation/
+

@@ -20,6 +20,7 @@ prod_names <- names(products)
 large_products <- c(
   "relative-humidity" = "DP1.00098.001",
   "precipitation" = "DP1.00006.001",
+  "precip-weights" = "DP1.00044.001", 
   "biological-temperatures" = "DP1.00005.001",
   "air-temperatures" = "DP1.00003.001"
   # "meteorological-products" = "DP4.00200.001", # bundled eddy-covariance (very large)
@@ -130,11 +131,11 @@ for (i in seq_len(length(large_products))) {
     }
     
     # load the product
-    data_object <- loadByProduct(
+    data_object <- try(loadByProduct(
       dpID = prod, site = site, startdate = start_date, enddate = end_date,
       package = pack, release = release, include.provisional = prov,
       check.size = check_size, nCores = ncores, token = NEON_TOKEN
-    )
+    ))
     
     # save the product
     saveRDS(data_object, file = file_path)
