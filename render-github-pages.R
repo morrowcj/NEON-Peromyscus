@@ -8,4 +8,4 @@ bookdown::render_book("index.Rmd")
 ## .Rmd "chapters" are specified, as well as the output location ("docs")
 
 # remove the unneccessary files
-# unlink("neon-peromyscus_files", recursive = TRUE)
+unlink("neon-peromyscus_files", recursive = TRUE)

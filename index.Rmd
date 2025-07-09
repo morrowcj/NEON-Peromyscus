@@ -5,16 +5,15 @@ author: "Clay J. Morrow"
 site: "bookdown::bookdown_site"
 output: 
   bookdown::gitbook:
-    number_sections: false
+    number_sections: true
     config:
       toc:
         collapse: section
 ---
 
-<!-- # Analysis projects {-} -->
+# NEON peromyscus analysis projects {-}
 
-This site documents the analysis of the NEON *Peromyscus* project...
+This site documents the analysis of the NEON *Peromyscus* project. Use the side
+bar to navigate.
 
-Projects:
-
-* [Resistance and tolerance analysis](#resistance-and-tolerance)
+I will update this main page at a later date.
