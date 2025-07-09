@@ -1,0 +1,20 @@
+---
+title: "*Borrelia* infection of *Peromyscus*"
+subtitle: "A NEON data project"
+author: "Clay J. Morrow"
+site: "bookdown::bookdown_site"
+output: 
+  bookdown::gitbook:
+    number_sections: false
+    config:
+      toc:
+        collapse: section
+---
+
+<!-- # Analysis projects {-} -->
+
+This site documents the analysis of the NEON *Peromyscus* project...
+
+Projects:
+
+* [Resistance and tolerance analysis](#resistance-and-tolerance)

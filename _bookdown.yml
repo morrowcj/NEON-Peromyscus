@@ -1,0 +1,11 @@
+---
+book_filename: "neon-peromyscus.Rmd"
+rmd_files:
+  html: 
+  - "index.Rmd"
+  - "infection-modeling/R/rmarkdown/resistance-tolerance.Rmd"
+output_dir: "docs"
+delete_merged_file: true
+clean:
+  - "neon-peromyscus_files"
+---

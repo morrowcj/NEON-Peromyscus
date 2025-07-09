@@ -1,0 +1,14 @@
+fig:gene-cors
+fig:gene-PCA
+fig:Gene-hists
+fig:Bb-hists
+fig:Bb-trans
+fig:infect-raw
+fig:infect-sqrt
+fig:infect-quarts
+fig:infect-decs
+tab:infect-mod-raw
+tab:infect-mod-trans
+tab:infect-mod-scaled
+tab:infect-mod-95pct
+tab:unnamed-chunk-24
