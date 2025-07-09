@@ -20,11 +20,15 @@ NEON-API-token*
 # emails
 *.msg
 
+# force the docs/ folder to be included
+
 # images
 *.png
 *.jpg
 *.jpeg
 *.tif
+
+!docs/**
 
 # powerpoint files
 *.pptx
