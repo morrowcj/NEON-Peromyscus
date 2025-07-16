@@ -747,6 +747,20 @@ a single month at a site).
 # Load temperature data
 daily_temps <- readRDS("neon-data/data/eight_sites/daily-air-temperatures.rds")
 
+# daily_temps %>% 
+#   select(year, siteID, date, temp_day_min, temp_day_max, temp_day_mean) %>% 
+#   filter(year %in% 2015:2024) %>% 
+#   group_by(year, siteID) %>% 
+#   arrange(year, siteID, date) %>% 
+#   mutate(
+#     dd_sng_tri = degday::dd_calc(
+#       daily_min = mean(temp_day_min, na.rm = TRUE), 
+#       daily_max = mean(temp_day_max, na.rm = TRUE),
+#       thresh_low = 10, thresh_up = 23, cumulative = FALSE,
+#       interpolate_na = TRUE
+#     )
+#   )
+
 # calculate yearly and monthly summaries of daily temperature data
 temp_summaries <- daily_temps %>% 
   filter(year %in% 2017:2024) %>% 
@@ -1039,31 +1053,31 @@ PC2 explains an additional 22%.
 ```{r year-climate-PCA, fig.asp = 1, fig.width = 4}
 # Join the year-level summaries to use for PCA
 year_climate_summaries <- temp_summaries %>% 
-  select(siteID, starts_with("year_")) %>% distinct() %>% 
+  select(siteID, year, starts_with("year_")) %>% distinct() %>% 
   mutate(
     year_CV_monthly_temp = year_sd_monthly_temp / year_avg_monthly_temp
   ) %>% 
   select(
-    siteID, year_avg_monthly_temp, year_CV_monthly_temp
+    siteID, year, year_avg_monthly_temp, year_CV_monthly_temp
   ) %>% 
   full_join(
     precip_summaries %>% 
-      select(siteID, starts_with("year_")) %>% distinct() %>% 
+      select(siteID, year, starts_with("year_")) %>% distinct() %>% 
       mutate(
         year_CV_monthly_precip = year_sd_monthly_precip / year_avg_monthly_precip
       ) %>% 
       select(
-        siteID, year_avg_monthly_precip, year_CV_monthly_precip
+        siteID, year, year_avg_monthly_precip, year_CV_monthly_precip
       )
   ) %>% 
   full_join(
     humid_summaries %>% 
-      select(siteID, starts_with("year_")) %>% distinct() %>% 
+      select(siteID, year, starts_with("year_")) %>% distinct() %>% 
       mutate(
         year_CV_monthly_RH = year_sd_monthly_RH / year_avg_monthly_RH
       ) %>% 
       select(
-        siteID, year_avg_monthly_RH, year_CV_monthly_RH
+        siteID, year, year_avg_monthly_RH, year_CV_monthly_RH
       )
   )
 
@@ -1092,7 +1106,7 @@ month_climate_summaries <- temp_summaries %>%
     month_CV_daily_temp = month_sd_daily_temp / month_avg_daily_temp
   ) %>% 
   select(
-    siteID, month_avg_daily_temp, month_CV_daily_temp
+    siteID, year, month, month_avg_daily_temp, month_CV_daily_temp
   ) %>% 
   full_join(
     precip_summaries %>% 
@@ -1101,7 +1115,7 @@ month_climate_summaries <- temp_summaries %>%
         month_CV_daily_precip = month_sd_daily_precip / month_avg_daily_precip
       ) %>% 
       select(
-        siteID, month_avg_daily_precip, month_CV_daily_precip
+        siteID, year, month,  month_avg_daily_precip, month_CV_daily_precip
       )
   ) %>% 
   full_join(
@@ -1111,7 +1125,7 @@ month_climate_summaries <- temp_summaries %>%
         month_CV_daily_RH = month_sd_daily_RH / month_avg_daily_RH
       ) %>% 
       select(
-        siteID, month_avg_daily_RH, month_CV_daily_RH
+        siteID, year, month,  month_avg_daily_RH, month_CV_daily_RH
       )
   )
 # Conduct the PCA
@@ -1253,20 +1267,57 @@ Peros <- mammals %>%
     sex = if_else(sex == "U", NA, sex),
     sex_male = as.numeric(sex == "M"),
     cap_prop_rescaled = scales::rescale(cap_prop_night, to = c(0.025, 0.975)),
-    ticks_attatched = if_else(
+    ticks_attached = if_else(
       larvalTicksAttached | nymphalTicksAttached | adultTicksAttached,
       1, 0
     ), 
     sex_mature = vagina %in% c("neither", "swollen", "plugged") |
       nipples %in% c("enlarged") |
       testes %in% c("scrotal"),
-    sex_mature = as.numeric(sex_mature)
+    sex_mature = as.numeric(sex_mature),
+    larvalTicksAttached = as.numeric(larvalTicksAttached),
+    nymphalTicksAttached = as.numeric(nymphalTicksAttached),
+    Bb_infected = as.numeric(Bb_infected),
   )
+
+# add relative humidity
+Peros <- daily_humids %>%
+  group_by(siteID, date) %>%
+  summarize(
+    RH = mean(RH_day_mean, na.rm = TRUE),
+    RH_temp = mean(tempRH_day_mean, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  filter(is.finite(RH) | is.finite(RH_temp)) %>%
+  right_join(Peros, by = c("siteID", "date"))
+
+Peros <- daily_temps %>% 
+  group_by(siteID, date) %>% 
+  summarize(
+    temp_mean = mean(temp_day_mean, na.rm = TRUE),
+    temp_min = mean(temp_day_min, na.rm = TRUE),
+    temp_max = mean(temp_day_max, na.rm = TRUE),
+    .groups = "drop"
+  ) %>% 
+  filter(is.finite(temp_mean) | is.finite(temp_min) | is.finite(temp_max)) %>% 
+  right_join(Peros, by = c("siteID", "date"))
+
+Peros <- daily_precips %>% 
+  group_by(siteID, date) %>% 
+  summarize(
+    precip = mean(daily_precip, na.rm = TRUE),
+    .groups = "drop"
+  ) %>% 
+  filter(is.finite(precip)) %>% 
+  right_join(Peros, by = c("siteID", "date"))
+
+Peros <- year_climate_summaries %>% 
+  right_join(Peros, by = c("siteID", "year"))
 
 mod_dat <- Peros %>% 
   filter(taxonID == "PELE") %>% 
   select(
-    siteID, tagID, year, cap_prop_night, sex_male, weight, ticks_attatched, 
+    siteID, tagID, year, cap_prop_night, sex_male, weight, ticks_attached, 
     siteClimatePC1, sex_mature,
     res_PC1, tol_PC1, 
     # Bb_burden, Bb_infected,
@@ -1275,7 +1326,9 @@ mod_dat <- Peros %>%
   filter(complete.cases(.))
 ```
 
-#### model 1
+
+
+#### model 1: Ticks, Resistance, Tolerance as terminal responses
 
 The first model tries to replicate the model that Alli built, but adding an
 additional year of data. This model is not identical to the one Alli fit:
@@ -1304,7 +1357,7 @@ act_fm <- lmer(
 
 #2. ----
 tick_fm <- glmer(
-  formula = ticks_attatched ~ siteClimatePC1 + cap_prop_night + sex_male*sex_mature + (1|siteID) + (1|tagID),
+  formula = ticks_attached ~ siteClimatePC1 + cap_prop_night + sex_male*sex_mature + (1|siteID) + (1|tagID),
   data = Peros, family = "binomial"
 )
 
@@ -1317,7 +1370,7 @@ resist_fm <- lmer(
 #4. ----
 # 4. PC2_Tolerance ~ mean_weight + year + sex*prop_elapsed + propticksattached*prop.reproductive + (1|siteID)
 toler_fm <- lmer(
-  formula = tol_PC1 ~ weight + year + sex_male*cap_prop_night + ticks_attatched*sex_mature + (1|siteID) + (1|tagID),
+  formula = tol_PC1 ~ weight + year + sex_male*cap_prop_night + ticks_attached*sex_mature + (1|siteID) + (1|tagID),
   data = Peros
 )
 ```
@@ -1461,11 +1514,534 @@ render_graph(gph)
 # DiagrammeR::create_edge_df()
 ```
 
-#### model 2
+
+#### model 2:
+
+##### Capture timing
+
+
+
+```{r}
+captime_fm <- lmer(
+  formula = cap_prop_night ~ sex_male*sex_mature + weight + siteClimatePC1 + 
+    RH + temp_mean + temp_min + precip +
+    (1|siteID) + (1|tagID) + (1|year), 
+  data = Peros
+)
+
+summary(captime_fm)
+```
+
+```{r}
+captime_fm2 <- update(captime_fm, . ~ . - siteClimatePC1 - precip)
+summary(captime_fm2)
+```
+
+```{r}
+captime_select <- captime_fm2
+```
+
+
+##### Tick attachement, by relative humidity
+
+The below model of larval tick attachment suggests that relative humidity is a
+key factor (in year, individual, and site) in larval tick attachment. Again, 
+the interaction between sex and sexual maturity. Weight and the interaction 
+between capture timing are marginally significant:
+
+```{r}
+larv_fm <- glmer(
+  larvalTicksAttached ~ cap_prop_night*RH + sex_male*sex_mature + weight + 
+    precip + temp_min +
+    # res_PC1 + tol_PC1 + 
+    (1|siteID) + (1|tagID) + (1|year), 
+  data = Peros, family = "binomial"
+)
+
+summary(larv_fm)
+```
+
+After removing weight and the interaction between capture time and humidity,
+we get a model that suggests that capture time, humidity, and the interaction
+between sex and sexual maturity are important drivers of larval tick attachment:
+
+```{r}
+larv_fm2 <- update(larv_fm, . ~ . - weight - cap_prop_night:RH - sex_male:sex_mature)
+summary(larv_fm2)
+```
+
+```{r}
+larv_fm3 <- update(larv_fm2, . ~ . + siteClimatePC1)
+summary(larv_fm3)
+```
+```{r, eval = FALSE}
+# refit to ensure convergence
+
+prev <- lme4::getME(larv_fm3, c("theta", "fixef"))
+
+larv_fm4 <- update(
+  larv_fm3, . ~ ., 
+  start = prev,
+  control = glmerControl(
+    optCtrl = list(maxfun=2e10)
+  )
+)
+
+summary(larv_fm4) 
+
+# since this model is not any different from the previous model, it is 
+# unneccessary
+```
+
+```{r}
+larv_select <- larv_fm2
+```
+
+
+However, it seems like only relative humidity matters for nymphal ticks:
+
+```{r}
+nymph_fm <- glmer(
+  nymphalTicksAttached ~ cap_prop_night + RH + sex_male*sex_mature + 
+    precip + temp_min +
+    # res_PC1 + tol_PC1 + 
+    (1|siteID) + (1|tagID) + (1|year), 
+  data = Peros, family = "binomial"
+)
+summary(nymph_fm)
+```
+
+A simplified model contains capture timing and relative humidity:
+
+```{r}
+nymph_fm2 <- update(nymph_fm, . ~ . - sex_male*sex_mature -precip -temp_min)
+summary(nymph_fm2)
+```
+
+One important factor may be seasonality. Probability of nymphal tick attachment
+decreases relatively steadily and slowly throughout the season whereas 
+larval ticks have two peaks (once in March-April and again July-September):
+
+```{r, fig.width=5}
+Peros %>% 
+  group_by(year, siteID, month) %>% 
+  summarize(
+    mean_larvae = mean(larvalTicksAttached, na.rm = TRUE),
+    mean_nymphs = mean(nymphalTicksAttached, na.rm = TRUE),
+  ) %>% 
+  ggplot(aes(x = month)) + 
+  stat_summary(fun.data = mean_se, aes(y = mean_larvae, col = "larvae")) + 
+  stat_summary(
+    fun.data = mean_se, geom = "line", aes(y = mean_larvae, col = "larvae")
+  ) + 
+  stat_summary(fun.data = mean_se, aes(y = mean_nymphs, col = "nymphs")) +
+  stat_summary(
+    fun.data = mean_se, geom = "line", aes(y = mean_nymphs, col = "nymphs")
+  ) + 
+  scale_x_continuous(breaks = 1:12) + 
+  theme_bw() + 
+  labs(
+    color = NULL, y = "Proportion of mice with ticks attached", x = "Month"
+  ) + 
+  theme(
+    legend.position = "inside", legend.background = element_blank(),
+    legend.position.inside = c(0.99, 0.99), legend.justification = c(1, 1)
+  )
+```
+
+```{r}
+nymph_select <- nymph_fm2
+```
+
+
+##### Resistance
+
+```{r}
+resPC_fm <- lmer(
+  res_PC1 ~ siteClimatePC1 + sex_mature + weight + sex_male + # RH + 
+    larvalTicksAttached + nymphalTicksAttached + 
+    Bb_infected  +
+    (1|year) + (1|siteID) + (1|tagID),
+  data = Peros
+)
+
+summary(resPC_fm)
+```
+
+```{r}
+resPC_fm2 <- update(
+  resPC_fm, . ~ . - larvalTicksAttached - nymphalTicksAttached - siteClimatePC1 - weight
+)
+
+summary(resPC_fm2)
+```
+
+if we exclude infection status (to prevent SEM recursion), climate, weight, 
+and sex are important drivers of resistance:
+
+```{r}
+resPC_fm3 <- update(resPC_fm, . ~ . - Bb_infected)
+summary(resPC_fm3)
+```
+
+```{r}
+res_select <- resPC_fm3
+```
+
+##### Tolerance 
+
+```{r}
+tolPC_fm <- lmer(
+  tol_PC1 ~ siteClimatePC1 + sex_mature + weight + sex_male + # RH + 
+    larvalTicksAttached + nymphalTicksAttached +
+    (1|year) + (1|siteID) + (1|tagID),
+  data = Peros
+)
+
+summary(tolPC_fm)
+```
+
+```{r}
+tolPC_fm2 <- update(tolPC_fm, . ~ . - sex_mature - sex_male - siteClimatePC1)
+
+summary(tolPC_fm2)
+```
+
+```{r}
+tol_select <- tolPC_fm2
+```
+
+
+##### Borrelia infection (USF method)
+
+The infection status of an individual
+
+```{r}
+infect_fm <- glmer(
+  Bb_infected ~ siteClimatePC1 + cap_prop_night + res_PC1 + tol_PC1 + weight + 
+    sex_male + sex_mature +
+    larvalTicksAttached + nymphalTicksAttached +
+    (1|siteID) + (1|tagID) + (1|year),
+  data = Peros, family = "binomial"
+)
+summary(infect_fm)
+```
+
+```{r}
+# remove individual traits and climate
+infect_fm2 <- update(infect_fm, . ~ . - cap_prop_night - sex_male - sex_mature - siteClimatePC1)
+summary(infect_fm2)
+```
+
+```{r}
+infect_select <- infect_fm2
+```
+
+
+This model can likely be improved by combining both methods of detecting 
+infection status (i.e., USF and NEON PCR), with method included as a 
+covariate.
+
+
+##### Borrelia load (USF method)
+
+There does not seem to be any significant effects on *Borrelia burden*, except
+a marginal efffect of tolerance:
+
+```{r}
+burden_fm <- lmer(
+  Bb_burden ~ siteClimatePC1 + res_PC1 + tol_PC1 + 
+    weight + sex_male + sex_mature + larvalTicksAttached + nymphalTicksAttached + 
+    (1|siteID) + (1|tagID) + (1|year),
+  data = Peros #%>% filter(Bb_infected > 0)
+)
+summary(burden_fm)
+```
+
+removing some reasonable variables leaves us with a (non-converging) model that
+suggests that larval ticks and tolerance might have some influence on burden:
+
+```{r}
+burden_fm2 <- update(
+  burden_fm, . ~ . - cap_prop_night - weight - sex_mature - sex_male - 
+    cap_prop_night - siteClimatePC1 - nymphalTicksAttached
+    # sex_mature - sex_male - weight - siteClimatePC1 
+)
+summary(burden_fm2)
+```
+
+but those effects don't seem to have any impact beyond infection status:
+
+```{r}
+burden_fm3 <- update(burden_fm2, . ~ . + Bb_infected)
+summary(burden_fm3)
+```
+
+```{r}
+burden_fm4 <- update(burden_fm3, . ~ . - larvalTicksAttached)
+summary(burden_fm4)
+```
+
+```{r}
+burden_select <- burden_fm4
+```
+
+##### SEM
+
+###### Using all the data
+
+This first model uses all the data but does not take into account 
+the correlations between resistance and tolerance nor between larval tick 
+attachment and nymphal tick attachment
+
+```{r, warning=FALSE}
+infect_psem <- psem(
+  # burden_select, 
+  infect_select, 
+  captime_select,
+  res_select, 
+  tol_select, 
+  larv_select,
+  nymph_select,
+  data = Peros 
+)
+
+smry_infect_psem <- run_cache(
+  summary(infect_psem, conserve = TRUE), 
+  rds_path = file.path(cache_dir, "infect-PSEM_all-data.rds"), 
+  force = FALSE
+)
+
+smry_infect_psem
+
+smry_infect_psem$coefficients %>% data.frame() %>% 
+  filter(P.Value <= 0.1)
+```
+
+```{r}
+graphic_path <- R.utils::getAbsolutePath(
+  file.path(
+    "infection-modeling/graphical-models",
+    "Infected_PSEM_July2025.drawio.png"
+    ) 
+  )
+
+knitr::include_graphics(graphic_path, rel_path = FALSE, error = FALSE)
+```
+
+
+The goodness of fit test indicates that this model is a poor fit to our data 
+(P<0.05) so, we'll try to add the suggested paths that make biological sense 
+first, but doing so still leads to a poor overall fit:
+
+```{r}
+# add sex to nymphal tick model...
+infect_psem2 <- psem(
+  # burden_select, 
+  infect_select, 
+  captime_select,
+  res_select, 
+  tol_select %>% update(. ~ . + res_PC1), 
+  larv_select %>% update(. ~ . + nymphalTicksAttached + temp_mean), 
+  nymph_select %>% update(. ~ . + sex_male),
+  data = Peros 
+)
+
+smry_infect_psem2 <- run_cache(
+  summary(infect_psem2, conserve = TRUE), 
+  rds_path = file.path(cache_dir, "infect-PSEM_all-data2.rds"), 
+  force = FALSE
+)
+
+smry_infect_psem2
+
+smry_infect_psem2$coefficients %>% data.frame() %>% 
+  filter(P.Value <= 0.1)
+```
+
+
+Here's the model with all the missing paths added, and still the goodness of 
+fit statistic is poor:
+
+```{r}
+# add sex to nymphal tick model...
+infect_psem3 <- psem(
+  # burden_select, 
+  infect_select %>% update(. ~ . + temp_mean + temp_min), 
+  captime_select,
+  res_select %>% update(. ~ . + RH + temp_mean + temp_min + precip), 
+  tol_select %>% update(. ~ . + res_PC1), 
+  larv_select %>% update(. ~ . + nymphalTicksAttached + temp_mean), 
+  nymph_select %>% update(. ~ . + sex_male),
+  data = Peros 
+)
+
+smry_infect_psem3 <- run_cache(
+  summary(infect_psem3, conserve = TRUE), 
+  rds_path = file.path(cache_dir, "infect-PSEM_all-data2.rds"), 
+  force = FALSE
+)
+
+smry_infect_psem3
+```
+
+<!-- Note that the updated model above is a good fit according to the chi-squared  -->
+<!-- statistic (P = 1) but not according to Fischer's C (P = 0.014).  -->
+
+<!-- Also note that, in order to keep all the data while accounting for the  -->
+<!-- correlations among resistance and tolerance and among larval and nymphal ticks, -->
+<!-- we added *directed* paths where there perhaps should not be.  -->
+
+<!-- The directed seperation test further suggests that a better model would -->
+<!-- include the relationships between daily weather variables (RH, precip, and temp) -->
+<!-- and resposnes that should not be associated with these daily variables  -->
+<!-- (resistance and infection status) -->
+
+###### Remove nymphal ticks
+
+```{r}
+# add sex to nymphal tick model...
+infect_psem_noNymph <- psem(
+  # burden_select, 
+  infect_select %>% update(. ~ . - nymphalTicksAttached), 
+  res_select %>% update(. ~ . - nymphalTicksAttached + RH), 
+  tol_select %>% update(. ~ . - nymphalTicksAttached + res_PC1), 
+  larv_select, 
+  # nymph_select %>% update(. ~ . + sex_male),
+  data = Peros 
+  # larvalTicksAttached %~~% nymphalTicksAttached
+)
+
+smry_infect_psem_noNymph <- run_cache(
+  summary(infect_psem_noNymph, conserve = TRUE), 
+  rds_path = file.path(cache_dir, "infect-PSEM_noNymph.rds"), 
+  force = FALSE
+)
+
+smry_infect_psem_noNymph
+```
+
+**NEXT STEPS** should be to try again without the daily weather variables.
+We should replace with annual summary.
+
+###### Add correlated errors
+
+```{r}
+
+mod_vars <- smry_infect_psem$coefficients %>% 
+  select(Response, Predictor) %>% unlist() %>% unique()
+
+mod_dat <- Peros %>% 
+  select(siteID, year, tagID, one_of(mod_vars)) %>% 
+  filter(complete.cases(.))
+
+# add sex to nymphal tick model...
+infect_psem_corr <- psem(
+  # burden_select, 
+  infect_select %>% update(. ~ ., data = mod_dat), 
+  res_select %>% update(. ~ ., data = mod_dat),
+  tol_select %>% update(. ~ ., data = mod_dat), 
+  larv_select %>% update(. ~ ., data = mod_dat),
+  nymph_select %>% update(. ~ ., data = mod_dat),
+  data = Peros,
+  # correlation structure
+  larvalTicksAttached %~~% nymphalTicksAttached,
+  res_PC1 %~~% tol_PC1
+)
+
+smry_infect_psem_corr <- run_cache(
+  summary(infect_psem_corr, conserve = TRUE), 
+  rds_path = file.path(cache_dir, "infect-PSEM_corr.rds"), 
+  force = FALSE
+)
+
+smry_infect_psem_corr
+```
+
+One important thing to consider is that, in this formulation we have infection
+being affected by resistance, which is not significant. But infection status
+has an impact on resistance (i.e., changed direction)
+
+##### Try to calculate manually (dive into the code)
+
+```{r, eval = FALSE}
+infect_psem_corr <- psem(
+  infect_select, 
+  res_select, 
+  tol_select,
+  larv_select, 
+  nymph_select %>% update(. ~ . + sex_male),
+  data = Peros,
+  res_PC1 %~~% tol_PC1,
+  larvalTicksAttached %~~% nymphalTicksAttached
+)
+
+dSep(infect_psem_corr)
+
+
+piecewiseSEM:::coefs(infect_psem_corr)
+
+
+# cerror(res_PC1 %~~% tol_PC1, infect_psem2, data = Peros)
+
+# summary(infect_psem2, conserve = TRUE)
+```
+
+```{r, eval = FALSE}
+piecewiseSEM::psem
+piecewiseSEM:::formatpsem
+```
+
+```{r, eval = FALSE}
+piecewiseSEM:::summary.psem
+```
+
+```{r, eval = FALSE}
+piecewiseSEM:::coefs
+```
+
+```{r, eval = FALSE}
+modelList <- infect_psem_corr
+data <- modelList$data
+unstdCoefs(modelList)
+```
+
+```{r, eval = FALSE}
+piecewiseSEM:::unstdCoefs
+```
+
+```{r, eval = FALSE}
+modelList <- piecewiseSEM:::removeData(modelList, formulas = 2)
+
+cerror(modelList[[6]], modelList, data %>% filter(!is.na(res_PC1), !is.na(tol_PC1)))
+```
+
+```{r, eval = FALSE}
+piecewiseSEM:::cerror
+```
+
+```{r, eval = FALSE}
+partialCorr(modelList[[6]], infect_psem_corr, data = data %>% filter(!is.na(res_PC1), !is.na(tol_PC1)))
+
+piecewiseSEM:::partialCorr
+```
+
+```{r, eval = FALSE}
+form = modelList[[6]]
+
+tmp <- piecewiseSEM:::removeData(infect_psem_corr, 1)
+partialResid(form, tmp)
+
+piecewiseSEM:::partialResid
+```
+
+
+
+#### model X
 
 [**UNDER CONSTRUCTION**]
 
-```{r, include=FALSE}
+```{r, eval = FALSE}
 #1. ----
 act_fm <- glmer(
   formula = cap_prop_night ~ siteClimatePC1 + sex_male + weight + (1|siteID) + (1|tagID) + (1|year), 
@@ -1475,7 +2051,7 @@ summary(act_fm)
 
 #2. ----
 tick_fm <- glmer(
-  formula = ticks_attatched ~ siteClimatePC1 + cap_prop_night + sex_male*sex_mature + (1|siteID) + (1|tagID) + (1|year),
+  formula = ticks_attached ~ siteClimatePC1 + cap_prop_night + sex_male*sex_mature + (1|siteID) + (1|tagID) + (1|year),
   data = mod_dat, family = "binomial"
 )
 summary(tick_fm)
@@ -1490,13 +2066,13 @@ summary(resist_fm)
 #4. ----
 # 4. PC2_Tolerance ~ mean_weight + year + sex*prop_elapsed + propticksattached*prop.reproductive + (1|siteID)
 toler_fm <- lmer(
-  formula = tol_PC1 ~ res_PC1 + weight + sex_male*cap_prop_night + ticks_attatched*sex_mature + (1|siteID) + (1|tagID) + (1|year),
+  formula = tol_PC1 ~ res_PC1 + weight + sex_male*cap_prop_night + ticks_attached*sex_mature + (1|siteID) + (1|tagID) + (1|year),
   data = mod_dat, #family = "gaussian"
 )
 summary(toler_fm)
 ```
 
-```{r}
+```{r, eval = FALSE}
 res_tol_sem <- piecewiseSEM::psem(
   act_fm,
   tick_fm,
@@ -1513,7 +2089,7 @@ res_tol_sem_smry <- run_cache(
 res_tol_sem_smry
 ```
 
-```{r}
+```{r, eval = FALSE}
 res_tol_sem_smry$coefficients %>% knitr::kable()
 
 alt_psem <- psem(
@@ -1523,7 +2099,7 @@ alt_psem <- psem(
     data = mod_dat, family = "gaussian"
   ),
   glmer(
-    formula = ticks_attatched ~ res_PC1 + tol_PC1 + siteClimatePC1 + sex_mature + sex_male +
+    formula = ticks_attached ~ res_PC1 + tol_PC1 + siteClimatePC1 + sex_mature + sex_male +
       (1|siteID) + (1|tagID) + (1|year),
     data = mod_dat, family = "binomial"
   ),
@@ -1538,11 +2114,11 @@ alt_psem <- psem(
     data = mod_dat
   ),
   # lmer(
-  #   log_Bb_burden ~ ticks_attatched + tol_PC1 + res_PC1 + weight + siteClimatePC1 + (1|siteID) + (1|tagID) + (1|year),
+  #   log_Bb_burden ~ ticks_attached + tol_PC1 + res_PC1 + weight + siteClimatePC1 + (1|siteID) + (1|tagID) + (1|year),
   #   data = mod_dat
   # ),
   # glmer(
-  #   Bb_infected ~ ticks_attatched + tol_PC1 + res_PC1 + weight + siteClimatePC1 + cap_prop_night  + (1|siteID) + (1|tagID) + (1|year),
+  #   Bb_infected ~ ticks_attached + tol_PC1 + res_PC1 + weight + siteClimatePC1 + cap_prop_night  + (1|siteID) + (1|tagID) + (1|year),
   #   data = mod_dat, family = "binomial"      
   # ),
   res_PC1 %~~% tol_PC1,
@@ -1557,7 +2133,7 @@ alt_psem_smry <- run_cache(
 alt_psem_smry
 ```
 
-```{r}
+```{r, eval = FALSE}
 alt_psem_smry$coefficients %>% knitr::kable(digits = 2)
 
 alt_psem_smry$dTable
