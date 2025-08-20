@@ -1,0 +1,99 @@
+library(tidyverse)
+
+## ---- Load raw data ----
+
+# # mammal data
+# mammals <- readRDS("infection-modeling/data/mammal-data.rds")
+
+# immunity expression data
+immunity <- readRDS("infection-modeling/data/immune-data.rds")
+
+# immunity PCA data
+ipca_list <- readRDS("infection-modeling/data/immune-PCA.rds")
+
+# climate PCA data
+cpca_list <- readRDS("infection-modeling/data/climate-PCA.rds")
+
+# weather PCA data
+wpca_list <- readRDS("infection-modeling/data/weather-PCA.rds")
+
+# capture times data
+cap_times <- readRDS("infection-modeling/data/capture-times.rds")
+
+# other behavior data
+behavior <- readRDS("infection-modeling/data/individual-behavior-data.rds")
+
+## ---- Prepare Peromyscus data for models ----
+
+# Load peromyscus dataset
+Peros <- readRDS("infection-modeling/data/peromyscus-data.rds")
+
+# get table rows, to check for proper merging.
+n_peros <- nrow(Peros)
+
+# add in immune data
+Peros <- left_join(Peros, immunity %>% select(-year), by = "uid")
+
+# check that merges worked
+stopifnot(nrow(Peros) == n_peros)
+
+# add in immune PCA data
+Peros <- left_join(Peros, ipca_list$site_scores, by = "uid")
+
+# check that merges worked
+stopifnot(nrow(Peros) == n_peros)
+
+# add in climate data (used to build the PCA)
+Peros <- left_join(Peros, cpca_list$data, by = "siteID")
+
+# check that merges worked
+stopifnot(nrow(Peros) == n_peros)
+
+# add in climate PCA data
+Peros <- left_join(Peros, cpca_list$site_scores, by = "siteID")
+
+# check that merges worked
+stopifnot(nrow(Peros) == n_peros)
+
+# add in weather data (used to build PCAs)
+Peros <- left_join(Peros, wpca_list$data, by = c("siteID", "date"))
+
+# check that merges worked
+stopifnot(nrow(Peros) == n_peros)
+
+# add in weather PCA data
+Peros <- left_join(Peros, wpca_list$site_scores, by = c("siteID", "date"))
+
+# check that merges worked
+stopifnot(nrow(Peros) == n_peros)
+
+# add in capture timing
+Peros <- left_join(Peros, cap_times, by = "uid")
+
+# check that merges worked
+stopifnot(nrow(Peros) == n_peros)
+
+# add in other behavior (and iid)
+Peros <- left_join(Peros, behavior, by = "iid")
+
+# check that merges worked
+stopifnot(nrow(Peros) == n_peros)
+
+# reorganize the data a bit:
+# Peros <- Peros %>% 
+#   relocate(iid, .after = tagID)
+
+## ---- Save the Model data ----
+
+saveRDS(Peros, "infection-modeling/data/peromyscus-model-data.rds")
+
+## ---- Create model directory ----
+
+mod_output_dir <- file.path(
+  "infection-modeling/data",
+  "model-objects"
+)
+
+if (!dir.exists(mod_output_dir)) {
+  dir.create(mod_output_dir, recursive = TRUE)
+}

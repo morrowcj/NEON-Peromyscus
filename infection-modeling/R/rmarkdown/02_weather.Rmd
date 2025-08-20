@@ -1,0 +1,81 @@
+---
+params: 
+  force: FALSE
+  cache_dir: "infection-modeling/R/rmarkdown/cache/resistance-tolerance"
+---
+
+```{r}
+library(tidyverse)
+library(vegan)
+```
+
+# Climate and Weather
+
+One important component of our ultimate models will be measures of short-term and 
+long-term climate conditions. For short-term variables, we consider
+the minimum, mean, and maximum temperature, total precipitation, and mean
+relative humidity on the day the individual was captured as well as the
+cumulative daily precipitation for the year up to the capture date. Long term
+variables include the average monthly (mean) temperature, average monthly
+precipitation, and the average monthly rain days (as a proportion) across 7
+years (2017 - 2024) at a site. Additionally, coefficients of variation are 
+considered in the long-term variables.
+
+To simplify these variables, we conducted PCA for both short-term (weather) 
+and long-term (climate) data. Positive values of the first weather PC are 
+associated with warmer and wetter observations (Fig \@ref(fig:wthrPCA)) and the
+first two PCs account for 73% of the variation in the weather data 
+(\@ref(tab:wthrPCimport)).
+
+```{r}
+wpca_list <- readRDS("infection-modeling/data/weather-PCA.rds")
+```
+
+```{r wthrPCA, fig.asp = 1, fig.cap=caption}
+ordiplot(wpca_list$pca_obj) %>% 
+  orditorp(display = "species")
+
+caption = paste(
+  "Principal component ordination of weather on the day of an",
+  "individual capture."
+)
+```
+
+```{r wthrPCimport}
+summary(wpca_list$pca_obj)$cont$importance %>% 
+  knitr::kable(
+    digits = 2,
+    caption = paste(
+      "Importance of weather principal components."
+    )
+  )
+```
+
+Positive values of the first climate PC are associated with cooler, dryer, 
+and more variable sites (Fig \@ref(fig:climPCA)) and the first two PCs
+explain 94% of the climatic variation among sites (\@ref(tab:climPCimport)).
+
+
+```{r}
+# climate pca list
+cpca_list <- readRDS("infection-modeling/data/climate-PCA.rds")
+```
+
+```{r climPCA, fig.asp = 1, fig.cap=caption}
+# rough plot of the PCA
+ordiplot(cpca_list$pca_obj) %>%
+  orditorp(display = "species")
+
+caption = paste(
+  "Principal component ordination of 7-year climate at a NEON site."
+)
+```
+
+```{r climPCimport}
+summary(cpca_list$pca_obj)$cont$importance %>% 
+  knitr::kable(
+    digits = 2,
+    caption = "Importance of climate principal components."
+  )
+```
+

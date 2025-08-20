@@ -1,0 +1,93 @@
+---
+params: 
+  force: FALSE
+  cache_dir: "infection-modeling/R/rmarkdown/cache/resistance-tolerance"
+---
+
+# Complete data SEM
+
+```{r}
+library(tidyverse)
+library(DiagrammeR)
+```
+
+Figure \@ref(fig:smallSelectSEM) visualizes a SEM fit to a "complete" data set
+(i.e., only observations for which *all* variables were measured). As such, 
+it has some limitations in its power, but it is the most "defensible" 
+explanatory model because it does not draw conclusions beyond the scope of its
+data. Models using more of the data will be explored in the next section.
+
+While this model is very interesting, one of the primary paths of interest
+is not significant (behavior -> ticks -> burden -> resistance). It is possible
+that the "behavior -> ticks" path is improved by a model which is not limited
+by the completeness restriction. Table \@ref(tab:smallSelSEMr2) summarizes the
+fit (r^2) of each of the component models.
+
+```{r smallSelectSEM, out.width="100%", fig.asp = 1, fig.cap=caption}
+mod <- readRDS(
+  "infection-modeling/data/model-objects/selected-alt-SEM_complete-cases.rds"
+)
+
+pbreaks = c(0, 0.05, 0.1, 1)#, 
+pcols = c("black", "grey70", "grey70")#, 
+linetypes = c("solid", "solid", "dotted")#, 
+penwidth_range = c(1, 8)
+
+# coefficients
+coef_tab <- mod$coefficients %>% 
+  data.frame() %>% 
+  rename(sig.star = "Var.9") %>% 
+  mutate(
+    pval_group = cut(
+      P.Value, breaks = pbreaks, include.lowest = TRUE,
+      labels(seq_len(length(pbreaks) - 1))
+    ),
+    pval_col = pcols[pval_group],
+    pval_linetype = linetypes[pval_group],
+    pval_penwidth = scales::rescale(Std.Estimate, to = penwidth_range)
+  )
+
+# all variables
+the_vars <- unique(c(coef_tab$Response, coef_tab$Predictor))
+
+path_nodes <- data.frame(var = the_vars, id = seq_len(length(the_vars)))
+
+create_graph(attr_theme = "bt") %>% 
+  add_global_graph_attrs("layout", "dot", "graph") %>%
+  # add_global_graph_attrs("rankdir", "LR", "graph") %>% 
+  add_nodes_from_table(path_nodes, label_col = var) %>% 
+  add_edges_from_table(
+    coef_tab, from_col = "Predictor", to_col = "Response", 
+    from_to_map = "label"
+  ) %>% 
+  set_node_attrs(width, 1.5) %>% 
+  set_node_attrs(fontsize, 20) %>% 
+  set_edge_attrs(color, coef_tab$pval_col) %>% 
+  set_edge_attrs(style, coef_tab$pval_linetype) %>% 
+  set_edge_attrs(penwidth, coef_tab$pval_penwidth) %>% 
+  render_graph()
+
+
+caption = paste(
+  "Acyclycal graph diagram of selected SEM model, fit with complete cases.",
+  "The goodness-of-fit P-value is", paste0(round(mod$Cstat$P.Value, 2), ","),
+  "which indicates that this model is *not* statistically different from an",
+  "'ideal' model of these data."
+)
+```
+
+```{r smallSelSEMr2}
+mod$R2 %>% 
+  knitr::kable(
+    digits = 2,
+    caption = paste(
+      "R-squared table of the selected SEM, fit with complete cases.",
+      "Marginal R-squared values represent the proportion of variation in",
+      "the resposne explained by the fixed effects and",
+      "Conditional values represent the proportion explained by the full model.",
+      "Models without random effects (i.e., simple linear regression) do not",
+      "have a conditional R-squared value."
+    )
+  )
+```
+

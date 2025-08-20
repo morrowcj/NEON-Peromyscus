@@ -1,0 +1,139 @@
+---
+params: 
+  force: FALSE
+  cache_dir: "infection-modeling/R/rmarkdown/cache/resistance-tolerance"
+---
+
+# Infection and gene expression
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+Peros <- readRDS("infection-modeling/data/peromyscus-model-data.rds")
+```
+
+## Infection
+
+Our colleagues at USF did measured gene expression, but not *Borrelia* in 2022.
+NEON did measure infection during that year, but we can only compare
+*Borrelia*-positive samples accross methods (we can be confident that a 
+"positive" is correct, but a "negative" is not certain with NEON's PCR 
+technique). Adding these samples would only net us 5 total samples 
+(\@ref(tab:infectMethodSamps)), which is likely not worth the cost of the new
+"method" variable that would be required to differentiate between the two
+infection screening methodologies.
+
+```{r infectMethodSamps}
+methodSamps <- Peros %>% 
+  select(
+    year, siteID, plotID, expr_PC1, expr_PC2, Bb_infected, NEON_Bb_infected,
+    cap_prop_night
+  ) %>% 
+  filter(year %in% c(2020:2024)) %>% 
+  group_by(year, siteID, plotID) %>% 
+  summarize(
+    expression = sum(!is.na(expr_PC1) | !is.na(expr_PC2), na.rm = TRUE),
+    captime = sum(!is.na(cap_prop_night), na.rm = TRUE),
+    USF_infect = sum(!is.na(Bb_infected), na.rm = TRUE),
+    NEON_infect = sum(!is.na(NEON_Bb_infected) & 
+                        NEON_Bb_infected == 1, na.rm = TRUE),
+    without_NEON = sum(
+      (!is.na(expr_PC1)|!is.na(expr_PC2)) &
+        !is.na(cap_prop_night) &
+        (!is.na(Bb_infected)),
+      na.rm = TRUE
+    ),
+    with_NEON = sum(
+      (!is.na(expr_PC1)|!is.na(expr_PC2)) &
+        !is.na(cap_prop_night) &
+        (!is.na(Bb_infected) | 
+           (!is.na(NEON_Bb_infected) & NEON_Bb_infected == 1)),
+      na.rm = TRUE
+    ), .groups = "drop"
+  ) %>% 
+  mutate(additional = with_NEON - without_NEON) %>% 
+  filter(expression > 0) %>% 
+  arrange(year, siteID, plotID, expression)
+
+methodSamps %>% 
+  knitr::kable(
+    digits = 2,
+    caption = paste(
+      "Tabulation of expression, behavior, and infection samples across NEON",
+      "plots. Columns correspond to the year, site, and plot by which counts",
+      "are grouped; the number of sampels for which we have expression,",
+      "capture timing, and infection data (either from USF or NEON);",
+      "the number of complete samples without NEON infection data,",
+      "with NEON infection data,",
+      "and the additional samples gained by including NEON infection data."
+    ),
+    format = "pipe"
+  )
+
+# methodSamps %>% 
+  # write.csv(
+  #   "infection-modeling/data/added-samples-with-NEON-infections.csv",
+  #   row.names = FALSE
+  # )
+#   
+# methodSamps %>% 
+#   select(without_NEON:additional) %>% 
+#   colSums()
+```
+
+
+
+
+## Resistance-Tolerance
+
+```{r exprOrthog, fig.cap = caption, fig.asp = 0.8, fig.width = 6}
+Peros %>% 
+  select(expr_PC1, expr_PC2, siteID, year) %>% 
+  filter(complete.cases(.)) %>% 
+  ggplot(aes(x = expr_PC1, y = expr_PC2)) + 
+  geom_hline(yintercept = 0, linetype = "dotted") + 
+  geom_point(aes(col = , col = siteID, shape = factor(year))) + 
+  geom_smooth(method = "lm", formula = y~x) + 
+  labs(
+    x = "expr_PC1 (resistance)", y = "expr_PC2 (tolerance)", col = "Site",
+    shape = "Year"
+  ) # +
+  # theme(
+  #   legend.position = "inside", legend.position.inside = c(1, 0.5),
+  #   legend.justification = c(1, 0.5), legend.background = element_blank()
+  # )
+
+caption = paste(
+  "Gene expression principal component values of individual *Peromyscus*.",
+  "The trend line demonstrates the orthogonality of these axes."
+)
+```
+
+```{r exprBurd, fig.cap = caption, fig.asp = 0.8, fig.width = 6}
+Peros %>% 
+  select(expr_PC1, expr_PC2, Bb_burden) %>% 
+  filter(complete.cases(.)) %>% 
+  # cor()
+  ggplot(aes(x = log(Bb_burden + 1))) + 
+  geom_point(aes(y = expr_PC1, col = "resistance"), alpha = 0.5) + 
+  geom_smooth(aes(y = expr_PC1, col = "resistance"), method = "lm") + 
+  geom_point(aes(y = expr_PC2, col = "tolerance"), alpha = 0.5) + 
+  geom_smooth(aes(y = expr_PC2, col = "tolerance"), method = "lm")
+  # ggplot(aes(x = expr_PC1, y = expr_PC2, col = log(Bb_burden + 1))) + 
+  # geom_point(alpha = 0.5, size = 3) +
+  # labs(
+  #   x = "expr_PC1 (resistance)", y = "expr_PC2 (tolerance)", col = "ln(Burden)",
+  # ) +
+  # theme(
+  #   legend.position = "inside", legend.position.inside = c(1, 0.5),
+  #   legend.justification = c(1, 0.5), legend.background = element_blank()
+  # ) + 
+  # scale_color_gradient(low = "cornflowerblue", high = "red")
+
+caption = paste(
+  ""
+)
+```
+

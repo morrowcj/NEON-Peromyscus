@@ -1,0 +1,13 @@
+"","sex","sex_mature","testes","nipples","vagina","observations","sex_prop"
+"1","F",FALSE,NA,"nonenlarged","neither",7196,0.46
+"2","F",FALSE,NA,"nonenlarged","not plugged",1272,0.08
+"3","F",TRUE,NA,"nonenlarged","swollen",916,0.06
+"4","F",TRUE,NA,"nonenlarged","plugged",522,0.03
+"5","F",TRUE,NA,"nonenlarged","both",4,0
+"6","F",TRUE,NA,"enlarged","neither",1786,0.11
+"7","F",TRUE,NA,"enlarged","not plugged",805,0.05
+"8","F",TRUE,NA,"enlarged","swollen",1110,0.07
+"9","F",TRUE,NA,"enlarged","plugged",873,0.06
+"10","F",TRUE,NA,"enlarged","both",7,0
+"11","M",FALSE,"nonscrotal",NA,NA,9193,0.52
+"12","M",TRUE,"scrotal",NA,NA,8255,0.47

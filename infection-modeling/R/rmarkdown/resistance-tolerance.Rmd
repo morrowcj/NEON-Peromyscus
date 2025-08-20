@@ -1,10 +1,12 @@
 ---
 params:
-  force: FALSE
+  force: TRUE
 ---
 
 ```{r knit_setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, error = FALSE)
+knitr::opts_chunk$set(
+  echo = FALSE, warning = FALSE, message = FALSE, error = FALSE
+)
 ```
 
 ```{r cache_setup, include=FALSE}
@@ -14,19 +16,48 @@ if (!dir.exists(cache_dir)) {
   dir.create(cache_dir, recursive = TRUE)
 }
 
-knitr::opts_chunk$set(cache.path = R.utils::getAbsolutePath(cache_dir))
+# knitr::opts_chunk$set(cache.path = R.utils::getAbsolutePath(cache_dir))
 
-# function to run/cache objects
+#' Function to run/cache objects
+#'
+#' @param expr R code to evaluate
+#' @param rds_path path to save object
+#' @param force should the object be overwritten?
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 run_cache <- function(expr, rds_path, force = params$force){
-  
   if (force || !file.exists(rds_path)) {
     x = eval(expr)
     saveRDS(x, rds_path)
   } else {
     x = readRDS(rds_path)
   }
-  
   return(x)
+}
+
+#' Function to plot/cache ggplot objects
+#'
+#' @param ggp ggplot code
+#' @param plot_path path to save plot
+#' @param force should the plot be overwritten?
+#' @param ... 
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+plot_cache <- function(ggp, plot_path, force = params$force, ...){
+  if (force || !file.exists(plot_path)) {
+    x = eval(ggp)
+    ggsave(plot_path, x, ...)
+    return(x)
+  } else {
+    graphic_path <- R.utils::getAbsolutePath(plot_path)
+    knitr::include_graphics(graphic_path, rel_path = FALSE, error = FALSE)
+  }
 }
 ```
 
@@ -35,6 +66,7 @@ run_cache <- function(expr, rds_path, force = params$force){
 library(tidyverse)
 library(glmmTMB)
 library(lme4)
+library(lmerTest)  
 ```
 
 # Resistance and Tolerance {-}
@@ -79,6 +111,17 @@ mammals <- readRDS("infection-modeling/data/full-data.rds")
 n_mammals = nrow(mammals)
 ```
 
+```{r}
+# calculate some individual-level behavior traits.
+
+## trapabillity = captures / total trap nights between first and last capture.
+
+## average move distance = average distance (m) between consecutive captures
+
+## trap diversity = total number of unique traps visited / total captures
+```
+
+
 ```{r unmatched, include = FALSE}
 # rows in mammals that aren't in df
 unmatched <- anti_join(df, mammals)
@@ -101,7 +144,9 @@ duplicates <- df %>%
 # save the duplicates as a table
 if (FALSE) {
   duplicates %>%
-    write.csv(file = "infection-modeling/data/duplicated_tagIDs_immuneTable.csv")
+    write.csv(
+      file = "infection-modeling/data/duplicated_tagIDs_immuneTable.csv"
+    )
 }
 
 # remove the duplicated sample (with two slightly different Bb_burdens)
@@ -132,7 +177,7 @@ most strongly correlated with each other and, similarly, the tolerance traits
 TGF-B and GATA-3 appear to be zero inflated and all the genetic traits 
 are highly right-skewed (i.e., many low values).
 
-```{r gene-cors, fig.width=7.5, fig.asp=0.95, warning=FALSE, message=FALSE, fig.cap=caption, cache=TRUE}
+```{r gene-cors, fig.width=7.5, fig.asp=0.95, warning=FALSE, message=FALSE, fig.cap=caption}
 gene_expr_lookup <- tibble(
   column = df %>% select(`IL-10`:`GATA-3`) %>% names(),
   group = c(rep("resistance", 4), rep("tolerance", 2))
@@ -140,10 +185,13 @@ gene_expr_lookup <- tibble(
 
 library(GGally)
 
-mammals %>% 
-  select(one_of(gene_expr_lookup$column)) %>% 
-  ggpairs(progress = FALSE) + 
-  scale_x_continuous(breaks = c(500, 1500))
+plot_cache(
+  mammals %>% 
+    select(one_of(gene_expr_lookup$column)) %>% 
+    ggpairs(progress = FALSE) + 
+    scale_x_continuous(breaks = c(500, 1500)),
+  file.path(cache_dir, "res-tol-pairplot.png")
+)
 
 caption = paste(
   "Genetic correlations"
@@ -175,7 +223,7 @@ preds = infect_tab %>%
   select(-c(Bb_burden, Bb_infected)) %>% 
   mutate(across(-uid, ~scale(log(.x + 1))))
 
-genetic_pca <- pca(preds %>% select(-uid) %>% as.matrix())
+genetic_pca <- pca(preds %>% select(-uid) %>% as.matrix(), scale = TRUE)
 
 gen_sites <- scores(genetic_pca, display = "sites") %>% 
   as.data.frame() %>% 
@@ -299,7 +347,8 @@ quant_cut <- function(x, n = 4, ordered = TRUE){
 # make a longer version of the data
 infect_long <- infect_tab %>% 
   pivot_longer(
-    -c(uid, Bb_burden, Bb_infected), names_to = "marker", values_to = "gene_expr"
+    -c(uid, Bb_burden, Bb_infected), 
+    names_to = "marker", values_to = "gene_expr"
   ) %>% 
   mutate(
     marker = factor(marker, levels = gene_expr_lookup$column),
@@ -347,7 +396,7 @@ among tolerance traits.
 
 ```{r Gene-hists, fig.asp = 1.5, fig.width=5, fig.cap=caption}
 infect_long %>% 
-    mutate(
+  mutate(
     x = gene_expr, 
     `sqrt(x)` = sqrt(gene_expr),
     `ln(x)` = log(gene_expr)
@@ -359,7 +408,7 @@ infect_long %>%
   geom_histogram(col = "black", show.legend = FALSE)
 
 caption = paste(
- "Genetic traits histogram, before and after transformations" 
+  "Genetic traits histogram, before and after transformations" 
 )
 ```
 
@@ -477,7 +526,7 @@ infect_long %>%
   ) %>% 
   ggplot(aes(x = trans_val, y = as.numeric(Bb_infected), col = trans)) + 
   facet_wrap(~marker, scales = "free_x", strip.position = "bottom") + 
-    geom_point(
+  geom_point(
     col = "black", shape = 21, 
     aes(y = jitter(as.numeric(Bb_infected), amount = 0.1))
   ) + 
@@ -502,7 +551,7 @@ patterns. Again, the strongest and clearest relationships are with the
 tolerance traits. Note that the blue points are mean proportion of infected
 individuals ± 95% confidence intervals for each quartile:
 
-```{r infect-quarts, fig.asp = 0.7, fig.width = 6, fig.cap=caption, cache=TRUE}
+```{r infect-quarts, fig.asp = 0.7, fig.width = 6, fig.cap=caption}
 infect_long %>% 
   mutate(
     marker = factor(
@@ -540,37 +589,41 @@ caption = paste(
 
 And the same patterns exist when we look at deciles:
 
-```{r infect-decs, fig.asp = 0.7, fig.width = 6, fig.cap=caption, cache=TRUE}
-infect_long %>% 
-  mutate(
-    marker = factor(
-      paste(marker, "decile"), levels = paste(levels(marker), "decile")
-    )
-  ) %>% 
-  ggplot(aes(x = as.numeric(expr_quints), y = Bb_infected)) + 
-  facet_wrap(~marker, scales = "free_y", strip.position = "bottom") + 
-  geom_point(
-    col = "black", shape = 21,
-    aes(
-      x = jitter(as.numeric(expr_quints), amount = 0.2),
-      y = jitter(as.numeric(Bb_infected), amount = 0.1)
-    )
-  ) +
-  # geom_count(shape = 21, fill = "grey80") + scale_size_area() + 
-  geom_smooth(
-    method = "glm", aes(group = 1), col = "blue", fill = "grey80",
-    method.args = list(family = "binomial"), formula = "y ~ x"
-  ) + 
-  stat_summary(
-    fun.data = mean_cl_normal, col = "blue", shape = 21, fill = "white"
-  ) + 
-  theme_bw() + 
-  scale_x_continuous(breaks = seq(1, 10)) + 
-  scale_y_continuous(breaks = seq(0, 1)) + 
-  theme(
-    strip.background = element_blank(), strip.placement = "outside",
-  ) + 
-  labs(x = NULL, y = "B.b. infection (probability ± 95% CI)")
+```{r infect-decs, fig.asp = 0.7, fig.width = 6, fig.cap=caption}
+plot_cache(
+  infect_long %>% 
+    mutate(
+      marker = factor(
+        paste(marker, "decile"), levels = paste(levels(marker), "decile")
+      )
+    ) %>% 
+    ggplot(aes(x = as.numeric(expr_quints), y = Bb_infected)) + 
+    facet_wrap(~marker, scales = "free_y", strip.position = "bottom") + 
+    geom_point(
+      col = "black", shape = 21,
+      aes(
+        x = jitter(as.numeric(expr_quints), amount = 0.2),
+        y = jitter(as.numeric(Bb_infected), amount = 0.1)
+      )
+    ) +
+    # geom_count(shape = 21, fill = "grey80") + scale_size_area() + 
+    geom_smooth(
+      method = "glm", aes(group = 1), col = "blue", fill = "grey80",
+      method.args = list(family = "binomial"), formula = "y ~ x"
+    ) + 
+    stat_summary(
+      fun.data = mean_cl_normal, col = "blue", shape = 21, fill = "white"
+    ) + 
+    theme_bw() + 
+    scale_x_continuous(breaks = seq(1, 10)) + 
+    scale_y_continuous(breaks = seq(0, 1)) + 
+    theme(
+      strip.background = element_blank(), strip.placement = "outside",
+    ) + 
+    labs(x = NULL, y = "B.b. infection (probability ± 95% CI)"),
+  file.path(cache_dir, "infect-decs.png"),
+  width = 6, height = 0.7*6,
+)
 
 caption = paste(
   "Relationships between genetic traits deciles and B.b. infection"
@@ -587,7 +640,7 @@ Unfortunately, a generalized linear mixed effects (logistic regression) model
 using raw responses reveals that shows no significant effects (and very small
 effect sizes):
 
-```{r infect-mod-raw,}
+```{r infect-mod-raw}
 # load mixed models package
 library(glmmTMB)
 
@@ -638,13 +691,13 @@ infect_glmm2 <- mammals %>%
 
 # get the summary of that model
 coefficients(summary(infect_glmm2))$cond %>% 
-    knitr::kable(
-      col.names = c("Coef", "SE", "z", "P"), digits = 3,
-      caption = paste(
-        "Infection logistic GLMM model, with sqrt-transformed",
-        "genetic traits."
-      )
+  knitr::kable(
+    col.names = c("Coef", "SE", "z", "P"), digits = 3,
+    caption = paste(
+      "Infection logistic GLMM model, with sqrt-transformed",
+      "genetic traits."
     )
+  )
 ```
 
 Nor does standardizing the predictor variables:
@@ -670,13 +723,13 @@ infect_glmm3 <- mammals %>%
 
 # get the summary of that model
 coefficients(summary(infect_glmm3))$cond %>% 
-    knitr::kable(
-      col.names = c("Coef", "SE", "z", "P"), digits = 3,
-      caption = paste(
-        "Infection logistic GLMM model, with z-scaled",
-        "genetic traits."
-      )
+  knitr::kable(
+    col.names = c("Coef", "SE", "z", "P"), digits = 3,
+    caption = paste(
+      "Infection logistic GLMM model, with z-scaled",
+      "genetic traits."
     )
+  )
 ```
 
 However, if we exclude the top 5% of all the genetic traits, then the two
@@ -710,13 +763,13 @@ infect_glmm <- mammals %>%
 
 # get as summary of the model
 coefficients(summary(infect_glmm))$cond %>% 
-    knitr::kable(
-      col.names = c("Coef", "SE", "z", "P"), digits = 3,
-      caption = paste(
-        "Infection logistic GLMM model, with extreme",
-        "genetic traits removed."
-      )
+  knitr::kable(
+    col.names = c("Coef", "SE", "z", "P"), digits = 3,
+    caption = paste(
+      "Infection logistic GLMM model, with extreme",
+      "genetic traits removed."
     )
+  )
 ```
 
 The same is likely true for using quartiles/deciles, but I haven't fit those
@@ -784,7 +837,7 @@ temp_summaries <- daily_temps %>%
     year_avg_monthly_temp = mean(month_avg_daily_temp, na.rm = TRUE),
     year_max_monthly_temp = max(month_avg_daily_temp, na.rm = TRUE),
     year_sd_monthly_temp = sd(month_avg_daily_temp, na.rm = TRUE),
-    ) %>% 
+  ) %>% 
   group_by(siteID) %>% 
   mutate(
     # daily
@@ -961,7 +1014,11 @@ site_climate_summaries <- temp_summaries %>%
         siteID, site_avg_monthly_RH, site_CV_monthly_RH
       )
   )
+```
 
+### PCA
+
+```{r}
 # Conduct the PCA
 site_climate_PCA <- site_climate_summaries %>% 
   select(-siteID) %>% 
@@ -974,6 +1031,7 @@ site_climate_PCA %>%
 
 summary(site_climate_PCA)$cont$importance
 ```
+
 ```{r calculate-sitePCA}
 climSites <- scores(site_climate_PCA)$sites %>% data.frame() %>% 
   bind_cols(site_climate_summaries) %>% 
@@ -1092,6 +1150,10 @@ year_climate_PCA %>%
   orditorp(display = "species")
 
 summary(year_climate_PCA)$cont$importance
+
+year_climate_summaries <- scores(year_climate_PCA)$sites %>% 
+  data.frame() %>% 
+  bind_cols(year_climate_summaries)
 ```
 
 The monthly climate PCA (not visualized) further reduces the explanatory power of the PC axes
@@ -1240,8 +1302,14 @@ gen_tab <- full_join(resistance_tab, tolerance_tab, by = "uid")
 ```
 
 ```{r}
-mammals <- left_join(mammals, gen_tab, by = "uid")
-stopifnot(nrow(mammals) == n_mammals)
+# mammals <- left_join(mammals, gen_tab, by = "uid")
+# stopifnot(nrow(mammals) == n_mammals)
+
+## Now use original PCA
+mammals <- gen_sites %>% 
+  select(uid, res_PC1 = PC1, tol_PC1 = PC2) %>% 
+  right_join(mammals, by = "uid")
+
 ```
 
 ## SEMs:
@@ -1250,13 +1318,6 @@ In this section, we will look at SEMs that involve resistance and tolerance.
 Specifically, we are interested in resistance and tolerance as *latent* 
 variables for tick attachment and *Borrelia* infection. 
 
-### Tick attachment
-
-First, we'll build a model whose ultimate response variable is tick attachment.
-These models will include resistance and tolerance as predictors of tick 
-attachment as well as factors that might predict resistance and tolerance. We
-will also try to incorporate mouse behavior (e.g., capture time) into these
-models.
 
 ```{r}
 Peros <- mammals %>% 
@@ -1312,7 +1373,13 @@ Peros <- daily_precips %>%
   right_join(Peros, by = c("siteID", "date"))
 
 Peros <- year_climate_summaries %>% 
+  rename(
+    yearClimPC1 = PC1,
+    yearClimPC2 = PC2
+  ) %>% 
   right_join(Peros, by = c("siteID", "year"))
+
+
 
 mod_dat <- Peros %>% 
   filter(taxonID == "PELE") %>% 
@@ -1327,8 +1394,13 @@ mod_dat <- Peros %>%
 ```
 
 
+### model 1: Ticks, Resistance, Tolerance as terminal responses
 
-#### model 1: Ticks, Resistance, Tolerance as terminal responses
+First, we'll build a model whose ultimate response variable is tick attachment.
+These models will include resistance and tolerance as predictors of tick 
+attachment as well as factors that might predict resistance and tolerance. We
+will also try to incorporate mouse behavior (e.g., capture time) into these
+models.
 
 The first model tries to replicate the model that Alli built, but adding an
 additional year of data. This model is not identical to the one Alli fit:
@@ -1466,8 +1538,8 @@ graphic_path <- R.utils::getAbsolutePath(
   file.path(
     "infection-modeling/graphical-models",
     "resistance-tolerance_model1.drawio.png"
-    ) 
-  )
+  ) 
+)
 
 knitr::include_graphics(graphic_path, rel_path = FALSE, error = FALSE)
 ```
@@ -1515,9 +1587,9 @@ render_graph(gph)
 ```
 
 
-#### model 2:
+### model 2:
 
-##### Capture timing
+#### Capture timing
 
 
 
@@ -1542,7 +1614,30 @@ captime_select <- captime_fm2
 ```
 
 
-##### Tick attachement, by relative humidity
+#### Tick attachement, by relative humidity
+
+```{r}
+tick_fm <- glmer(
+  ticks_attached ~ cap_prop_night*RH + sex_male*sex_mature + weight + 
+    precip + temp_min +
+    # res_PC1 + tol_PC1 + 
+    (1|siteID) + (1|tagID) + (1|year), 
+  data = Peros, family = "binomial"
+)
+
+summary(tick_fm)
+```
+
+```{r}
+tick_fm2 <- update(
+  tick_fm, . ~ . - sex_male:sex_mature - cap_prop_night:RH - weight - RH
+)
+summary(tick_fm2)
+```
+
+```{r}
+tick_select <- tick_fm2
+```
 
 The below model of larval tick attachment suggests that relative humidity is a
 key factor (in year, individual, and site) in larval tick attachment. Again, 
@@ -1654,10 +1749,10 @@ nymph_select <- nymph_fm2
 ```
 
 
-##### Resistance
+#### Resistance
 
 ```{r}
-resPC_fm <- lmer(
+resist_fm <- lmer(
   res_PC1 ~ siteClimatePC1 + sex_mature + weight + sex_male + # RH + 
     larvalTicksAttached + nymphalTicksAttached + 
     Bb_infected  +
@@ -1665,54 +1760,54 @@ resPC_fm <- lmer(
   data = Peros
 )
 
-summary(resPC_fm)
+summary(resist_fm)
 ```
 
 ```{r}
-resPC_fm2 <- update(
-  resPC_fm, . ~ . - larvalTicksAttached - nymphalTicksAttached - siteClimatePC1 - weight
+resist_fm2 <- update(
+  resist_fm, . ~ . - larvalTicksAttached - nymphalTicksAttached - siteClimatePC1 - weight
 )
 
-summary(resPC_fm2)
+summary(resist_fm2)
 ```
 
 if we exclude infection status (to prevent SEM recursion), climate, weight, 
 and sex are important drivers of resistance:
 
 ```{r}
-resPC_fm3 <- update(resPC_fm, . ~ . - Bb_infected)
-summary(resPC_fm3)
+resist_fm3 <- update(resist_fm, . ~ . - Bb_infected  - larvalTicksAttached - nymphalTicksAttached - sex_mature - siteClimatePC1)
+summary(resist_fm3)
 ```
 
 ```{r}
-res_select <- resPC_fm3
+res_select <- resist_fm3
 ```
 
-##### Tolerance 
+#### Tolerance 
 
 ```{r}
-tolPC_fm <- lmer(
+tolerance_fm <- lmer(
   tol_PC1 ~ siteClimatePC1 + sex_mature + weight + sex_male + # RH + 
     larvalTicksAttached + nymphalTicksAttached +
     (1|year) + (1|siteID) + (1|tagID),
   data = Peros
 )
 
-summary(tolPC_fm)
+summary(tolerance_fm)
 ```
 
 ```{r}
-tolPC_fm2 <- update(tolPC_fm, . ~ . - sex_mature - sex_male - siteClimatePC1)
+tolerance_fm2 <- update(tolerance_fm, . ~ . - sex_mature - sex_male - siteClimatePC1)
 
-summary(tolPC_fm2)
+summary(tolerance_fm2)
 ```
 
 ```{r}
-tol_select <- tolPC_fm2
+tol_select <- tolerance_fm2
 ```
 
 
-##### Borrelia infection (USF method)
+#### Borrelia infection (USF method)
 
 The infection status of an individual
 
@@ -1743,7 +1838,7 @@ infection status (i.e., USF and NEON PCR), with method included as a
 covariate.
 
 
-##### Borrelia load (USF method)
+#### Borrelia load (USF method)
 
 There does not seem to be any significant effects on *Borrelia burden*, except
 a marginal efffect of tolerance:
@@ -1765,7 +1860,7 @@ suggests that larval ticks and tolerance might have some influence on burden:
 burden_fm2 <- update(
   burden_fm, . ~ . - cap_prop_night - weight - sex_mature - sex_male - 
     cap_prop_night - siteClimatePC1 - nymphalTicksAttached
-    # sex_mature - sex_male - weight - siteClimatePC1 
+  # sex_mature - sex_male - weight - siteClimatePC1 
 )
 summary(burden_fm2)
 ```
@@ -1786,9 +1881,9 @@ summary(burden_fm4)
 burden_select <- burden_fm4
 ```
 
-##### SEM
+#### SEM
 
-###### Using all the data
+##### Using all the data
 
 This first model uses all the data but does not take into account 
 the correlations between resistance and tolerance nor between larval tick 
@@ -1823,8 +1918,8 @@ graphic_path <- R.utils::getAbsolutePath(
   file.path(
     "infection-modeling/graphical-models",
     "Infected_PSEM_July2025.drawio.png"
-    ) 
-  )
+  ) 
+)
 
 knitr::include_graphics(graphic_path, rel_path = FALSE, error = FALSE)
 ```
@@ -1897,7 +1992,7 @@ smry_infect_psem3
 <!-- and resposnes that should not be associated with these daily variables  -->
 <!-- (resistance and infection status) -->
 
-###### Remove nymphal ticks
+##### Remove nymphal ticks
 
 ```{r}
 # add sex to nymphal tick model...
@@ -1924,7 +2019,7 @@ smry_infect_psem_noNymph
 **NEXT STEPS** should be to try again without the daily weather variables.
 We should replace with annual summary.
 
-###### Add correlated errors
+##### Add correlated errors
 
 ```{r}
 
@@ -1962,7 +2057,7 @@ One important thing to consider is that, in this formulation we have infection
 being affected by resistance, which is not significant. But infection status
 has an impact on resistance (i.e., changed direction)
 
-##### Try to calculate manually (dive into the code)
+###### Try to calculate manually (dive into the code)
 
 ```{r, eval = FALSE}
 infect_psem_corr <- psem(
@@ -2036,6 +2131,924 @@ piecewiseSEM:::partialResid
 ```
 
 
+#### model 3: collapsed daily weather
+
+##### Conduct PCA
+
+If we conduct a PCA on the daily weather variables, we can see that the first
+axis (which explains 58% of variation) corresponds to temperature and 
+the second axis (which explains 26% of the variation) corresponds to moisture:
+
+```{r}
+weather_PCA_data <- Peros %>% 
+  filter(year %in% 2017:2024) %>% 
+  select(siteID, date, temp_mean, temp_min, temp_max, RH, precip) %>% 
+  distinct() %>% 
+  filter(complete.cases(.))
+
+weather_PCA <- weather_PCA_data%>% 
+  select(-c(siteID, date)) %>% 
+  vegan::pca(scale = TRUE)
+
+summary(weather_PCA)$cont$importance
+```
+
+```{r, fig.asp = 0.8, fig.width = 6}
+weather_PCA_data <- scores(weather_PCA)$sites %>% data.frame() %>% tibble() %>% 
+  rename(weather_PC1 = PC1, weather_PC2 = PC2) %>% 
+  bind_cols(weather_PCA_data)
+
+weather_loadings <- scores(weather_PCA)$species %>% data.frame() %>% 
+  rownames_to_column() %>% 
+  tibble() %>% 
+  mutate(
+    weather_PC1 = 0.4*PC1, weather_PC2 = 0.4*PC2,
+    nudge_x = case_when(
+      rowname == "temp_min" ~ -0.1,
+      rowname == "temp_mean" ~ -0.15,
+      rowname == "temp_max" ~ -0.1,
+      .default = 0
+    ), 
+    nudge_y = case_when(
+      rowname == "temp_min" ~ 0.05,
+      rowname == "temp_mean" ~ 0.05,
+      rowname == "temp_max" ~ -0.05,
+      .default = 0
+    ),
+    label_PC1 = weather_PC1 + nudge_x,
+    label_PC2 = weather_PC2 + nudge_y
+  )
+
+weather_PCA_data %>% 
+  mutate(year = year(date)) %>% 
+  ggplot(aes(x = weather_PC1, y = weather_PC2, col = siteID)) + 
+  # facet_wrap(~year) + 
+  geom_hline(yintercept = 0, col = "grey50", linetype = "dashed") + 
+  geom_vline(xintercept = 0, col = "grey50", linetype = "dashed") + 
+  geom_point(alpha = 0.5) + 
+  geom_segment(
+    data = weather_loadings,
+    aes(x = 0, y = 0, xend = weather_PC1, yend = weather_PC2),
+    col = "black"
+  ) + 
+  geom_label(
+    data = weather_loadings, 
+    aes(label = rowname, x = label_PC1, y = label_PC2), 
+    col = "black"
+  ) + 
+  labs(x = "Daily weather PC1", y = "Daily weather PC2", col = "Site") + 
+  theme_bw()
+```
+
+```{r}
+Peros <- weather_PCA_data %>% 
+  select(weather_PC1, weather_PC2, siteID, date) %>% 
+  right_join(Peros, by = c("siteID", "date"))
+```
+
+```{r}
+weather_check <- lm(
+  cbind(weather_PC1, weather_PC2) ~ 
+    temp_mean + temp_min + temp_max + RH + precip,
+  data = weather_PCA_data
+)
+```
+
+
+##### Fit Updated models
+
+```{r}
+alt_captime_fm <- lmer(
+  formula = cap_prop_night ~ sex_male*sex_mature + weight + siteClimatePC1 + 
+    weather_PC1 + weather_PC2 + 
+    (1|siteID) + (1|tagID) + (1|year), 
+  data = Peros
+)
+
+# summary(alt_captime_fm)$coefficients
+
+alt_captime_fm2 <- update(
+  alt_captime_fm, . ~ . - siteClimatePC1 - weather_PC2
+)
+
+# summary(alt_captime_fm2)
+
+alt_captime_select <- alt_captime_fm2
+```
+
+```{r}
+alt_tick_fm <- glmer(
+  ticks_attached ~ cap_prop_night*weather_PC1 + sex_male*sex_mature + weight + 
+    # res_PC1 + tol_PC1 + 
+    (1|siteID) + (1|tagID) + (1|year), 
+  data = Peros, family = "binomial"
+)
+# summary(alt_tick_fm)
+
+alt_tick_fm2 <- update(
+  alt_tick_fm, . ~ . - sex_male:sex_mature - cap_prop_night:weather_PC1 - weight
+)
+# summary(alt_tick_fm2)
+
+alt_tick_fm3 <- update(
+  alt_tick_fm2, . ~ . + siteClimatePC1
+)
+# summary(alt_tick_fm3)
+
+alt_tick_select <- alt_tick_fm3
+```
+
+```{r}
+alt_larv_fm <- glmer(
+  larvalTicksAttached ~ cap_prop_night*weather_PC1 + sex_male*sex_mature + weight + 
+    # res_PC1 + tol_PC1 + 
+    (1|siteID) + (1|tagID) + (1|year), 
+  data = Peros, family = "binomial"
+)
+# summary(alt_larv_fm)
+
+alt_larv_fm2 <- update(
+  alt_larv_fm, . ~ . - sex_male:sex_mature - cap_prop_night:weather_PC1 - weight
+)
+# summary(alt_larv_fm2)
+
+alt_larv_fm3 <- update(
+  alt_larv_fm2, . ~ . + siteClimatePC1
+)
+# summary(alt_larv_fm3)
+
+alt_larv_select <- alt_larv_fm3
+```
+
+```{r}
+alt_nymph_fm <- glmer(
+  nymphalTicksAttached ~ cap_prop_night*weather_PC1 + sex_male*sex_mature + weight + 
+    # res_PC1 + tol_PC1 + 
+    (1|siteID) + (1|tagID) + (1|year), 
+  data = Peros, family = "binomial"
+)
+# summary(alt_nymph_fm)
+
+alt_nymph_fm2 <- update(
+  alt_nymph_fm, . ~ . - sex_male*sex_mature - cap_prop_night:weather_PC1 - 
+    weight
+)
+# summary(alt_nymph_fm2)
+
+alt_nymph_select <- alt_nymph_fm2
+```
+
+
+```{r}
+alt_res_select <- res_select
+alt_tol_select <- tol_select
+```
+
+```{r}
+alt_infect_select <- infect_select
+```
+
+```{r}
+alt_infect_psem <- psem(
+  alt_infect_select,
+  alt_larv_select,
+  alt_nymph_select,
+  alt_res_select, 
+  alt_tol_select,
+  alt_captime_select
+)
+
+smry_alt_infect_psem <- run_cache(
+  summary(alt_infect_psem, conserve = TRUE),
+  file.path(cache_dir, "alternate_infection_PSEM.rds"),
+  force = FALSE
+)
+
+smry_alt_infect_psem
+```
+
+```{r}
+alt2_infect_select <- alt_infect_select %>% update(. ~ . + weather_PC1)
+
+alt2_nymph_select <- alt_nymph_select %>% 
+  update(
+    . ~ . + sex_mature + siteClimatePC1 + larvalTicksAttached + weight +
+      sex_male
+  )
+
+alt2_res_select <- alt_res_select %>% update(. ~ . + weather_PC1)
+
+alt2_tol_select <- alt_tol_select %>% update(. ~ . + res_PC1)
+
+alt_infect_psem2 <- psem(
+  alt2_infect_select,
+  alt_larv_select, # unchanged
+  alt2_nymph_select,
+  alt2_res_select, 
+  alt2_tol_select,
+  alt_captime_select # unchanged
+)
+
+# collect sample size of each sub-model
+model_n <- tribble(
+  ~"Response", ~"n",
+  "Bb_infected", nrow(alt2_infect_select@frame),
+  "larvalTicksAttached", nrow(alt_larv_select@frame),
+  "nymphalTicksAttached", nrow(alt2_nymph_select@frame),
+  "res_PC1", nrow(alt2_res_select@frame),
+  "tol_PC1", nrow(alt2_tol_select@frame),
+  "cap_prop_night", nrow(alt_captime_select@frame)
+) %>% ungroup()
+
+smry_alt_infect_psem2 <- run_cache(
+  summary(alt_infect_psem2, conserve = TRUE),
+  file.path(cache_dir, "alternate_infection_PSEM2.rds"),
+  force = FALSE
+)
+
+# smry_alt_infect_psem2
+
+smry_alt_infect_psem2$coefficients %>% data.frame() %>% 
+  rename("Sig" = "Var.9") %>% 
+  arrange(Predictor, P.Value, Response) %>% 
+  select(Predictor, Response, Estimate, P.Value)
+```
+
+The above model is a good fit according to Fischer's C goodness of fit test, which indicates that this model is *not* significantly different (P > 0.05) from the "ideal" model:
+
+```{r}
+smry_alt_infect_psem2$Cstat
+```
+
+and the individual component models all have reasonably high R-squared. Recall that the "Conditional" R-squared represents the variance explained by the entire mixed model structure (both fixed and random effects), whereas the "marginal" R-squared" represents the variation explained by the fixed effects only:
+
+```{r}
+smry_alt_infect_psem2$R2 %>% 
+  full_join(model_n, by = "Response") %>% 
+  select("Response", "n", "family", "Marginal", "Conditional") 
+```
+
+
+```{r fig.asp = 1}
+library(DiagrammeR)
+
+# Filter the coeficients to only significant paths:
+path_dat <- smry_alt_infect_psem2$coefficients %>% data.frame() %>% 
+  # filter(P.Value <= 0.1) %>% 
+  select(Response, Predictor, Std.Estimate, P.Value) 
+
+var_lookup <- 
+  tibble(
+    var = unique(c(path_dat$Response, path_dat$Predictor)),
+    short_name = c(
+      "infected", "larvae\nattached", "nymphs\nattached", "resistance", "tolerance", "capture\ntime", 
+      "weight", "weather", "sex", "mature", "climate", "sex:mature"
+    )
+  )
+
+path_dat <- path_dat %>% 
+  mutate(
+    Response = factor(Response, levels = var_lookup$var, labels = var_lookup$short_name),
+    Predictor = factor(Predictor, levels = var_lookup$var, labels = var_lookup$short_name),
+    path_color = case_when(
+      P.Value <= 0.05 ~ "black", 
+      P.Value <= 0.1 ~ "grey70",
+      .default = "grey70"
+    ),
+    path_linetype = if_else(P.Value <= 0.1, "solid", "dotted"),
+    path_penwidth = scales::rescale(Std.Estimate, to = c(1, 5)) %>% round(),
+    est_val = round(Std.Estimate, 2),
+    label = stringr::str_pad(est_val, 5)
+  )
+
+# Get names of each node
+path_nodes <- tibble(
+  node_name = var_lookup$short_name,
+  id = seq_len(length(node_name))
+) %>% 
+  mutate(
+    fillcolor = case_when(
+      node_name == "capture\ntime" ~ "cornflowerblue",
+      node_name == "resistance" ~ "forestgreen",
+      node_name == "tolerance" ~ "violet",
+      node_name == "infected" ~ "tomato",
+      node_name == "larvae\nattached" ~ "tan",
+      node_name == "nymphs\nattached" ~ "darkorange",
+      .default = "white"
+    ),
+  )
+```
+
+```{r}
+gph <- create_graph(attr_theme = "bt") %>% 
+  add_global_graph_attrs("layout", "dot", "graph") %>% 
+  # add_global_graph_attrs("rankdir", "LR", "graph") %>% 
+  add_nodes_from_table(path_nodes, label_col = node_name) %>% 
+  add_edges_from_table(
+    path_dat, from_col = Predictor, to_col = Response, from_to_map = label
+  ) %>% 
+  # node attributes
+  set_node_attrs(width, 1.2) %>%
+  # set_node_attrs(fixedsize, FALSE) %>% 
+  set_node_attrs(color, "black") %>% 
+  set_node_attrs(fontcolor, "black") %>% 
+  set_node_attrs(fillcolor, path_nodes$fillcolor) %>% 
+  set_node_attrs(fontsize, 15) %>% 
+  # edge attributes
+  set_edge_attrs(len, 1) %>% 
+  set_edge_attrs(color, "black") %>% 
+  set_edge_attrs(color, path_dat$path_color) %>% 
+  set_edge_attrs(style, path_dat$path_linetype) %>% 
+  set_edge_attrs(penwidth, path_dat$path_penwidth) %>% 
+  set_edge_attrs(label, path_dat$label) %>% 
+  set_edge_attrs(fontcolor, path_dat$path_color) %>% 
+  set_edge_attrs(fontsize, 15) %>% 
+  set_edge_attrs(tooltip, path_dat$est_val)
+
+{
+  set.seed(951)
+  render_graph(gph)
+  export_graph(gph, "infection-modeling/graphical-models/alt2_infect-PSEM.png")
+  }
+# DiagrammeR::create_edge_df()
+```
+
+##### Reverse paths from infection to expression
+
+```{r}
+# Reversed polarity model
+alt_infect_psem3 <- psem(
+  alt2_infect_select %>% update(. ~ . - tol_PC1 - res_PC1),
+  alt_larv_select, # unchanged
+  alt2_nymph_select,
+  alt2_res_select %>% update(. ~ . + Bb_infected), 
+  alt2_tol_select %>% update(. ~ . + Bb_infected),
+  alt_captime_select # unchanged
+)
+
+new_n <- sapply(
+  seq_len(length(alt_infect_psem3) - 1), 
+  FUN = function(i){
+    mod = alt_infect_psem3[[i]]
+    n = nrow(mod@frame)
+  }
+)
+
+smry_alt_infect_psem3 <- run_cache(
+  summary(alt_infect_psem3, conserve = TRUE),
+  file.path(cache_dir, "alternate_infection_PSEM3.rds"),
+  force = FALSE
+)
+
+# print coefficient table
+smry_alt_infect_psem3$coefficients %>% data.frame() %>% 
+  rename("Sig" = "Var.9") %>% 
+  arrange(Predictor, P.Value, Response) %>% 
+  select(Predictor, Response, Estimate, P.Value)
+```
+
+```{r}
+smry_alt_infect_psem3$R2 %>% 
+  full_join(
+    model_n %>% mutate(n = new_n),
+    by = "Response"
+  ) %>% 
+  select("Response", "n", "family", "Marginal", "Conditional") 
+```
+
+
+```{r fig.asp = 1}
+# Filter the coeficients to only significant paths:
+path_dat2 <- smry_alt_infect_psem3$coefficients %>% data.frame() %>% 
+  # filter(P.Value <= 0.1) %>% 
+  select(Response, Predictor, Std.Estimate, P.Value) 
+
+var_lookup2 <- 
+  tibble(
+    var = unique(c(path_dat2$Response, path_dat2$Predictor)),
+    short_name = c(
+      "infected", "larvae\nattached", "nymphs\nattached", "resistance", 
+      "tolerance", "capture\ntime", 
+      "weight", "weather", "sex", "mature", "climate", "sex:mature"
+    )
+  )
+
+#
+path_dat2 <- path_dat2 %>% 
+  mutate(
+    Response = factor(
+      Response, levels = var_lookup2$var, labels = var_lookup2$short_name
+    ),
+    Predictor = factor(
+      Predictor, levels = var_lookup2$var, labels = var_lookup2$short_name
+    ),
+    path_color = case_when(
+      P.Value <= 0.05 ~ "black", 
+      P.Value <= 0.1 ~ "grey70",
+      .default = "grey70"
+    ),
+    path_linetype = if_else(P.Value <= 0.1, "solid", "dotted"),
+    path_penwidth = scales::rescale(Std.Estimate, to = c(1, 5)) %>% round(),
+    est_val = round(Std.Estimate, 2),
+    label = stringr::str_pad(est_val, 5)
+  )
+
+# Get names of each node
+path_nodes2 <- tibble(
+  node_name = var_lookup2$short_name,
+  id = seq_len(length(node_name))
+) %>% 
+  mutate(
+    fillcolor = case_when(
+      node_name == "capture\ntime" ~ "cornflowerblue",
+      node_name == "resistance" ~ "forestgreen",
+      node_name == "tolerance" ~ "violet",
+      node_name == "infected" ~ "tomato",
+      node_name == "larvae\nattached" ~ "tan",
+      node_name == "nymphs\nattached" ~ "darkorange",
+      .default = "white"
+    ),
+  )
+```
+
+```{r}
+gph2 <- create_graph(attr_theme = "bt") %>% 
+  add_global_graph_attrs("layout", "dot", "graph") %>% 
+  # add_global_graph_attrs("rankdir", "LR", "graph") %>% 
+  add_nodes_from_table(path_nodes2, label_col = node_name) %>% 
+  add_edges_from_table(
+    path_dat2, from_col = Predictor, to_col = Response, from_to_map = label
+  ) %>% 
+  # node attributes
+  set_node_attrs(width, 1.2) %>%
+  # set_node_attrs(fixedsize, FALSE) %>% 
+  set_node_attrs(color, "black") %>% 
+  set_node_attrs(fontcolor, "black") %>% 
+  set_node_attrs(fillcolor, path_nodes2$fillcolor) %>% 
+  set_node_attrs(fontsize, 15) %>% 
+  # edge attributes
+  set_edge_attrs(len, 1) %>% 
+  set_edge_attrs(color, "black") %>% 
+  set_edge_attrs(color, path_dat2$path_color) %>% 
+  set_edge_attrs(style, path_dat2$path_linetype) %>% 
+  set_edge_attrs(penwidth, path_dat2$path_penwidth) %>% 
+  set_edge_attrs(label, path_dat2$label) %>% 
+  set_edge_attrs(fontcolor, path_dat2$path_color) %>% 
+  set_edge_attrs(fontsize, 15) %>% 
+  set_edge_attrs(tooltip, path_dat2$est_val)
+
+{
+  set.seed(951)
+  render_graph(gph2)
+  export_graph(gph2, "infection-modeling/graphical-models/alt3_infect-PSEM.png")
+  }
+# DiagrammeR::create_edge_df()
+```
+
+##### Mixed res-tol-infect 
+
+```{r}
+# Reversed polarity model
+alt_infect_psem4 <- psem(
+  alt2_infect_select %>% update(. ~ . - tol_PC1),
+  alt_larv_select, # unchanged
+  alt2_nymph_select,
+  alt2_res_select %>% update(. ~ .), 
+  alt2_tol_select %>% update(. ~ .+ Bb_infected),
+  alt_captime_select # unchanged
+)
+
+new_n <- sapply(
+  seq_len(length(alt_infect_psem4) - 1), 
+  FUN = function(i){
+    mod = alt_infect_psem4[[i]]
+    n = nrow(mod@frame)
+  }
+)
+
+smry_alt_infect_psem4 <- run_cache(
+  summary(alt_infect_psem4, conserve = TRUE),
+  file.path(cache_dir, "alternate_infection_PSEM4.rds"),
+  force = FALSE
+)
+
+# print coefficient table
+smry_alt_infect_psem4$coefficients %>% data.frame() %>% 
+  rename("Sig" = "Var.9") %>% 
+  arrange(Predictor, P.Value, Response) %>% 
+  select(Predictor, Response, Estimate, P.Value)
+```
+
+```{r}
+smry_alt_infect_psem4$R2 %>% 
+  full_join(
+    model_n %>% mutate(n = new_n),
+    by = "Response"
+  ) %>% 
+  select("Response", "n", "family", "Marginal", "Conditional") 
+```
+
+```{r fig.asp = 1}
+# Filter the coeficients to only significant paths:
+path_dat3 <- smry_alt_infect_psem4$coefficients %>% data.frame() %>% 
+  # filter(P.Value <= 0.1) %>% 
+  select(Response, Predictor, Std.Estimate, P.Value) 
+
+var_lookup3 <- 
+  tibble(
+    var = unique(c(path_dat3$Response, path_dat3$Predictor)),
+    short_name = c(
+      "infected", "larvae\nattached", "nymphs\nattached", "resistance", 
+      "tolerance", "capture\ntime", 
+      "weight", "weather", "sex", "mature", "climate", "sex:mature"
+    )
+  )
+
+#
+path_dat3 <- path_dat3 %>% 
+  mutate(
+    Response = factor(
+      Response, levels = var_lookup3$var, labels = var_lookup3$short_name
+    ),
+    Predictor = factor(
+      Predictor, levels = var_lookup3$var, labels = var_lookup3$short_name
+    ),
+    path_color = case_when(
+      P.Value <= 0.05 ~ "black", 
+      P.Value <= 0.1 ~ "grey70",
+      .default = "grey70"
+    ),
+    path_linetype = if_else(P.Value <= 0.1, "solid", "dotted"),
+    path_penwidth = scales::rescale(Std.Estimate, to = c(1, 5)) %>% round(),
+    est_val = round(Std.Estimate, 2),
+    label = stringr::str_pad(est_val, 5)
+  )
+
+# Get names of each node
+path_nodes3 <- tibble(
+  node_name = var_lookup3$short_name,
+  id = seq_len(length(node_name))
+) %>% 
+  mutate(
+    fillcolor = case_when(
+      node_name == "capture\ntime" ~ "cornflowerblue",
+      node_name == "resistance" ~ "forestgreen",
+      node_name == "tolerance" ~ "violet",
+      node_name == "infected" ~ "tomato",
+      node_name == "larvae\nattached" ~ "tan",
+      node_name == "nymphs\nattached" ~ "darkorange",
+      .default = "white"
+    ),
+  )
+```
+
+```{r}
+gph3 <- create_graph(attr_theme = "bt") %>% 
+  add_global_graph_attrs("layout", "dot", "graph") %>% 
+  # add_global_graph_attrs("rankdir", "LR", "graph") %>% 
+  add_nodes_from_table(path_nodes3, label_col = node_name) %>% 
+  add_edges_from_table(
+    path_dat3, from_col = Predictor, to_col = Response, from_to_map = label
+  ) %>% 
+  # node attributes
+  set_node_attrs(width, 1.2) %>%
+  # set_node_attrs(fixedsize, FALSE) %>% 
+  set_node_attrs(color, "black") %>% 
+  set_node_attrs(fontcolor, "black") %>% 
+  set_node_attrs(fillcolor, path_nodes3$fillcolor) %>% 
+  set_node_attrs(fontsize, 15) %>% 
+  # edge attributes
+  set_edge_attrs(len, 1) %>% 
+  set_edge_attrs(color, "black") %>% 
+  set_edge_attrs(color, path_dat3$path_color) %>% 
+  set_edge_attrs(style, path_dat3$path_linetype) %>% 
+  set_edge_attrs(penwidth, path_dat3$path_penwidth) %>% 
+  set_edge_attrs(label, path_dat3$label) %>% 
+  set_edge_attrs(fontcolor, path_dat3$path_color) %>% 
+  set_edge_attrs(fontsize, 15) %>% 
+  set_edge_attrs(tooltip, path_dat3$est_val)
+
+{
+  set.seed(951)
+  render_graph(gph3)
+  export_graph(gph3, "infection-modeling/graphical-models/alt4_infect-PSEM.png")
+  }
+# DiagrammeR::create_edge_df()
+```
+
+##### with Correlated errors
+
+```{r}
+tmp_dat <- Peros %>% 
+  select(one_of(c(var_lookup$var, "year", "siteID", "tagID"))) %>% 
+  filter(complete.cases(.))
+
+# Reversed polarity model
+alt_infect_psem_corr <- psem(
+  alt2_infect_select %>% update(data = tmp_dat),
+  alt_larv_select %>% update(data = tmp_dat), # unchanged
+  alt2_nymph_select %>% update(data = tmp_dat),
+  alt2_res_select %>% update(. ~ . - (1|tagID), data = tmp_dat), 
+  alt2_tol_select %>% update(. ~ . - res_PC1 + sex_mature - (1|tagID), data = tmp_dat),
+  alt_captime_select %>% update(data = tmp_dat), # unchanged
+  res_PC1 %~~% tol_PC1,
+  data = tmp_dat
+)
+
+new_n <- sapply(
+  seq_len(length(alt_infect_psem_corr) - 2), 
+  FUN = function(i){
+    mod = alt_infect_psem_corr[[i]]
+    n = nrow(mod@frame)
+  }
+)
+
+smry_alt_infect_psem_corr <- run_cache(
+  summary(alt_infect_psem_corr, conserve = TRUE),
+  file.path(cache_dir, "alternate_infection_PSEM-corr.rds"),
+  force = FALSE
+)
+
+# print coefficient table
+smry_alt_infect_psem_corr$coefficients %>% data.frame() %>% 
+  rename("Sig" = "Var.9") %>% 
+  arrange(Predictor, P.Value, Response) %>% 
+  select(Predictor, Response, Estimate, P.Value)
+```
+
+```{r}
+smry_alt_infect_psem_corr$R2 %>% 
+  full_join(
+    model_n %>% mutate(n = new_n),
+    by = "Response"
+  ) %>% 
+  select("Response", "n", "family", "Marginal", "Conditional") 
+```
+
+```{r fig.asp = 1}
+# Filter the coeficients to only significant paths:
+path_dat_corr <- smry_alt_infect_psem_corr$coefficients %>% data.frame() %>% 
+  # filter(P.Value <= 0.1) %>% 
+  select(Response, Predictor, Std.Estimate, P.Value) 
+
+var_lookup_corr <- 
+  tibble(
+    var = unique(c(path_dat_corr$Response, path_dat_corr$Predictor)),
+    short_name = c(
+      "infected", "larvae\nattached", "nymphs\nattached", "resistance", 
+      "tolerance", "capture\ntime", "resistance\nerror",
+      "weight", "weather", "sex", "mature", "climate", "sex:mature", "tolerance\nerror"
+    )
+  )
+
+#
+path_dat_corr <- path_dat_corr %>% 
+  mutate(
+    Response = factor(
+      Response, levels = var_lookup_corr$var, labels = var_lookup_corr$short_name
+    ),
+    Predictor = factor(
+      Predictor, levels = var_lookup_corr$var, labels = var_lookup_corr$short_name
+    ),
+    path_color = case_when(
+      P.Value <= 0.05 ~ "black", 
+      P.Value <= 0.1 ~ "grey70",
+      .default = "grey70"
+    ),
+    path_linetype = if_else(P.Value <= 0.1, "solid", "dotted"),
+    path_penwidth = scales::rescale(Std.Estimate, to = c(1, 5)) %>% round(),
+    est_val = round(Std.Estimate, 2),
+    label = stringr::str_pad(est_val, 5)
+  )
+
+# Get names of each node
+path_nodes_corr <- tibble(
+  node_name = var_lookup_corr$short_name,
+  id = seq_len(length(node_name))
+) %>% 
+  mutate(
+    fillcolor = case_when(
+      node_name == "capture\ntime" ~ "cornflowerblue",
+      node_name == "resistance" ~ "forestgreen",
+      node_name == "tolerance" ~ "violet",
+      node_name == "infected" ~ "tomato",
+      node_name == "larvae\nattached" ~ "tan",
+      node_name == "nymphs\nattached" ~ "darkorange",
+      grepl("error", node_name) ~ "grey80",
+      .default = "white"
+    ),
+  )
+```
+
+```{r}
+gph_corr <- create_graph(attr_theme = "bt") %>% 
+  add_global_graph_attrs("layout", "dot", "graph") %>% 
+  # add_global_graph_attrs("rankdir", "LR", "graph") %>% 
+  add_nodes_from_table(path_nodes_corr, label_col = node_name) %>% 
+  add_edges_from_table(
+    path_dat_corr, from_col = Predictor, to_col = Response, from_to_map = label
+  ) %>% 
+  # node attributes
+  set_node_attrs(width, 1.2) %>%
+  # set_node_attrs(fixedsize, FALSE) %>% 
+  set_node_attrs(color, "black") %>% 
+  set_node_attrs(fontcolor, "black") %>% 
+  set_node_attrs(fillcolor, path_nodes_corr$fillcolor) %>% 
+  set_node_attrs(fontsize, 15) %>% 
+  # edge attributes
+  set_edge_attrs(len, 1) %>% 
+  set_edge_attrs(color, "black") %>% 
+  set_edge_attrs(color, path_dat_corr$path_color) %>% 
+  set_edge_attrs(style, path_dat_corr$path_linetype) %>% 
+  set_edge_attrs(penwidth, path_dat_corr$path_penwidth) %>% 
+  set_edge_attrs(label, path_dat_corr$label) %>% 
+  set_edge_attrs(fontcolor, path_dat_corr$path_color) %>% 
+  set_edge_attrs(fontsize, 15) %>% 
+  set_edge_attrs(tooltip, path_dat_corr$est_val)
+
+{
+  set.seed(951)
+  render_graph(gph_corr)
+  export_graph(gph_corr, "infection-modeling/graphical-models/alt-corr_infect-PSEM.png")
+  }
+# DiagrammeR::create_edge_df()
+```
+
+
+##### Add samples for NEON infection
+
+```{r tickborne-data}
+# read the NEON tick-borne pathogen product object
+pathogen_prods <- readRDS(
+  file.path("neon-data/data/eight_sites", "rodent-tickborne-pathogen-status.rds")
+)
+
+# extract the main pathogen testing table
+pathogens <- pathogen_prods$rpt2_pathogentesting %>% tibble() %>% 
+  filter(grepl("burgdorferi", testPathogenName, TRUE)) %>% 
+  mutate(
+    year = year(.data$collectDate),
+    sample_method = dplyr::case_when(
+      grepl(".*\\.E$", sampleID) ~ "ear",
+      grepl(".*\\.B$", sampleID) ~ "blood",
+      .default = NA
+    ),
+    NEON_Bb_infected = case_when(
+      testResult == "Positive" ~ 1,
+      testResult == "Negative" ~ 0,
+      .default = NA
+    )
+  ) %>% 
+  select(
+    pathTestUid = uid, sampleID, sample_method, testPathogenName, NEON_Bb_infected
+  )
+```
+
+```{r match_pathogen_mammal}
+
+blood_samps <- Peros %>% 
+  select(uid, bloodSampleID) %>% 
+  filter(complete.cases(.)) %>% 
+  distinct() %>% 
+  right_join(pathogens, by = c("bloodSampleID" = "sampleID"))
+
+ear_samps <- Peros %>% 
+  select(uid, earSampleID) %>% 
+  filter(complete.cases(.)) %>% 
+  distinct() %>% 
+  right_join(pathogens, by = c("earSampleID" = "sampleID"))
+
+NEON_infected <- bind_rows(
+  blood_samps %>% 
+    select(uid, sample_method, NEON_Bb_infected),
+  ear_samps %>% 
+    select(uid, sample_method, NEON_Bb_infected),
+) %>% 
+  group_by(uid) %>% 
+  summarize(NEON_Bb_infected = as.numeric(any(NEON_Bb_infected == 1)))
+
+# Add in the infection
+alt_Peros <- Peros %>% 
+  left_join(NEON_infected, by = "uid") %>% 
+  mutate(
+    Bb_infected_both = case_when(
+      Bb_infected == 1 | NEON_Bb_infected == 1 ~ 1,
+      Bb_infected == 0 ~ 0, 
+      .default = NA
+    )
+  )
+
+long_Peros <- alt_Peros %>% 
+  pivot_longer(cols = c(Bb_infected, NEON_Bb_infected), names_to = "test_method", values_to = "Bb_infected")
+```
+
+
+```{r}
+alt_Peros %>% 
+  filter(is.finite(Bb_infected_both)) %>% 
+  select(NEON_Bb_infected, one_of(c(var_lookup$var, "year", "siteID", "tagID")))
+
+alt_Peros %>% 
+  filter(NEON_Bb_infected == 1) %>% 
+  select(NEON_Bb_infected, res_PC1, tol_PC1, cap_prop_night)
+```
+
+
+```{r}
+alt_tmp_dat <- alt_Peros %>% 
+  select(one_of(c(var_lookup$var, "year", "siteID", "tagID")), Bb_infected_both, -Bb_infected) %>% 
+  filter(complete.cases(.))
+
+nrow(tmp_dat)
+nrow(alt_tmp_dat)
+
+# # Reversed polarity model
+# alt_infect_psem_corr <- psem(
+#   alt2_infect_select %>% update(data = tmp_dat),
+#   alt_larv_select %>% update(data = tmp_dat), # unchanged
+#   alt2_nymph_select %>% update(data = tmp_dat),
+#   alt2_res_select %>% update(. ~ . - (1|tagID), data = tmp_dat), 
+#   alt2_tol_select %>% update(. ~ . - res_PC1 + sex_mature - (1|tagID), data = tmp_dat),
+#   alt_captime_select %>% update(data = tmp_dat), # unchanged
+#   res_PC1 %~~% tol_PC1,
+#   data = tmp_dat
+# )
+# 
+# new_n <- sapply(
+#   seq_len(length(alt_infect_psem_corr) - 2), 
+#   FUN = function(i){
+#     mod = alt_infect_psem_corr[[i]]
+#     n = nrow(mod@frame)
+#   }
+# )
+# 
+# smry_alt_infect_psem_corr <- run_cache(
+#   summary(alt_infect_psem_corr, conserve = TRUE),
+#   file.path(cache_dir, "alternate_infection_PSEM-corr.rds"),
+#   force = FALSE
+# )
+# 
+# # print coefficient table
+# smry_alt_infect_psem_corr$coefficients %>% data.frame() %>% 
+#   rename("Sig" = "Var.9") %>% 
+#   arrange(Predictor, P.Value, Response) %>% 
+#   select(Predictor, Response, Estimate, P.Value)
+```
+
+
+
+##### Remove "singular" random effects
+
+```{r}
+# alt_infect_psem3 <- psem(
+#   alt_infect_select %>% update(. ~ . + weather_PC1),
+#   alt_larv_select,
+#   alt_nymph_select %>% 
+#     update(. ~ . + sex_mature + siteClimatePC1 + larvalTicksAttached + weight),
+#   alt_res_select %>% update(. ~ . + weather_PC1), 
+#   alt_tol_select %>% update(. ~ . + res_PC1),
+#   alt_captime_select
+# )
+```
+
+
+##### Calculate differnet paths per year
+
+TBD
+
+##### Calculate different paths per PELE/PEMA
+
+TBD
+
+#### Seperate Models for resistance and tolerance
+
+TBD
+```{r}
+tol_psem <- psem(
+  alt2_infect_select %>% update(. ~ . - tol_PC1 - res_PC1),
+  alt_larv_select, # unchanged
+  alt2_nymph_select,
+  # alt2_res_select %>% update(. ~ . + Bb_infected), 
+  alt2_tol_select %>% update(. ~ . + Bb_infected - res_PC1),
+  alt_captime_select # unchanged
+)
+
+new_n <- sapply(
+  seq_len(length(tol_psem) - 1), 
+  FUN = function(i){
+    mod = tol_psem[[i]]
+    n = nrow(mod@frame)
+  }
+)
+
+smry_tol_psem <- run_cache(
+  summary(tol_psem, conserve = TRUE),
+  file.path(cache_dir, "tolerance-PSEM.rds"),
+  force = FALSE
+)
+
+smry_tol_psem
+```
 
 #### model X
 
@@ -2139,6 +3152,93 @@ alt_psem_smry$coefficients %>% knitr::kable(digits = 2)
 alt_psem_smry$dTable
 ```
 
+## Infection models (revisted)
+
+```{r}
+coefs(alt_infect_select)
+
+status_fm <- glmer(
+  Bb_infected ~ sex_male*sex_mature + weight + cap_prop_night + larvalTicksAttached + 
+    nymphalTicksAttached + weather_PC1 + siteClimatePC1 + res_PC1 + tol_PC1 +
+    (1|siteID) + (1|tagID) + (1|year), 
+  family = "binomial", data = Peros
+)
+summary(status_fm)
+
+status_fm2 <- status_fm %>% 
+  update(
+    . ~ . - sex_male:sex_mature - cap_prop_night - siteClimatePC1 -
+      sex_male - res_PC1 - nymphalTicksAttached - (1|tagID) - tol_PC1
+  )
+
+summary(status_fm2)
+
+performance::r2(status_fm2)
+```
+
+```{r}
+burden_fm <- lmer(
+  Bb_burden ~ sex_male*sex_mature + weight + cap_prop_night + larvalTicksAttached + 
+    nymphalTicksAttached + weather_PC1 + siteClimatePC1 + res_PC1 + tol_PC1 +
+    (1|siteID) + (1|year), 
+  data = Peros %>% filter(Bb_infected == 1)
+)
+summary(burden_fm)
+
+# burden_fm2 <- update(
+#   burden_fm, . ~ . - sex_male*sex_mature - cap_prop_night - 
+#     weather_PC1 - siteClimatePC1 -
+#     # res_PC1 - tol_PC1
+#     nymphalTicksAttached - larvalTicksAttached - (1|year)
+# )
+# summary(burden_fm2)
+
+lburden_fm <- update(
+  burden_fm, 
+  log(Bb_burden) ~ . - (1|year)
+)
+summary(lburden_fm)
+
+performance::r2(lburden_fm)
+```
+
+```{r}
+gburden_fm <- glmer(
+  Bb_burden ~ sex_male*sex_mature + weight + cap_prop_night + larvalTicksAttached + 
+    nymphalTicksAttached + weather_PC1 + siteClimatePC1 + res_PC1 + tol_PC1 +
+    (1|siteID) + (1|year), 
+  data = Peros %>% filter(Bb_infected == 1),
+  family = Gamma(link = "log"), control = glmerControl(optimizer = "bobyqa")
+)
+summary(gburden_fm)
+
+gburden_fm2 <- update(
+    gburden_fm, 
+    . ~ . - weather_PC1 - nymphalTicksAttached - siteClimatePC1 - (1|year) -
+      cap_prop_night - weight - res_PC1 - tol_PC1
+  )
+summary(gburden_fm2)
+
+performance::r2(gburden_fm2)
+```
+
+```{r}
+alt_res_select %>% 
+  update(
+    . ~ . + log(Bb_burden + 1) - (1|tagID) - (1|year), 
+    data = Peros %>% filter(Bb_infected == 1)
+  ) %>% 
+  summary()
+
+alt_tol_select %>% 
+  update(
+    . ~ . + log(Bb_burden + 1) - (1|tagID) - (1|year),
+    data = Peros %>% filter(Bb_infected == 1)
+  ) %>% 
+  summary()
+```
+
+
 ## Question: What coverage do we have for recaptures within a capture event?
 
 In total there are nearly 8000 individual *Peromyscus* individuals that were
@@ -2169,7 +3269,7 @@ recaps %>%
     title = "All recaptured Peromyscus"
   ) + 
   theme_bw()
- 
+
 # total individuals 
 recaps %>% 
   filter(taxonID %in% c("PELE", "PEMA", "PELEPEMA")) %>% 
@@ -2355,8 +3455,6 @@ factor that strongly predicts whether a recapture has a tick is if the
 initial capture had a tick:
 
 ```{r, echo = TRUE}
-library(lmerTest)  
-
 tick_time_fm <- glmer(
   attachStatus ~ cap_time_change * initial_status + 
     (1|year) + (1|siteID) + (1|eventID) + (1|tagID),
@@ -2389,7 +3487,7 @@ upd <- update(
       attachStatus = as.numeric(attachStatus),
       initial_status = as.numeric(initial_status)
     ) 
-  )
+)
 
 car::Anova(upd)
 ```

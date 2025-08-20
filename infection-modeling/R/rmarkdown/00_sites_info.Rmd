@@ -1,0 +1,17 @@
+---
+params:
+  force: FALSE
+  cache_dir: "infection-modeling/R/rmarkdown/cache/resistance-tolerance"
+---
+
+# Neon Sites
+
+Our work at NEON primarily took place at the eight sites shown below:
+
+```{r, out.width="100%", fig.width=6.5}
+knitr::include_graphics(
+  path = R.utils::getAbsolutePath(
+    "infection-modeling/graphics/eight_NEON_sites_map.jpg"
+  ), rel_path = FALSE, error = FALSE
+)
+```

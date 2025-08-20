@@ -1,19 +1,50 @@
 ---
-title: "*Borrelia* infection of *Peromyscus*"
+title: "*Borrelia* Competence in *Peromyscus*"
 subtitle: "A NEON data project"
 author: "Clay J. Morrow"
 site: "bookdown::bookdown_site"
-output: 
-  bookdown::gitbook:
-    number_sections: true
-    config:
-      toc:
-        collapse: section
+output:
+ bookdown::gitbook:
+   number_sections: true
+   config:
+     toc:
+       collapse: section
+params:
+  run_scripts: FALSE
+  force: FALSE
+  cache_dir: "infection-modeling/R/rmarkdown/cache/resistance-tolerance"
 ---
 
-# NEON peromyscus analysis projects {-}
+```{r knit_setup, include=FALSE}
+# These knitr settings are carried through the full book.
+knitr::opts_chunk$set(
+  echo = FALSE, warning = FALSE, message = FALSE, error = FALSE
+)
+```
 
-This site documents the analysis of the NEON *Peromyscus* project. Use the side
-bar to navigate.
+```{r,  include=FALSE, warning=FALSE}
+if (params$run_scripts){
+  # run all the scripts for this project
+  source("infection-modeling/R/scripts/00_map-sites.R")
+  source("infection-modeling/R/scripts/01_prepare-mammal-data.R")
+  source("infection-modeling/R/scripts/01-2_prepare-Peromyscus-data.R")
+  source("infection-modeling/R/scripts/02_clean-immune-data.R")
+  source("infection-modeling/R/scripts/03_summarize-weather.R") # gives warnings
+  source("infection-modeling/R/scripts/04_quantify-behavior.R") # makes plots
+  source("infection-modeling/R/scripts/05_prepare-model-data.R")
+  
+  # Model fits
+  source("infection-modeling/R/scripts/06-2_fit-models_complete-cases.R")
+  # source("infection-modeling/R/scripts/06_fit-models.R")
+  
+  # remove the incidental objects from memory
+  rm(list = ls())
+  gc()
+}
+```
 
-I will update this main page at a later date.
+
+# Introduction:
+
+This document tracks modeling the *Borrelia burgdorferi* disease competence of 
+*Peromyscus* mice at NEON.

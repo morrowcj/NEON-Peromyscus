@@ -1,0 +1,27 @@
+---
+params: 
+  force: FALSE
+  cache_dir: "infection-modeling/R/rmarkdown/cache/resistance-tolerance"
+---
+
+# Behavior
+
+```{r}
+library(tidyverse)
+```
+
+This page is under construction
+
+## Capture timing
+
+## Recapture dynamics
+
+* trap diversity
+
+* average trap distances
+
+* "trapability" 
+
+* recapture timing shifts (extra)
+
+## Tick contact
