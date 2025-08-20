@@ -8,6 +8,7 @@ rmd_files:
   - "infection-modeling/R/rmarkdown/02_weather.Rmd"
   - "infection-modeling/R/rmarkdown/03_behavior.Rmd"
   - "infection-modeling/R/rmarkdown/04_infection-and-gene-expression.Rmd"
+  - "infection-modeling/R/rmarkdown/05_individuals.Rmd"
   - "infection-modeling/R/rmarkdown/06-2_small-SEMs.Rmd"
   # - "infection-modeling/R/rmarkdown/resistance-tolerance.Rmd"
 output_dir: "docs"
