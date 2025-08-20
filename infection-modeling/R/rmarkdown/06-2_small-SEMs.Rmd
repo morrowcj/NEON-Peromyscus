@@ -18,7 +18,7 @@ explanatory model because it does not draw conclusions beyond the scope of its
 data. Models using more of the data will be explored in the next section.
 
 While this model is very interesting, one of the primary paths of interest
-is not significant (behavior -> ticks -> burden -> resistance). It is possible
+is not significant (behavior -> ticks -> resistance -> burden -> tolerance). It is possible
 that the "behavior -> ticks" path is improved by a model which is not limited
 by the completeness restriction. Table \@ref(tab:smallSelSEMr2) summarizes the
 fit (r^2) of each of the component models.
