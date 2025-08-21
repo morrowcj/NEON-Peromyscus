@@ -3,7 +3,7 @@ book_filename: "neon-peromyscus.Rmd"
 rmd_files:
   html: 
   - "index.Rmd"
-  - "infection-modeling/R/rmarkdown/00_sites_info.Rmd"
+  - "infection-modeling/R/rmarkdown/00_sites-and-data-info.Rmd"
   - "infection-modeling/R/rmarkdown/01_immunity.Rmd"
   - "infection-modeling/R/rmarkdown/02_weather.Rmd"
   - "infection-modeling/R/rmarkdown/03_behavior.Rmd"

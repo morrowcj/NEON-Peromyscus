@@ -1,0 +1,11 @@
+---
+params: 
+  force: FALSE
+  cache_dir: "infection-modeling/R/rmarkdown/cache/resistance-tolerance"
+---
+
+# Individual designations
+
+*This page is under construction.*
+
+This page will explore how individuals are identified from the NEON data

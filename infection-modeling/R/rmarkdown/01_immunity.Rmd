@@ -25,6 +25,8 @@ immunity <- readRDS("infection-modeling/data/immune-data.rds")
 ipca_list <- readRDS("infection-modeling/data/immune-PCA.rds")
 ```
 
+In addition to the NEON
+
 ## Genetic correlations
 
 First, let's look at how the genetic traits are correlated with each other. 

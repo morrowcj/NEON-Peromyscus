@@ -91,3 +91,20 @@ mod$R2 %>%
   )
 ```
 
+## Next steps
+
+* How to include infection and burden? Two models? hurdle-style approach? 
+binning burden?
+
+* sub-modules with more observations!
+
+* Prediction: how can the expression module (smaller data) inform the larger 
+things
+
+  - can we map expression to something else? Proxy variables for expression.
+  
+  - use 200 mice to fine tune estimation
+  
+* **leucopus** vs **maniculatus**
+
+* Maybe look at proposal for machine learning hanta virus / disease?

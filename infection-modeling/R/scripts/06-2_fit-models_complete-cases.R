@@ -561,6 +561,12 @@ sem_sel <- psem(
 )
 sel_smry <- summary(sem_sel)
 
+sel_smry$coefficients %>% 
+  data.frame() %>% 
+  select(Response, Predictor, Std.Estimate, P.Value, Var.9)
+
+sel_smry$R2
+
 # save it 
 saveRDS(
   sel_smry, 

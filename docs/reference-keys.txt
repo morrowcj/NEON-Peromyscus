@@ -1,3 +1,6 @@
+fig:sitesMap
+tab:speciesIndividuals
+tab:mamTraitsSub
 fig:genCorPlot
 fig:genPCPlot
 tab:genPCImport
@@ -11,17 +14,3 @@ tab:infectMethodSamps
 fig:exprOrthog
 fig:smallSelectSEM
 tab:smallSelSEMr2
-introduction
-neon-sites
-immunity
-genetic-correlations
-pca
-climate-and-weather
-behavior
-capture-timing
-recapture-dynamics
-tick-contact
-infection-and-gene-expression
-infection
-resistance-tolerance
-complete-data-sem

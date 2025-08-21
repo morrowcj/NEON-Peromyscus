@@ -4,11 +4,12 @@
 ## the "params" get passed through to all RMD files
 bookdown::render_book(
   input = "index.Rmd", config_file = "_bookdown.yml", 
+  new_session = FALSE, # I think this could be set to TRUE
   params = list(
     run_scripts = FALSE,
     force = TRUE, 
     cache_dir = "infection-modeling/R/rmarkdown/cache/resistance-tolerance"
-  )
+  ), 
 )
 
 ## Options for the output of the book are split between the YAML header of the

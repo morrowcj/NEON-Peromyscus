@@ -1,0 +1,175 @@
+---
+params:
+  force: FALSE
+  cache_dir: "infection-modeling/R/rmarkdown/cache/resistance-tolerance"
+---
+
+# Neon sites and data overview
+
+This project utilizes the US National Ecological 
+Observatory Network ([NEON](https://www.neonscience.org/)), which collects data
+about various ecological features and systems. The system that we are primarily
+interested in, *Peromyscus* mice and tick-borne disease, is covered by NEON's 
+[small mammal](https://data.neonscience.org/data-products/DP1.10072.001) 
+trapping network.
+
+## Site locations
+
+Our work focused primarily on eight sites shown by Figure \@ref(fig:sitesMap) 
+from 2022 to 2024. Information about the sites can be found on NEON's 
+[Field Sites](https://www.neonscience.org/field-sites/explore-field-sites)
+web page.
+
+```{r sitesMap, out.width="100%", fig.width=6.5, fig.cap=caption}
+knitr::include_graphics(
+  path = R.utils::getAbsolutePath(
+    "infection-modeling/graphics/eight_NEON_sites_map.jpg"
+  ), rel_path = FALSE, error = FALSE
+)
+
+caption = paste(
+  "Upper northeast terrestrial NEON site locations used for this project."
+)
+```
+
+## Small mammal data
+
+```{r}
+# mammal data
+mammals <- readRDS("infection-modeling/data/mammal-data.rds")
+# peromyscus data
+Peros <- readRDS("infection-modeling/data/peromyscus-data.rds")
+```
+
+
+```{r get_obs_stats}
+# observations and individuals (total)
+nobs <- mammals %>% filter(!is.na(taxonID)) %>% nrow()
+nind <- mammals %>% pull(iid) %>% unique() %>% length()
+# observations and individuals (2022-2024)
+tnobs <- mammals %>% filter(!is.na(taxonID), year %in% 2022:2024) %>% nrow()
+tnind <- mammals %>% filter(year %in% 2022:2024) %>% 
+  pull(iid) %>% unique() %>% length()
+# Peromyscus observations and individuals
+perobs <- Peros %>% 
+  filter(
+    year %in% 2022:2024
+  ) %>% nrow()
+perind <- Peros %>% 
+  filter(
+    year %in% 2022:2024
+  ) %>% 
+  pull(iid) %>% unique() %>% length()
+
+spec_inds <- mammals %>% 
+  filter(!is.na(scientificName)) %>% 
+  mutate(
+    all_time = TRUE,
+    now = year %in% 2022:2024
+  ) %>% 
+  group_by(scientificName, all_time) %>% 
+  mutate(all_ind = length(unique(iid))) %>% 
+  group_by(scientificName, now) %>% 
+  mutate(now_ind = length(unique(iid))) %>% 
+  select(scientificName, all_time, now, all_ind, now_ind) %>% 
+  distinct() %>% 
+  mutate(keep = now | (all_ind == now_ind)) %>% 
+  filter(keep) %>% ungroup() %>% 
+  select(-c(all_time, now, keep))
+
+nspec <- nrow(spec_inds)
+```
+
+Through their capture efforts at these sites, NEON has made 
+`r prettyNum(nobs, ",")` small mammal observations from 
+`r prettyNum(nspec, ",")` species and `r prettyNum(nind, ",")` unique 
+individuals since its inception (Table \@ref(tab:speciesIndividuals)). 
+From 2022 to 2024, they made `r prettyNum(tnobs, ",")` observations of 
+`r prettyNum(tnind, ",")` individuals, `r prettyNum(perind, ",")` of which 
+are either *Peromyscus maniculatus* or *Peromyscus leucopus*. NEON collects 
+information about each individual mouse it catches. Some key traits used by 
+this project are body size, sex, maturity, reproductive 
+status (Table \@ref(tab:mamTraitsSub)).
+
+<br>
+```{r speciesIndividuals}
+spec_inds %>% arrange(desc(all_ind)) %>% 
+  knitr::kable(
+    digits = 2,
+    col.names = c("Species", "all time", "2022-2024"),
+    caption = paste(
+      "Approximate counts of individuals^[Individuals were sometimes",
+      "labeled as multiple species across their capture record",
+      "and double-counted by this table. The totals given in the text",
+      "above are accurate.]",
+      "from each species^[There are occasional misidentifications.]",
+      "captured by NEON from its",
+      "full duration and from our focal time window (2022 - 2024)."
+    )
+  )
+```
+
+<br>
+```{r mamTraitsSub}
+set.seed(119977)
+Peros %>% 
+  filter(
+    year %in% 2022:2024,
+    !is.na(sex), sex != "U",
+    !is.na(weight), !is.na(tailLength), #!is.na(totalLength),
+    !is.na(testes) | testes == "unknown" | !is.na(vagina) | vagina == "unknown",
+    !is.na(lifeStage), 
+    sex_male != 0.5
+  ) %>% 
+  mutate(
+    obs = as.numeric(factor(uid)),
+    sex = factor(sex_male, levels = c(0, 1), labels = c("F", "M"))
+  ) %>% 
+  select(
+    obs, ind = iid, date, age = lifeStage, sex, weight, tail = tailLength,  
+    testes, vagina
+  ) %>% 
+  sample_n(10) %>% 
+  arrange(obs) %>% 
+  knitr::kable(
+    caption = paste(
+      "Ten random small mammal observations subset.",
+      "Columns correspond to observation ID,",
+      "individual ID, capture data, life stage, sex, weight (g),",
+      "tail length (mm), testes status (scrotal/nonscrotal),",
+      "vagina condition (swollen or plugged)."
+    )
+  )
+set.seed(NULL) # unset seed
+```
+
+## Other data
+
+In addition to the 
+[small mammal](https://data.neonscience.org/data-products/DP1.10072.001) 
+data product, we also use other NEON-collected data including
+
+* [temperature](https://data.neonscience.org/data-products/DP1.00003.001),
+
+* [precipitation](https://data.neonscience.org/data-products/DP1.00006.001),
+and 
+
+* [humidity](https://data.neonscience.org/data-products/DP1.00098.001) from
+NEON's weather stations; as well as 
+
+* tick-borne 
+[pathogen status](https://data.neonscience.org/data-products/DP1.10064.002).
+
+Further, our working group collected supplemental data in 2022-2024 including
+
+* Times at which individuals were captured, which is indicative of their 
+activity/behavior; 
+
+* Refined estimates of *Borrelia* infection, which are utilize a detection
+method that is more sensitive than those used by NEON, including quantitative
+pathogen burden; and
+
+* Expression of five key genes, thought to be important for resistance to and
+tolerance of *Borrelia* infection.
+
+Much of this data will be explored in later sections.

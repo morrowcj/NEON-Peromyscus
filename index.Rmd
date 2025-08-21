@@ -5,7 +5,7 @@ author: "Clay J. Morrow"
 site: "bookdown::bookdown_site"
 output:
  bookdown::gitbook:
-   number_sections: true
+   number_sections: false
    config:
      toc:
        collapse: section
