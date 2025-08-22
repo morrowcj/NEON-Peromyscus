@@ -1,8 +1,7 @@
----
-params:
-  force: FALSE
-  cache_dir: "infection-modeling/R/rmarkdown/cache/resistance-tolerance"
----
+```{r}
+library(tidyverse)
+```
+
 
 # Neon sites and data overview
 
@@ -169,7 +168,7 @@ activity/behavior;
 method that is more sensitive than those used by NEON, including quantitative
 pathogen burden; and
 
-* Expression of five key genes, thought to be important for resistance to and
+* Expression of six key genes, thought to be important for resistance to and
 tolerance of *Borrelia* infection.
 
 Much of this data will be explored in later sections.

@@ -1,7 +1,7 @@
 ---
-title: "*Borrelia* Competence in *Peromyscus*"
+title: "*Borrelia* Competence of *Peromyscus*"
 subtitle: "A NEON data project"
-author: "Clay J. Morrow"
+# author: "Clay J. Morrow"
 site: "bookdown::bookdown_site"
 output:
  bookdown::gitbook:
@@ -18,7 +18,8 @@ params:
 ```{r knit_setup, include=FALSE}
 # These knitr settings are carried through the full book.
 knitr::opts_chunk$set(
-  echo = FALSE, warning = FALSE, message = FALSE, error = FALSE
+  echo = FALSE, warning = FALSE, message = FALSE, error = FALSE,
+  out.width = "80%"
 )
 ```
 
@@ -46,5 +47,17 @@ if (params$run_scripts){
 
 # Introduction:
 
-This document tracks modeling the *Borrelia burgdorferi* disease competence of 
-*Peromyscus* mice at NEON.
+This site follows the analyses of data from the *Borrelia* Competence of 
+*Peromyscus* project. The project is a collaboration between 
+University of Wisconsin - Madison (UW) and the University of South Florida
+(USF). The primary goal of the project is to explain and disease competence
+of *Peromyscus* mice regarding the *Borrelia burgdorferi* pathogen within the
+NEON ecology network. The following sections explain the data (briefly), our
+analytical decisions, and results of the analyses. 
+
+Use the arrows at the bottom (or sides) of each page move to the next 
+section, or use the side bar to jump to a specific section. 
+
+**Note** that this project is a work-in-progress, so some pages may not be 
+complete. Check back periodically for updates.
+

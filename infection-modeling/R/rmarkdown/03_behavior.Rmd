@@ -1,18 +1,91 @@
----
-params: 
-  force: FALSE
-  cache_dir: "infection-modeling/R/rmarkdown/cache/resistance-tolerance"
----
-
-# Behavior
-
 ```{r}
 library(tidyverse)
 ```
 
-This page is under construction
+# Behavior
 
-## Capture timing
+Individual behavior of an individual is expected to be associated with disease 
+dynamics in a number of ways. The timing and location of movements can 
+influences exposure to pathogens and how an individual chooses to expend 
+energy can influence its ability to fight off infection. We chose to assess 4 
+metrics of behavior for this project: 1) Activity timing, 2) range size,
+3) exploration, and 4) learning
+
+## Activity timing
+
+From 2022 - 2024, our group added ibutton temperature sensor pairs to all traps 
+at one of each plots within the eight NEON sites of interest. These sensors,
+which log temperatures every five minutes, allowed us to estimate the time
+at which an individual entered a 
+trap^[**Citation to original Orrock paper needed**] and, thus, the time at
+which the individual is active. This technique works because when an individual 
+is inside a trap, the air inside increases above the ambient air. 
+Figure \@ref(fig:ibutCapTimeExamp) shows an example of these data. For most
+analyses, capture time is presented as the fraction of the night 
+(sunset to sunrise) that had elapsed when the capture occurred. This 
+relative capture time scaling allows for more equitable comparisons 
+across latitudinal gradients and photoperiods 
+(Figure \@ref(fig:capTimeByLat)).
+
+Figure \@ref(fig:capTimeOverlap) shows the distribution of those relative
+capture times for *Peromyscus*, how they differ across sites and through time.
+
+```{r ibutCapTimeExamp, fig.cap=caption}
+knitr::include_graphics(
+  path = R.utils::getAbsolutePath(
+    paste0(
+      "activity-timing/graphics/trapping-bout_temperature-data/",
+      "capture-paired-temperatures_UNDE_2.jpg"
+    )
+  ), rel_path = FALSE, error = FALSE
+)
+
+caption = paste(
+  "Capture time estimate example: ibutton data (green and blue lines)",
+  "from a three-day trapping event at plot #2 from the UNDE NEON site in 2024.",
+  "The dotted vertical lines correspond to the algorithmically-derived estimate",
+  "of the time an individual entered the trap. Purple rectangles correspond to",
+  "the segment of time during which the temperature difference between",
+  "inner and outer buttons is above the trigger threshold (1°C).",
+  "No data are shown for trapnights in which there was no capture."
+)
+```
+```{r capTimeByLat, out.width="35%", fig.cap=caption}
+knitr::include_graphics(
+  path = R.utils::getAbsolutePath(
+    paste0(
+      "activity-timing/graphics/capture-time-exploration/",
+      "captime-by-latitude.jpg"
+    )
+  ), rel_path = FALSE, error = FALSE
+)
+
+caption = paste(
+  "Linear relationship between relative capture time (y) and latitude (x)."
+)
+```
+
+```{r capTimeOverlap, fig.cap=caption}
+knitr::include_graphics(
+  path = R.utils::getAbsolutePath(
+    paste0(
+      "activity-timing/graphics/capture-time-exploration/",
+      "capture-overlap_site-by-year.jpg"
+    )
+  ), rel_path = FALSE, error = FALSE
+)
+
+caption = paste(
+  "*Peromyscus* relative capture time density distributions across eight NEON",
+  "sites over three years."
+)
+```
+
+## Range Size
+
+## Exploration
+
+## Learning
 
 ## Recapture dynamics
 

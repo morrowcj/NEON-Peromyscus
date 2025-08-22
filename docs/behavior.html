@@ -4,23 +4,22 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Behavior | Borrelia Competence in Peromyscus</title>
-  <meta name="description" content="Behavior | Borrelia Competence in Peromyscus" />
+  <title>Behavior | Borrelia Competence of Peromyscus</title>
+  <meta name="description" content="Behavior | Borrelia Competence of Peromyscus" />
   <meta name="generator" content="bookdown 0.43 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Behavior | Borrelia Competence in Peromyscus" />
+  <meta property="og:title" content="Behavior | Borrelia Competence of Peromyscus" />
   <meta property="og:type" content="book" />
   
   
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Behavior | Borrelia Competence in Peromyscus" />
+  <meta name="twitter:title" content="Behavior | Borrelia Competence of Peromyscus" />
   
   
   
 
-<meta name="author" content="Clay J. Morrow" />
 
 
 
@@ -91,7 +90,10 @@
 <li class="chapter" data-level="" data-path="climate-and-weather.html"><a href="climate-and-weather.html"><i class="fa fa-check"></i>Climate and Weather</a></li>
 <li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html"><i class="fa fa-check"></i>Behavior</a>
 <ul>
-<li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#capture-timing"><i class="fa fa-check"></i>Capture timing</a></li>
+<li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#activity-timing"><i class="fa fa-check"></i>Activity timing</a></li>
+<li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#range-size"><i class="fa fa-check"></i>Range Size</a></li>
+<li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#exploration"><i class="fa fa-check"></i>Exploration</a></li>
+<li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#learning"><i class="fa fa-check"></i>Learning</a></li>
 <li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#recapture-dynamics"><i class="fa fa-check"></i>Recapture dynamics</a></li>
 <li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#tick-contact"><i class="fa fa-check"></i>Tick contact</a></li>
 </ul></li>
@@ -114,7 +116,7 @@
       <div class="body-inner">
         <div class="book-header" role="navigation">
           <h1>
-            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./"><em>Borrelia</em> Competence in <em>Peromyscus</em></a>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./"><em>Borrelia</em> Competence of <em>Peromyscus</em></a>
           </h1>
         </div>
 
@@ -124,9 +126,56 @@
             <section class="normal" id="section-">
 <div id="behavior" class="section level1 hasAnchor">
 <h1>Behavior<a href="behavior.html#behavior" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>This page is under construction</p>
-<div id="capture-timing" class="section level2 hasAnchor">
-<h2>Capture timing<a href="behavior.html#capture-timing" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Individual behavior of an individual is expected to be associated with disease
+dynamics in a number of ways. The timing and location of movements can
+influences exposure to pathogens and how an individual chooses to expend
+energy can influence its ability to fight off infection. We chose to assess 4
+metrics of behavior for this project: 1) Activity timing, 2) range size,
+3) exploration, and 4) learning</p>
+<div id="activity-timing" class="section level2 hasAnchor">
+<h2>Activity timing<a href="behavior.html#activity-timing" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>From 2022 - 2024, our group added ibutton temperature sensor pairs to all traps
+at one of each plots within the eight NEON sites of interest. These sensors,
+which log temperatures every five minutes, allowed us to estimate the time
+at which an individual entered a
+trap<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a> and, thus, the time at
+which the individual is active. This technique works because when an individual
+is inside a trap, the air inside increases above the ambient air.
+Figure <a href="behavior.html#fig:ibutCapTimeExamp">6</a> shows an example of these data. For most
+analyses, capture time is presented as the fraction of the night
+(sunset to sunrise) that had elapsed when the capture occurred. This
+relative capture time scaling allows for more equitable comparisons
+across latitudinal gradients and photoperiods
+(Figure <a href="behavior.html#fig:capTimeByLat">7</a>).</p>
+<p>Figure <a href="behavior.html#fig:capTimeOverlap">8</a> shows the distribution of those relative
+capture times for <em>Peromyscus</em>, how they differ across sites and through time.</p>
+<div class="figure"><span style="display:block;" id="fig:ibutCapTimeExamp"></span>
+<img src="activity-timing/graphics/trapping-bout_temperature-data/capture-paired-temperatures_UNDE_2.jpg" alt="Capture time estimate example: ibutton data (green and blue lines) from a three-day trapping event at plot #2 from the UNDE NEON site in 2024. The dotted vertical lines correspond to the algorithmically-derived estimate of the time an individual entered the trap. Purple rectangles correspond to the segment of time during which the temperature difference between inner and outer buttons is above the trigger threshold (1°C). No data are shown for trapnights in which there was no capture." width="80%" />
+<p class="caption">
+Figure 6: Capture time estimate example: ibutton data (green and blue lines) from a three-day trapping event at plot #2 from the UNDE NEON site in 2024. The dotted vertical lines correspond to the algorithmically-derived estimate of the time an individual entered the trap. Purple rectangles correspond to the segment of time during which the temperature difference between inner and outer buttons is above the trigger threshold (1°C). No data are shown for trapnights in which there was no capture.
+</p>
+</div>
+<div class="figure"><span style="display:block;" id="fig:capTimeByLat"></span>
+<img src="activity-timing/graphics/capture-time-exploration/captime-by-latitude.jpg" alt="Linear relationship between relative capture time (y) and latitude (x)." width="35%" />
+<p class="caption">
+Figure 7: Linear relationship between relative capture time (y) and latitude (x).
+</p>
+</div>
+<div class="figure"><span style="display:block;" id="fig:capTimeOverlap"></span>
+<img src="activity-timing/graphics/capture-time-exploration/capture-overlap_site-by-year.jpg" alt="*Peromyscus* relative capture time density distributions across eight NEON sites over three years." width="80%" />
+<p class="caption">
+Figure 8: <em>Peromyscus</em> relative capture time density distributions across eight NEON sites over three years.
+</p>
+</div>
+</div>
+<div id="range-size" class="section level2 hasAnchor">
+<h2>Range Size<a href="behavior.html#range-size" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+</div>
+<div id="exploration" class="section level2 hasAnchor">
+<h2>Exploration<a href="behavior.html#exploration" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+</div>
+<div id="learning" class="section level2 hasAnchor">
+<h2>Learning<a href="behavior.html#learning" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 </div>
 <div id="recapture-dynamics" class="section level2 hasAnchor">
 <h2>Recapture dynamics<a href="behavior.html#recapture-dynamics" class="anchor-section" aria-label="Anchor link to header"></a></h2>
@@ -141,6 +190,12 @@
 <h2>Tick contact<a href="behavior.html#tick-contact" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 
 </div>
+</div>
+<div class="footnotes">
+<hr />
+<ol start="4">
+<li id="fn4"><p><strong>Citation to original Orrock paper needed</strong><a href="behavior.html#fnref4" class="footnote-back">↩︎</a></p></li>
+</ol>
 </div>
             </section>
 
@@ -202,6 +257,20 @@ gitbook.start({
 });
 </script>
 
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
 </body>
 
 </html>

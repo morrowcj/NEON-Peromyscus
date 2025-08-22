@@ -1,6 +1,7 @@
 fig:sitesMap
 tab:speciesIndividuals
 tab:mamTraitsSub
+tab:geneLookupTab
 fig:genCorPlot
 fig:genPCPlot
 tab:genPCImport
@@ -10,6 +11,9 @@ fig:wthrPCA
 tab:wthrPCimport
 fig:climPCA
 tab:climPCimport
+fig:ibutCapTimeExamp
+fig:capTimeByLat
+fig:capTimeOverlap
 tab:infectMethodSamps
 fig:exprOrthog
 fig:smallSelectSEM

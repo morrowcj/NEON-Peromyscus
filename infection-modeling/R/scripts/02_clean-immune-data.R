@@ -30,9 +30,14 @@ immunity <- immunity %>%
     # individual traits
   ) %>% 
   distinct() %>% 
-  mutate(Bb_infected = as.numeric(Bb_status == "Positive")) %>% 
+  mutate(
+    Bb_infected = as.numeric(Bb_status == "Positive"),
+    log_burden = log(Bb_burden + 1),
+    across(c(`IL-10`:`GATA-3`), ~log(.x + 1), .names = "log_{.col}")
+  ) %>% 
   relocate(Bb_infected, .after = Bb_status) %>% 
-  relocate(`TGF-B`, .before = `GATA-3`)
+  relocate(log_burden, .after = Bb_burden) %>% 
+  relocate(`log_IL-10`:`log_GATA-3`, .after = `GATA-3`)
 
 
 # rows in mammals that aren't in immunity
@@ -71,7 +76,7 @@ immunity <- immunity %>%
     mammals %>% select(uid, year, plotID, trapCoordinate, collectDate, tagID), 
     by = c("plotID", "trapCoordinate", "collectDate", "tagID")
   ) %>% 
-  select(uid, year, DFA_Taxon:`GATA-3`)
+  select(uid, year, DFA_Taxon:`log_GATA-3`)
   # relocate(uid, .before = 0)
 
 # lookup table for gene funcitonal groups
@@ -91,17 +96,16 @@ saveRDS(immunity, "infection-modeling/data/immune-data.rds")
 
 # complete expression data for PCA
 ipca_dat <- immunity %>% 
-  select(uid, `IL-10`:`GATA-3`) %>% 
+  select(uid, `log_IL-10`:`log_GATA-3`) %>% 
   filter(complete.cases(.))
 
 # conduct PCA
 ipca <- ipca_dat %>% select(-uid) %>% 
-  mutate(across(gene_lookup$gene, ~log(.x + 1))) %>% 
   vegan::pca(scale = TRUE)
 
 # fit the "environmental" borrelia variables 
 Bb_envfit <- immunity %>% filter(uid %in% ipca_dat$uid) %>% 
-  select(Bb_burden, Bb_status) %>% 
+  select(log_burden, Bb_status) %>% 
   envfit(ipca, ., na.rm = TRUE)
 
 # extract the scores from PCA
@@ -109,7 +113,8 @@ ipca_scores <- scores(ipca)
 
 # construct the species scores table (with gene info)
 ipca_sp <- ipca_scores$species %>% data.frame() %>% 
-  rownames_to_column("gene") %>% 
+  rownames_to_column("log_gene") %>% 
+  mutate(gene = gsub("log_", "", log_gene)) %>% 
   full_join(gene_lookup, by = "gene") %>% 
   tibble()
 
@@ -136,53 +141,53 @@ saveRDS(ipca_list, "infection-modeling/data/immune-PCA.rds")
 
 ## ---- PCA (2023 - 2024) ----
 
-# This is because there is a correlation...
-
-# subset data to exclude 2022
-ipca_dat_2324 <- immunity %>% 
-  filter(year != 2022) %>% 
-  select(uid, `IL-10`:`GATA-3`) %>% 
-  filter(complete.cases(.)) 
-
-# conduct PCA
-ipca2324 <- ipca_dat_2324 %>% select(-uid) %>% 
-  mutate(across(gene_lookup$gene, ~log(.x + 1))) %>% 
-  vegan::pca(scale = TRUE)
-
-# fit the "environmental" borrelia variables 
-Bb_envfit2324 <- immunity %>% filter(uid %in% ipca_dat_2324$uid) %>% 
-  select(Bb_burden, Bb_status) %>% 
-  envfit(ipca2324, ., na.rm = TRUE)
-
-# ordiplot(ipca2324) %>% 
-#   orditorp(display = "species"); plot(Bb_envfit, add = TRUE)
-
-# extract the scores from PCA
-ipca2324_scores <- scores(ipca2324)
-
-# construct the species scores table (with gene info)
-ipca2324_sp <- ipca2324_scores$species %>% data.frame() %>% 
-  rownames_to_column("gene") %>% 
-  full_join(gene_lookup, by = "gene") %>% 
-  tibble()
-
-# and the site scores table (with uid)
-ipca2324_st <- bind_cols(
-  ipca_dat_2324, 
-  ipca2324_scores$sites %>% data.frame()
-) %>% 
-  tibble()
-
-# build a list of PCA objects to save
-ipca2324_list <- list(
-  site_scores = ipca2324_st %>% 
-    select(uid, expr_PC1 = PC1, expr_PC2 = PC2),
-  species_scores = ipca2324_sp %>% 
-    rename(expr_PC1 = PC1, expr_PC2 = PC2),
-  pca_obj = ipca2324,
-  data = ipca_dat_2324,
-  envfit_obj = Bb_envfit2324
-)
-
-# save the output
-saveRDS(ipca2324_list, "infection-modeling/data/immune-PCA_no2022.rds")
+# # This is because there is a correlation...
+# 
+# # subset data to exclude 2022
+# ipca_dat_2324 <- immunity %>% 
+#   filter(year != 2022) %>% 
+#   select(uid, `IL-10`:`GATA-3`) %>% 
+#   filter(complete.cases(.)) 
+# 
+# # conduct PCA
+# ipca2324 <- ipca_dat_2324 %>% select(-uid) %>% 
+#   mutate(across(gene_lookup$gene, ~log(.x + 1))) %>% 
+#   vegan::pca(scale = TRUE)
+# 
+# # fit the "environmental" borrelia variables 
+# Bb_envfit2324 <- immunity %>% filter(uid %in% ipca_dat_2324$uid) %>% 
+#   select(Bb_burden, Bb_status) %>% 
+#   envfit(ipca2324, ., na.rm = TRUE)
+# 
+# # ordiplot(ipca2324) %>% 
+# #   orditorp(display = "species"); plot(Bb_envfit, add = TRUE)
+# 
+# # extract the scores from PCA
+# ipca2324_scores <- scores(ipca2324)
+# 
+# # construct the species scores table (with gene info)
+# ipca2324_sp <- ipca2324_scores$species %>% data.frame() %>% 
+#   rownames_to_column("gene") %>% 
+#   full_join(gene_lookup, by = "gene") %>% 
+#   tibble()
+# 
+# # and the site scores table (with uid)
+# ipca2324_st <- bind_cols(
+#   ipca_dat_2324, 
+#   ipca2324_scores$sites %>% data.frame()
+# ) %>% 
+#   tibble()
+# 
+# # build a list of PCA objects to save
+# ipca2324_list <- list(
+#   site_scores = ipca2324_st %>% 
+#     select(uid, expr_PC1 = PC1, expr_PC2 = PC2),
+#   species_scores = ipca2324_sp %>% 
+#     rename(expr_PC1 = PC1, expr_PC2 = PC2),
+#   pca_obj = ipca2324,
+#   data = ipca_dat_2324,
+#   envfit_obj = Bb_envfit2324
+# )
+# 
+# # save the output
+# saveRDS(ipca2324_list, "infection-modeling/data/immune-PCA_no2022.rds")

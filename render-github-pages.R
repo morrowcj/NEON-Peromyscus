@@ -4,7 +4,7 @@
 ## the "params" get passed through to all RMD files
 bookdown::render_book(
   input = "index.Rmd", config_file = "_bookdown.yml", 
-  new_session = FALSE, # I think this could be set to TRUE
+  new_session = FALSE,
   params = list(
     run_scripts = FALSE,
     force = TRUE, 
