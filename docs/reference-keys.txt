@@ -14,6 +14,11 @@ tab:climPCimport
 fig:ibutCapTimeExamp
 fig:capTimeByLat
 fig:capTimeOverlap
+fig:MoveDistHist
+fig:recapMoveDistro
+fig:trapDivByCaps
+fig:wTrapDivTrapDiv
+fig:trapDistTrapDIv
 tab:infectMethodSamps
 fig:exprOrthog
 fig:smallSelectSEM

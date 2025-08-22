@@ -1,5 +1,10 @@
 ```{r}
 library(tidyverse)
+
+Peros <- readRDS("infection-modeling/data/peromyscus-data.rds")
+behavior <- readRDS("infection-modeling/data/individual-behavior-data.rds")
+
+Peros <- left_join(Peros, behavior, by = "iid")
 ```
 
 # Behavior
@@ -9,17 +14,38 @@ dynamics in a number of ways. The timing and location of movements can
 influences exposure to pathogens and how an individual chooses to expend 
 energy can influence its ability to fight off infection. We chose to assess 4 
 metrics of behavior for this project: 1) Activity timing, 2) range size,
-3) exploration, and 4) learning
+3) exploration, and 4) learning. Since this is a field study and we weren't
+able to follow each individual, we estimated proxies for these behavioral 
+metrics
+
+```{r}
+recaps <- Peros %>% filter(!is.na(iid), year %in% c(2022:2024)) %>% 
+  group_by(iid) %>% tally()
+ninds <- nrow(recaps)
+nrecaps <- recaps %>% filter(n > 1) %>% nrow()
+recap_pct = round((nrecaps / ninds) * 100, 1)
+avg_caps <- recaps %>% ungroup() %>% filter(n > 1) %>% 
+  pull(n) %>% mean() %>% round(1)
+```
+
+Many of these behavioral metrics rely on recaptures. From 2022 to 2024, there
+were `r prettyNum(nrecaps, ",")` *Peromyscus* individuals that 
+were recaptured at least once (`r prettyNum(recap_pct)`% of total individuals).
+On average, individuals that were captured more than once were captured 
+`r prettyNum(avg_caps)` times on average.
 
 ## Activity timing
 
+Our indicator for activity timing in this study is capture time.
 From 2022 - 2024, our group added ibutton temperature sensor pairs to all traps 
 at one of each plots within the eight NEON sites of interest. These sensors,
 which log temperatures every five minutes, allowed us to estimate the time
 at which an individual entered a 
 trap^[**Citation to original Orrock paper needed**] and, thus, the time at
-which the individual is active. This technique works because when an individual 
-is inside a trap, the air inside increases above the ambient air. 
+which the individual is active. 
+
+This technique of deriving capture timing works because 
+the air inside increases above the ambient air when an animal is in it. 
 Figure \@ref(fig:ibutCapTimeExamp) shows an example of these data. For most
 analyses, capture time is presented as the fraction of the night 
 (sunset to sunrise) that had elapsed when the capture occurred. This 
@@ -43,14 +69,15 @@ knitr::include_graphics(
 caption = paste(
   "Capture time estimate example: ibutton data (green and blue lines)",
   "from a three-day trapping event at plot #2 from the UNDE NEON site in 2024.",
-  "The dotted vertical lines correspond to the algorithmically-derived estimate",
+  "The dotted vertical lines correspond to the algorithmically-derived",
+  "estimate",
   "of the time an individual entered the trap. Purple rectangles correspond to",
   "the segment of time during which the temperature difference between",
   "inner and outer buttons is above the trigger threshold (1°C).",
   "No data are shown for trapnights in which there was no capture."
 )
 ```
-```{r capTimeByLat, out.width="35%", fig.cap=caption}
+```{r capTimeByLat, out.width="25%", fig.cap=caption}
 knitr::include_graphics(
   path = R.utils::getAbsolutePath(
     paste0(
@@ -81,9 +108,122 @@ caption = paste(
 )
 ```
 
-## Range Size
+## Range size
+
+Our indicator of range size is the average distance between traps that an 
+individual was captured between each subsequent capture. As it depends upon 
+recaptures, this metric is biased towards individuals that have been captured
+more times times (Figure \@ref(fig:MoveDistHist)); individuals captured 
+only once always have an average trap distance of 0. But for those 
+individuals that were recaptured, it provides some information about the 
+size of the space that the individual occupies. Figure 
+\@ref(fig:recapMoveDistro) shows the distribution of movement distances among
+*Peromyscus* across NEON sites.
+
+```{r MoveDistHist, out.width="30%", fig.cap=caption, fig.asp = 1, fig.width=3}
+Peros %>% 
+  filter(year %in% c(2022:2024)) %>% 
+  select(iid, avg_move_dist, n_captures) %>% distinct() %>% 
+  ggplot(aes(x = log(avg_move_dist + 1), fill = n_captures > 1)) + 
+  geom_histogram(position = "identity", bins = 30, col = "black") +
+  labs(y = "Individuals", x = "ln(trap distance + 1)") + 
+  scale_fill_manual(
+    name = "Recaptured?",
+    values = c("cornflowerblue", "orange"),
+    labels = c("no", "yes")
+  ) +
+  theme(
+    legend.position = "inside", legend.position.inside = c(1, 1),
+    legend.justification = c(1, 1), legend.background = element_blank()
+  )
+  
+caption = paste(
+  "Distribution of the log-transformed distance (meters) between",
+  "subsequent captures, averaged across all recaptures, for an individual",
+  "*Peromyscus*."
+)
+```
+
+```{r recapMoveDistro, fig.asp=0.8, fig.width=5, fig.cap=caption, out.width="50%"}
+Peros %>% 
+  filter(year %in% c(2022:2024), n_captures > 1, sex_male != 0.5) %>% 
+  select(siteID, iid, sex_male, sex_mature, avg_move_dist) %>% 
+  distinct() %>% 
+  ggplot(aes(x = log(avg_move_dist + 1), fill = factor(sex_male))) +
+  facet_wrap(~siteID) + 
+  geom_density(alpha = 0.5) +
+  labs(x = "ln(trap disance + 1)", y = "Density", fill = "Sex") +
+  scale_fill_discrete(
+    labels = c("F", "M")
+  ) +
+  theme(
+    legend.position = "inside", legend.position.inside = c(0.85, 0),
+    legend.justification = c(0.5, 0), legend.background = element_blank(),
+    panel.spacing = unit(0.1, "lines")
+  )
+
+caption = paste(
+  "Distribution of log-transformed distance (D, meters) between",
+  "subsequent captures of recaptured individuals, seperated by site and sex."
+)
+```
 
 ## Exploration
+
+Our proxy for exploration is trap diversity: the number of unique traps an
+individual was captured in. We scaled trap diversity by the total number of 
+captures to alleviate some of the bias towards recaptures 
+(Figures \@ref(fig:trapDivByCaps), \@ref(fig:wTrapDivTrapDiv)). 
+While this (weighted) trap diversity is somewhat associated with trap 
+distance, they are not equivalent (Figure \@ref(fig:trapDistTrapDIv)). 
+An individual that travels far along a consistent path is probably functionally 
+different from one that stays within a relatively small range, but uses more 
+of that range. The former individual would have a higher trap distance and a 
+lower trap diversity than the latter.
+
+```{r trapDivByCaps, fig.asp = 1, fig.width = 3, out.width="25%", fig.cap = caption}
+behavior %>% 
+  ggplot(aes(x = n_captures, y = unique_traps)) + 
+  geom_point() + geom_smooth(method = "lm", formula = y~x) +
+  labs(x = "Captures", y = "Trap diversity")
+
+caption = paste(
+  "Relationship between individual capture count (x) and number of unique",
+  "traps captured in (y)."
+)
+```
+
+```{r wTrapDivTrapDiv, fig.asp = 1, fig.width = 3, out.width="25%", fig.cap=caption}
+behavior %>% 
+  ggplot(aes(x = unique_traps, y = weighted_trap_diversity)) +
+  geom_point() + 
+  geom_smooth(method = "lm", formula = y~poly(x, 2)) +
+  labs(x = "Trap diversity (raw)", y = "Weighted trap diversity")
+
+caption = paste(
+  "Relationship between raw (x) and weighted (y) trap diversity.",
+  "The regression line is a second-order polynomial."
+)
+```
+
+```{r trapDistTrapDIv, fig.asp = 0.8, fig.width = 5, out.width="50%", fig.cap=caption}
+Peros %>% 
+  filter(year %in% c(2022:2024)) %>% 
+  select(
+    iid, avg_move_dist, n_captures, weighted_trap_diversity, unique_traps
+  ) %>% 
+  distinct() %>% 
+  ggplot(
+    aes(x = log(avg_move_dist + 1), y = (weighted_trap_diversity + 1))
+  ) +
+  geom_point() + geom_smooth(method = "lm") +
+  labs(x = "ln(trap distance + 1)", y = "Weighted trap diversity")
+
+caption = paste(
+  "Relationship between (log-transformed) trap distance and weighted trap",
+  "diversity."
+)
+```
 
 ## Learning
 

@@ -91,7 +91,7 @@
 <li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html"><i class="fa fa-check"></i>Behavior</a>
 <ul>
 <li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#activity-timing"><i class="fa fa-check"></i>Activity timing</a></li>
-<li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#range-size"><i class="fa fa-check"></i>Range Size</a></li>
+<li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#range-size"><i class="fa fa-check"></i>Range size</a></li>
 <li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#exploration"><i class="fa fa-check"></i>Exploration</a></li>
 <li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#learning"><i class="fa fa-check"></i>Learning</a></li>
 <li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#recapture-dynamics"><i class="fa fa-check"></i>Recapture dynamics</a></li>
@@ -131,16 +131,25 @@ dynamics in a number of ways. The timing and location of movements can
 influences exposure to pathogens and how an individual chooses to expend
 energy can influence its ability to fight off infection. We chose to assess 4
 metrics of behavior for this project: 1) Activity timing, 2) range size,
-3) exploration, and 4) learning</p>
+3) exploration, and 4) learning. Since this is a field study and we weren’t
+able to follow each individual, we estimated proxies for these behavioral
+metrics</p>
+<p>Many of these behavioral metrics rely on recaptures. From 2022 to 2024, there
+were 2,142 <em>Peromyscus</em> individuals that
+were recaptured at least once (44.9% of total individuals).
+On average, individuals that were captured more than once were captured
+3.3 times on average.</p>
 <div id="activity-timing" class="section level2 hasAnchor">
 <h2>Activity timing<a href="behavior.html#activity-timing" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>From 2022 - 2024, our group added ibutton temperature sensor pairs to all traps
+<p>Our indicator for activity timing in this study is capture time.
+From 2022 - 2024, our group added ibutton temperature sensor pairs to all traps
 at one of each plots within the eight NEON sites of interest. These sensors,
 which log temperatures every five minutes, allowed us to estimate the time
 at which an individual entered a
 trap<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a> and, thus, the time at
-which the individual is active. This technique works because when an individual
-is inside a trap, the air inside increases above the ambient air.
+which the individual is active.</p>
+<p>This technique of deriving capture timing works because
+the air inside increases above the ambient air when an animal is in it.
 Figure <a href="behavior.html#fig:ibutCapTimeExamp">6</a> shows an example of these data. For most
 analyses, capture time is presented as the fraction of the night
 (sunset to sunrise) that had elapsed when the capture occurred. This
@@ -156,7 +165,7 @@ Figure 6: Capture time estimate example: ibutton data (green and blue lines) fro
 </p>
 </div>
 <div class="figure"><span style="display:block;" id="fig:capTimeByLat"></span>
-<img src="activity-timing/graphics/capture-time-exploration/captime-by-latitude.jpg" alt="Linear relationship between relative capture time (y) and latitude (x)." width="35%" />
+<img src="activity-timing/graphics/capture-time-exploration/captime-by-latitude.jpg" alt="Linear relationship between relative capture time (y) and latitude (x)." width="25%" />
 <p class="caption">
 Figure 7: Linear relationship between relative capture time (y) and latitude (x).
 </p>
@@ -169,10 +178,59 @@ Figure 8: <em>Peromyscus</em> relative capture time density distributions across
 </div>
 </div>
 <div id="range-size" class="section level2 hasAnchor">
-<h2>Range Size<a href="behavior.html#range-size" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<h2>Range size<a href="behavior.html#range-size" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Our indicator of range size is the average distance between traps that an
+individual was captured between each subsequent capture. As it depends upon
+recaptures, this metric is biased towards individuals that have been captured
+more times times (Figure <a href="behavior.html#fig:MoveDistHist">9</a>); individuals captured
+only once always have an average trap distance of 0. But for those
+individuals that were recaptured, it provides some information about the
+size of the space that the individual occupies. Figure
+<a href="behavior.html#fig:recapMoveDistro">10</a> shows the distribution of movement distances among
+<em>Peromyscus</em> across NEON sites.</p>
+<div class="figure"><span style="display:block;" id="fig:MoveDistHist"></span>
+<img src="neon-peromyscus_files/figure-html/MoveDistHist-1.png" alt="Distribution of the log-transformed distance (meters) between subsequent captures, averaged across all recaptures, for an individual *Peromyscus*." width="30%" />
+<p class="caption">
+Figure 9: Distribution of the log-transformed distance (meters) between subsequent captures, averaged across all recaptures, for an individual <em>Peromyscus</em>.
+</p>
+</div>
+<div class="figure"><span style="display:block;" id="fig:recapMoveDistro"></span>
+<img src="neon-peromyscus_files/figure-html/recapMoveDistro-1.png" alt="Distribution of log-transformed distance (D, meters) between subsequent captures of recaptured individuals, seperated by site and sex." width="50%" />
+<p class="caption">
+Figure 10: Distribution of log-transformed distance (D, meters) between subsequent captures of recaptured individuals, seperated by site and sex.
+</p>
+</div>
 </div>
 <div id="exploration" class="section level2 hasAnchor">
 <h2>Exploration<a href="behavior.html#exploration" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Our proxy for exploration is trap diversity: the number of unique traps an
+individual was captured in. We scaled trap diversity by the total number of
+captures to alleviate some of the bias towards recaptures
+(Figures <a href="behavior.html#fig:trapDivByCaps">11</a>, <a href="behavior.html#fig:wTrapDivTrapDiv">12</a>).
+While this (weighted) trap diversity is somewhat associated with trap
+distance, they are not equivalent (Figure <a href="behavior.html#fig:trapDistTrapDIv">13</a>).
+An individual that travels far along a consistent path is probably functionally
+different from one that stays within a relatively small range, but uses more
+of that range. The former individual would have a higher trap distance and a
+lower trap diversity than the latter.</p>
+<div class="figure"><span style="display:block;" id="fig:trapDivByCaps"></span>
+<img src="neon-peromyscus_files/figure-html/trapDivByCaps-1.png" alt="Relationship between individual capture count (x) and number of unique traps captured in (y)." width="25%" />
+<p class="caption">
+Figure 11: Relationship between individual capture count (x) and number of unique traps captured in (y).
+</p>
+</div>
+<div class="figure"><span style="display:block;" id="fig:wTrapDivTrapDiv"></span>
+<img src="neon-peromyscus_files/figure-html/wTrapDivTrapDiv-1.png" alt="Relationship between raw (x) and weighted (y) trap diversity. The regression line is a second-order polynomial." width="25%" />
+<p class="caption">
+Figure 12: Relationship between raw (x) and weighted (y) trap diversity. The regression line is a second-order polynomial.
+</p>
+</div>
+<div class="figure"><span style="display:block;" id="fig:trapDistTrapDIv"></span>
+<img src="neon-peromyscus_files/figure-html/trapDistTrapDIv-1.png" alt="Relationship between (log-transformed) trap distance and weighted trap diversity." width="50%" />
+<p class="caption">
+Figure 13: Relationship between (log-transformed) trap distance and weighted trap diversity.
+</p>
+</div>
 </div>
 <div id="learning" class="section level2 hasAnchor">
 <h2>Learning<a href="behavior.html#learning" class="anchor-section" aria-label="Anchor link to header"></a></h2>
