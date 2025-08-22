@@ -19,6 +19,7 @@ fig:recapMoveDistro
 fig:trapDivByCaps
 fig:wTrapDivTrapDiv
 fig:trapDistTrapDIv
+tab:mostTrapped
 tab:infectMethodSamps
 fig:exprOrthog
 fig:smallSelectSEM

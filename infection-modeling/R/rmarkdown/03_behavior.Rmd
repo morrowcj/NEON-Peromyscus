@@ -9,7 +9,7 @@ Peros <- left_join(Peros, behavior, by = "iid")
 
 # Behavior
 
-Individual behavior of an individual is expected to be associated with disease 
+Behavior of individual mice is expected to be associated with disease 
 dynamics in a number of ways. The timing and location of movements can 
 influences exposure to pathogens and how an individual chooses to expend 
 energy can influence its ability to fight off infection. We chose to assess 4 
@@ -111,7 +111,7 @@ caption = paste(
 ## Range size
 
 Our indicator of range size is the average distance between traps that an 
-individual was captured between each subsequent capture. As it depends upon 
+individual was captured between each consecutive capture. As it depends upon 
 recaptures, this metric is biased towards individuals that have been captured
 more times times (Figure \@ref(fig:MoveDistHist)); individuals captured 
 only once always have an average trap distance of 0. But for those 
@@ -126,7 +126,7 @@ Peros %>%
   select(iid, avg_move_dist, n_captures) %>% distinct() %>% 
   ggplot(aes(x = log(avg_move_dist + 1), fill = n_captures > 1)) + 
   geom_histogram(position = "identity", bins = 30, col = "black") +
-  labs(y = "Individuals", x = "ln(trap distance + 1)") + 
+  labs(y = "Individuals", x = "ln(Trap distance + 1)") + 
   scale_fill_manual(
     name = "Recaptured?",
     values = c("cornflowerblue", "orange"),
@@ -139,7 +139,7 @@ Peros %>%
   
 caption = paste(
   "Distribution of the log-transformed distance (meters) between",
-  "subsequent captures, averaged across all recaptures, for an individual",
+  "consecutive captures, averaged across all recaptures, for an individual",
   "*Peromyscus*."
 )
 ```
@@ -152,7 +152,7 @@ Peros %>%
   ggplot(aes(x = log(avg_move_dist + 1), fill = factor(sex_male))) +
   facet_wrap(~siteID) + 
   geom_density(alpha = 0.5) +
-  labs(x = "ln(trap disance + 1)", y = "Density", fill = "Sex") +
+  labs(x = "ln(Trap disance + 1)", y = "Density", fill = "Sex") +
   scale_fill_discrete(
     labels = c("F", "M")
   ) +
@@ -164,7 +164,7 @@ Peros %>%
 
 caption = paste(
   "Distribution of log-transformed distance (D, meters) between",
-  "subsequent captures of recaptured individuals, seperated by site and sex."
+  "consecutive captures of recaptured individuals, seperated by site and sex."
 )
 ```
 
@@ -172,7 +172,8 @@ caption = paste(
 
 Our proxy for exploration is trap diversity: the number of unique traps an
 individual was captured in. We scaled trap diversity by the total number of 
-captures to alleviate some of the bias towards recaptures 
+captures (relative to the population) to alleviate some of the bias towards
+recaptures 
 (Figures \@ref(fig:trapDivByCaps), \@ref(fig:wTrapDivTrapDiv)). 
 While this (weighted) trap diversity is somewhat associated with trap 
 distance, they are not equivalent (Figure \@ref(fig:trapDistTrapDIv)). 
@@ -208,20 +209,31 @@ caption = paste(
 
 ```{r trapDistTrapDIv, fig.asp = 0.8, fig.width = 5, out.width="50%", fig.cap=caption}
 Peros %>% 
+  group_by(iid) %>% 
+  mutate(plots_visited = length(unique(plotID))) %>% ungroup() %>% 
   filter(year %in% c(2022:2024)) %>% 
   select(
-    iid, avg_move_dist, n_captures, weighted_trap_diversity, unique_traps
+    iid, avg_move_dist, n_captures, weighted_trap_diversity, unique_traps,
+    plots_visited
   ) %>% 
   distinct() %>% 
   ggplot(
     aes(x = log(avg_move_dist + 1), y = (weighted_trap_diversity + 1))
   ) +
-  geom_point() + geom_smooth(method = "lm") +
-  labs(x = "ln(trap distance + 1)", y = "Weighted trap diversity")
+  geom_point(aes(col = factor(plots_visited))) + 
+  geom_smooth(method = "lm") +
+  labs(
+    x = "ln(Trap distance + 1)", y = "Weighted trap diversity",
+    col = "Plots\nvisited"
+  ) + theme(
+    legend.position = "inside", legend.position.inside = c(1, 1), 
+    legend.justification = c(1, 1), legend.background = element_blank()
+  )
 
 caption = paste(
   "Relationship between (log-transformed) trap distance and weighted trap",
-  "diversity."
+  "diversity. Red points represent individuals that were only caught at",
+  "at one plot and blue dot individuals were captured at 2 plots."
 )
 ```
 
@@ -236,5 +248,93 @@ caption = paste(
 * "trapability" 
 
 * recapture timing shifts (extra)
+
+
+### Outliers?
+
+```{r}
+most_trapped <- behavior %>% 
+  left_join(
+    Peros %>%
+      group_by(iid) %>% 
+      mutate(
+        nplots = length(unique(plotID)), 
+        # avg_captime = mean(cap_prop_night, na.rm = TRUE)
+      ) %>% 
+      select(iid, sex_male, new_taxonID, nplots) %>% distinct(),
+    by = "iid"
+  ) %>% 
+  # arrange(desc(unique_traps)) %>% 
+  arrange(desc(n_captures)) %>% 
+  slice(1:10) %>% 
+  mutate(
+    sex = factor(sex_male, levels = c(0, 0.5, 1), labels = c("F", "U", "M"))
+  ) %>% 
+  # filter(iid %in% outl_trapdiv$iid) %>% 
+  select(
+  iid, sex, n_captures, unique_traps, nplots,
+  residence_trapnights, known_alive_days,
+  weighted_trapability, avg_move_dist, 
+  max_travel_dist
+  )
+  
+avg_traps <- most_trapped$unique_traps %>% mean(na.rm = TRUE)
+max_traps <- most_trapped$unique_traps %>% max(na.rm = TRUE)
+corresp_caps <- most_trapped$n_captures[which.max(most_trapped$unique_traps)]
+corresp_days <- most_trapped$known_alive_days[
+  which.max(most_trapped$unique_traps)
+]
+corresp_yrs <- corresp_days/365
+avg_dist <- most_trapped$avg_move_dist %>% mean(na.rm = TRUE)
+max_dist <- most_trapped$max_travel_dist %>% max(na.rm = TRUE)
+
+big_maxd_km <- max(Peros$max_travel_dist)/1000
+```
+
+A handful of mice were captured in many traps 
+(Table \@ref(tab:mostTrapped)) at the eight sites and across all of NEON's 
+duration. One individual was trapped `r prettyNum(corresp_caps)` times in 
+`r prettyNum(max_traps)` traps over 
+`r prettyNum(corresp_yrs, digits = 1)` years! On average, these trap-happy
+individuals stuck
+to relatively small areas (average of `r prettyNum(avg_dist)` meters), with
+a maximum distance of `r prettyNum(max_dist, digits = 1)` meters and 
+`r prettyNum(avg_traps, digits = 1)` traps. Compare that to the very 
+furthest distance between observations of an individual in the larger
+*Peromyscus* population of `r prettyNum(big_maxd_km, digits = 1)` 
+kilometers^[this is not unusual for a *Peromyscus* dispersal event 
+(**Citation needed**)]! 
+
+We evaluated the validity of these observations to the best of our abilities
+and believe that the records for these individuals are corrected and not,
+as we initially suspected, erroneous grouping of multiple individuals that 
+share the same tag number^[NEON's `tagID` values are not entirely unique to 
+individuals. Tags must be combined with site and recapture information to
+differentiate individual animals (i.e., `iid`).]
+
+<br>
+```{r mostTrapped}
+most_trapped %>% 
+  knitr::kable(
+    digits = 2,
+    col.names = c(
+      "iid", "sex", "caps", "traps", "plots", "trap nights", "days",
+      "trapability", "avg D", "max D"
+    ),
+    caption = paste(
+      "Most trapped *Peromyscus*: top ten most captured",
+      "individuals. Columns represent individual ID, sex,",
+      "number of times captured, number of unique traps captured in",
+      "(i.e., trap diversity), number of unique plots caught on,",
+      "number of trap nights between first and last capture",
+      "(across all plots visited),", 
+      "calendar days between first and last capture,",
+      "trapability (weighted by times captured),", 
+      "average distance (meters) between consecutive captures,", 
+      "and maximum distance (meters) among observations of the individual."
+    )
+  )
+```
+
 
 ## Tick contact

@@ -94,7 +94,10 @@
 <li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#range-size"><i class="fa fa-check"></i>Range size</a></li>
 <li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#exploration"><i class="fa fa-check"></i>Exploration</a></li>
 <li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#learning"><i class="fa fa-check"></i>Learning</a></li>
-<li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#recapture-dynamics"><i class="fa fa-check"></i>Recapture dynamics</a></li>
+<li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#recapture-dynamics"><i class="fa fa-check"></i>Recapture dynamics</a>
+<ul>
+<li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#outliers"><i class="fa fa-check"></i>Outliers?</a></li>
+</ul></li>
 <li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#tick-contact"><i class="fa fa-check"></i>Tick contact</a></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="infection-and-gene-expression.html"><a href="infection-and-gene-expression.html"><i class="fa fa-check"></i>Infection and gene expression</a>
@@ -126,7 +129,7 @@
             <section class="normal" id="section-">
 <div id="behavior" class="section level1 hasAnchor">
 <h1>Behavior<a href="behavior.html#behavior" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>Individual behavior of an individual is expected to be associated with disease
+<p>Behavior of individual mice is expected to be associated with disease
 dynamics in a number of ways. The timing and location of movements can
 influences exposure to pathogens and how an individual chooses to expend
 energy can influence its ability to fight off infection. We chose to assess 4
@@ -180,7 +183,7 @@ Figure 8: <em>Peromyscus</em> relative capture time density distributions across
 <div id="range-size" class="section level2 hasAnchor">
 <h2>Range size<a href="behavior.html#range-size" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Our indicator of range size is the average distance between traps that an
-individual was captured between each subsequent capture. As it depends upon
+individual was captured between each consecutive capture. As it depends upon
 recaptures, this metric is biased towards individuals that have been captured
 more times times (Figure <a href="behavior.html#fig:MoveDistHist">9</a>); individuals captured
 only once always have an average trap distance of 0. But for those
@@ -189,15 +192,15 @@ size of the space that the individual occupies. Figure
 <a href="behavior.html#fig:recapMoveDistro">10</a> shows the distribution of movement distances among
 <em>Peromyscus</em> across NEON sites.</p>
 <div class="figure"><span style="display:block;" id="fig:MoveDistHist"></span>
-<img src="neon-peromyscus_files/figure-html/MoveDistHist-1.png" alt="Distribution of the log-transformed distance (meters) between subsequent captures, averaged across all recaptures, for an individual *Peromyscus*." width="30%" />
+<img src="neon-peromyscus_files/figure-html/MoveDistHist-1.png" alt="Distribution of the log-transformed distance (meters) between consecutive captures, averaged across all recaptures, for an individual *Peromyscus*." width="30%" />
 <p class="caption">
-Figure 9: Distribution of the log-transformed distance (meters) between subsequent captures, averaged across all recaptures, for an individual <em>Peromyscus</em>.
+Figure 9: Distribution of the log-transformed distance (meters) between consecutive captures, averaged across all recaptures, for an individual <em>Peromyscus</em>.
 </p>
 </div>
 <div class="figure"><span style="display:block;" id="fig:recapMoveDistro"></span>
-<img src="neon-peromyscus_files/figure-html/recapMoveDistro-1.png" alt="Distribution of log-transformed distance (D, meters) between subsequent captures of recaptured individuals, seperated by site and sex." width="50%" />
+<img src="neon-peromyscus_files/figure-html/recapMoveDistro-1.png" alt="Distribution of log-transformed distance (D, meters) between consecutive captures of recaptured individuals, seperated by site and sex." width="50%" />
 <p class="caption">
-Figure 10: Distribution of log-transformed distance (D, meters) between subsequent captures of recaptured individuals, seperated by site and sex.
+Figure 10: Distribution of log-transformed distance (D, meters) between consecutive captures of recaptured individuals, seperated by site and sex.
 </p>
 </div>
 </div>
@@ -205,7 +208,8 @@ Figure 10: Distribution of log-transformed distance (D, meters) between subseque
 <h2>Exploration<a href="behavior.html#exploration" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Our proxy for exploration is trap diversity: the number of unique traps an
 individual was captured in. We scaled trap diversity by the total number of
-captures to alleviate some of the bias towards recaptures
+captures (relative to the population) to alleviate some of the bias towards
+recaptures
 (Figures <a href="behavior.html#fig:trapDivByCaps">11</a>, <a href="behavior.html#fig:wTrapDivTrapDiv">12</a>).
 While this (weighted) trap diversity is somewhat associated with trap
 distance, they are not equivalent (Figure <a href="behavior.html#fig:trapDistTrapDIv">13</a>).
@@ -226,9 +230,9 @@ Figure 12: Relationship between raw (x) and weighted (y) trap diversity. The reg
 </p>
 </div>
 <div class="figure"><span style="display:block;" id="fig:trapDistTrapDIv"></span>
-<img src="neon-peromyscus_files/figure-html/trapDistTrapDIv-1.png" alt="Relationship between (log-transformed) trap distance and weighted trap diversity." width="50%" />
+<img src="neon-peromyscus_files/figure-html/trapDistTrapDIv-1.png" alt="Relationship between (log-transformed) trap distance and weighted trap diversity. Red points represent individuals that were only caught at at one plot and blue dot individuals were captured at 2 plots." width="50%" />
 <p class="caption">
-Figure 13: Relationship between (log-transformed) trap distance and weighted trap diversity.
+Figure 13: Relationship between (log-transformed) trap distance and weighted trap diversity. Red points represent individuals that were only caught at at one plot and blue dot individuals were captured at 2 plots.
 </p>
 </div>
 </div>
@@ -243,6 +247,176 @@ Figure 13: Relationship between (log-transformed) trap distance and weighted tra
 <li><p>“trapability”</p></li>
 <li><p>recapture timing shifts (extra)</p></li>
 </ul>
+<div id="outliers" class="section level3 hasAnchor">
+<h3>Outliers?<a href="behavior.html#outliers" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>A handful of mice were captured in many traps
+(Table <a href="behavior.html#tab:mostTrapped">9</a>) at the eight sites and across all of NEON’s
+duration. One individual was trapped 38 times in
+22 traps over
+2 years! On average, these trap-happy
+individuals stuck
+to relatively small areas (average of 21.25483 meters), with
+a maximum distance of 120 meters and
+17 traps. Compare that to the very
+furthest distance between observations of an individual in the larger
+<em>Peromyscus</em> population of 9
+kilometers<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a>!</p>
+<p>We evaluated the validity of these observations to the best of our abilities
+and believe that the records for these individuals are corrected and not,
+as we initially suspected, erroneous grouping of multiple individuals that
+share the same tag number<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a></p>
+<table>
+<caption><span id="tab:mostTrapped">Table 9: </span>Most trapped <em>Peromyscus</em>: top ten most captured individuals. Columns represent individual ID, sex, number of times captured, number of unique traps captured in (i.e., trap diversity), number of unique plots caught on, number of trap nights between first and last capture (across all plots visited), calendar days between first and last capture, trapability (weighted by times captured), average distance (meters) between consecutive captures, and maximum distance (meters) among observations of the individual.</caption>
+<colgroup>
+<col width="8%" />
+<col width="5%" />
+<col width="7%" />
+<col width="8%" />
+<col width="8%" />
+<col width="17%" />
+<col width="7%" />
+<col width="17%" />
+<col width="8%" />
+<col width="10%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="right">iid</th>
+<th align="left">sex</th>
+<th align="right">caps</th>
+<th align="right">traps</th>
+<th align="right">plots</th>
+<th align="right">trap nights</th>
+<th align="right">days</th>
+<th align="right">trapability</th>
+<th align="right">avg D</th>
+<th align="right">max D</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">11127</td>
+<td align="left">M</td>
+<td align="right">38</td>
+<td align="right">22</td>
+<td align="right">1</td>
+<td align="right">47</td>
+<td align="right">771</td>
+<td align="right">0.81</td>
+<td align="right">19.91</td>
+<td align="right">98.49</td>
+</tr>
+<tr class="even">
+<td align="right">10889</td>
+<td align="left">M</td>
+<td align="right">27</td>
+<td align="right">16</td>
+<td align="right">1</td>
+<td align="right">38</td>
+<td align="right">469</td>
+<td align="right">0.50</td>
+<td align="right">16.86</td>
+<td align="right">94.29</td>
+</tr>
+<tr class="odd">
+<td align="right">10932</td>
+<td align="left">F</td>
+<td align="right">27</td>
+<td align="right">8</td>
+<td align="right">1</td>
+<td align="right">35</td>
+<td align="right">435</td>
+<td align="right">0.55</td>
+<td align="right">11.94</td>
+<td align="right">31.59</td>
+</tr>
+<tr class="even">
+<td align="right">11231</td>
+<td align="left">M</td>
+<td align="right">27</td>
+<td align="right">19</td>
+<td align="right">1</td>
+<td align="right">37</td>
+<td align="right">688</td>
+<td align="right">0.52</td>
+<td align="right">33.03</td>
+<td align="right">120.38</td>
+</tr>
+<tr class="odd">
+<td align="right">11379</td>
+<td align="left">F</td>
+<td align="right">27</td>
+<td align="right">21</td>
+<td align="right">1</td>
+<td align="right">35</td>
+<td align="right">534</td>
+<td align="right">0.55</td>
+<td align="right">21.29</td>
+<td align="right">82.49</td>
+</tr>
+<tr class="even">
+<td align="right">5877</td>
+<td align="left">M</td>
+<td align="right">26</td>
+<td align="right">20</td>
+<td align="right">1</td>
+<td align="right">48</td>
+<td align="right">462</td>
+<td align="right">0.37</td>
+<td align="right">23.69</td>
+<td align="right">90.53</td>
+</tr>
+<tr class="odd">
+<td align="right">6126</td>
+<td align="left">F</td>
+<td align="right">25</td>
+<td align="right">14</td>
+<td align="right">1</td>
+<td align="right">63</td>
+<td align="right">760</td>
+<td align="right">0.26</td>
+<td align="right">18.12</td>
+<td align="right">78.28</td>
+</tr>
+<tr class="even">
+<td align="right">10853</td>
+<td align="left">M</td>
+<td align="right">25</td>
+<td align="right">15</td>
+<td align="right">1</td>
+<td align="right">50</td>
+<td align="right">770</td>
+<td align="right">0.33</td>
+<td align="right">18.54</td>
+<td align="right">70.69</td>
+</tr>
+<tr class="odd">
+<td align="right">10923</td>
+<td align="left">M</td>
+<td align="right">24</td>
+<td align="right">16</td>
+<td align="right">1</td>
+<td align="right">31</td>
+<td align="right">407</td>
+<td align="right">0.49</td>
+<td align="right">25.60</td>
+<td align="right">72.03</td>
+</tr>
+<tr class="even">
+<td align="right">14343</td>
+<td align="left">F</td>
+<td align="right">22</td>
+<td align="right">17</td>
+<td align="right">1</td>
+<td align="right">37</td>
+<td align="right">588</td>
+<td align="right">0.34</td>
+<td align="right">23.57</td>
+<td align="right">64.00</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div id="tick-contact" class="section level2 hasAnchor">
 <h2>Tick contact<a href="behavior.html#tick-contact" class="anchor-section" aria-label="Anchor link to header"></a></h2>
@@ -253,6 +427,11 @@ Figure 13: Relationship between (log-transformed) trap distance and weighted tra
 <hr />
 <ol start="4">
 <li id="fn4"><p><strong>Citation to original Orrock paper needed</strong><a href="behavior.html#fnref4" class="footnote-back">↩︎</a></p></li>
+<li id="fn5"><p>this is not unusual for a <em>Peromyscus</em> dispersal event
+(<strong>Citation needed</strong>)<a href="behavior.html#fnref5" class="footnote-back">↩︎</a></p></li>
+<li id="fn6"><p>NEON’s <code>tagID</code> values are not entirely unique to
+individuals. Tags must be combined with site and recapture information to
+differentiate individual animals (i.e., <code>iid</code>).<a href="behavior.html#fnref6" class="footnote-back">↩︎</a></p></li>
 </ol>
 </div>
             </section>
