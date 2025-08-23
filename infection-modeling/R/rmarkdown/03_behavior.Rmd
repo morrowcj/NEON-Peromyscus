@@ -1,10 +1,11 @@
 ```{r}
 library(tidyverse)
 
-Peros <- readRDS("infection-modeling/data/peromyscus-data.rds")
+# Peros <- readRDS("infection-modeling/data/peromyscus-data.rds")
+Peros <- readRDS("infection-modeling/data/peromyscus-model-data.rds")
 behavior <- readRDS("infection-modeling/data/individual-behavior-data.rds")
 
-Peros <- left_join(Peros, behavior, by = "iid")
+# Peros <- left_join(Peros, behavior, by = "iid")
 ```
 
 # Behavior
@@ -56,7 +57,7 @@ across latitudinal gradients and photoperiods
 Figure \@ref(fig:capTimeOverlap) shows the distribution of those relative
 capture times for *Peromyscus*, how they differ across sites and through time.
 
-```{r ibutCapTimeExamp, fig.cap=caption}
+```{r ibutCapTimeExamp, fig.cap=caption, out.width = "100%"}
 knitr::include_graphics(
   path = R.utils::getAbsolutePath(
     paste0(
@@ -77,7 +78,7 @@ caption = paste(
   "No data are shown for trapnights in which there was no capture."
 )
 ```
-```{r capTimeByLat, out.width="25%", fig.cap=caption}
+```{r capTimeByLat, out.width="50%", fig.cap=caption}
 knitr::include_graphics(
   path = R.utils::getAbsolutePath(
     paste0(
@@ -92,7 +93,7 @@ caption = paste(
 )
 ```
 
-```{r capTimeOverlap, fig.cap=caption}
+```{r capTimeOverlap, fig.cap=caption, out.width="75%"}
 knitr::include_graphics(
   path = R.utils::getAbsolutePath(
     paste0(
@@ -120,7 +121,7 @@ size of the space that the individual occupies. Figure
 \@ref(fig:recapMoveDistro) shows the distribution of movement distances among
 *Peromyscus* across NEON sites.
 
-```{r MoveDistHist, out.width="30%", fig.cap=caption, fig.asp = 1, fig.width=3}
+```{r MoveDistHist, out.width="50%", fig.cap=caption, fig.asp = 1, fig.width=3}
 Peros %>% 
   filter(year %in% c(2022:2024)) %>% 
   select(iid, avg_move_dist, n_captures) %>% distinct() %>% 
@@ -182,7 +183,7 @@ different from one that stays within a relatively small range, but uses more
 of that range. The former individual would have a higher trap distance and a 
 lower trap diversity than the latter.
 
-```{r trapDivByCaps, fig.asp = 1, fig.width = 3, out.width="25%", fig.cap = caption}
+```{r trapDivByCaps, fig.asp = 1, fig.width = 3, out.width="50%", fig.cap = caption}
 behavior %>% 
   ggplot(aes(x = n_captures, y = unique_traps)) + 
   geom_point() + geom_smooth(method = "lm", formula = y~x) +
@@ -194,7 +195,7 @@ caption = paste(
 )
 ```
 
-```{r wTrapDivTrapDiv, fig.asp = 1, fig.width = 3, out.width="25%", fig.cap=caption}
+```{r wTrapDivTrapDiv, fig.asp = 1, fig.width = 3, out.width="50%", fig.cap=caption}
 behavior %>% 
   ggplot(aes(x = unique_traps, y = weighted_trap_diversity)) +
   geom_point() + 
@@ -207,7 +208,7 @@ caption = paste(
 )
 ```
 
-```{r trapDistTrapDIv, fig.asp = 0.8, fig.width = 5, out.width="50%", fig.cap=caption}
+```{r trapDistTrapDIv, fig.asp = 0.8, fig.width = 3.5, out.width="50%", fig.cap=caption}
 Peros %>% 
   group_by(iid) %>% 
   mutate(plots_visited = length(unique(plotID))) %>% ungroup() %>% 
@@ -239,18 +240,77 @@ caption = paste(
 
 ## Learning
 
-## Recapture dynamics
+The metric of learning that we used is trapability: Individuals more prone to
+being captured - especially after the initial capture - have likely learned 
+to identify traps as a source of food. This is demonstrated by the tendency
+of individuals to enter traps earlier in the night than on their first capture.
+This pattern is true of NEON populations (Figure \@ref(fig:captimeShiftDistro))
+and has been demonstrated elsewhere^[**Citation Needed**].
 
-* trap diversity
+In our case, trapability is the proportion of trap nights on which an 
+individual was captured between their first and last capture. By this method,
+individuals captured only once have a trapability of 1, but this is misleading
+since we have the least information about and confidence in these mice. To 
+alleviate this bias, we weighted trapability by number of captures. A 
+comparison between raw and weighted-trapability are shown by Figure 
+\@ref(fig:weightTrapValid). This figure shows that raw trapability of
+an individual captured once and an individual captured 15 times across 15 trap
+nights are equal (x = 1), whereas weighted trapability accounts for the higher degree
+of certainty in estimates for the mouse captured 15 times.
 
-* average trap distances
+```{r captimeShiftDistro, fig.asp=0.8, fig.width=3, out.width="50%", fig.cap=caption}
+# capture time shift among recaptures
+Peros %>% 
+  filter(!is.na(capprop_shift)) %>% 
+  filter(is_recap == 1) %>% 
+  ggplot(aes(x = capprop_shift)) + 
+  geom_histogram(fill = "grey75", col = "grey50", bins = 30) +
+  # geom_vline(xintercept = 0, col = "blue", linetype = "dashed") +
+  geom_vline(
+    aes(xintercept = mean(capprop_shift, na.rm = TRUE)), 
+    col = "red",
+  ) +
+  theme_bw() +
+  labs(x = "Shift in relative capture time", y = "Observations")
 
-* "trapability" 
+caption = paste(
+  "Distribution in the change in relative capture time for recaptured",
+  "individuials after their first capture. Nevative values indicate",
+  "that recaptures occurred earlier in the night relative to the initial",
+  "capture. Positive shifts occured later. The red line represents the mean",
+  "value."
+)
+```
 
-* recapture timing shifts (extra)
+```{r weightTrapValid, fig.width=4, fig.asp=1, out.width="50%", fig.cap=caption}
+## Visualize relationship between "raw" trapability vs the weighted version
+behavior %>% 
+  filter(iid %in% (Peros %>% filter(year %in% 2022:2024) %>% pull(iid))) %>% 
+  select(trapability, weighted_trapability, n_captures) %>% 
+  distinct() %>% 
+  ggplot(aes(x = trapability, y = weighted_trapability)) +
+  geom_point(aes(fill = n_captures, size = n_captures), shape = 21, alpha = 1) + 
+  geom_smooth(method = "lm", formula = "y~x", alpha = 0.5) + 
+  scale_fill_gradient(
+    # midpoint = 10, mid = "grey80", 
+    low = "forestgreen", high = "orange"
+  ) + 
+  theme_bw() + 
+  theme(
+    legend.position = "inside", legend.position.inside = c(0, 1),
+    legend.justification = c(0, 1), legend.background = element_blank(),
+    legend.direction = "horizontal", legend.title.position = "top"
+  ) + 
+  guides(size = guide_none()) +
+  labs(fill = "Captures", x = "Trapability (raw)", y = "Weighted trapability")
 
+caption = paste(
+  "Relationship between weighted (y) and raw (x) trapability and number of 
+  captures (color, size)."
+)
+```
 
-### Outliers?
+## Outliers?
 
 ```{r}
 most_trapped <- behavior %>% 
@@ -336,5 +396,43 @@ most_trapped %>%
   )
 ```
 
-
 ## Tick contact
+
+A primary way that we expect behavior to influence *Borrelia* infection in
+*Peromyscus* is through interactions with ticks (specifically *Ixodes*). 
+For example, male mice are most likely to move around driven by mate-seeking
+behaviors. This extra movement makes them more likely to interact with ticks 
+that are sit-and-wait predators. Figure \@ref(fig:sexTickDiffs) demonstrates
+that males are, indeed, more likely to accumulate ticks. Similarly, individuals
+that were captured in more traps - suggesting more diverse space use -
+acquired slightly more ticks on average, regardless of sex 
+(Figure \@ref(fig:trapDivTicks)).
+
+```{r sexTickDiffs, fig.asp=1, fig.width=3.5, out.width="50%"}
+Peros %>% 
+  filter(sex_male != 0.5) %>% 
+  mutate(sex = factor(sex_male, levels = c(0, 1), labels = c("F", "M"))) %>% 
+  ggplot(aes(x = sex, y = as.numeric(ticks_attached))) + 
+  stat_summary(fun.data = mean_cl_normal, size = 0.5) + 
+  labs(x = "Sex", y = "Proportion of captures with ticks (± 95% CI)") + 
+  theme_bw()
+```
+
+```{r trapDivTicks, fig.asp=0.5, fig.width=4, fig.cap=caption, out.width="50%"}
+Peros %>% 
+  filter(!is.na(ticks_attached)) %>% 
+  ggplot(aes(x = log(weighted_trap_diversity + 1), y = ticks_attached)) + 
+  geom_point() + 
+  geom_smooth(
+    method = "glm", formula = "y~x", 
+    method.args = list(family = "binomial")
+  ) + 
+  theme_bw() + 
+  labs(x = "ln(Weighted trap diversity)", y = "P(ticks attached)")
+
+caption = paste(
+  "Logistic regression of tick attachment (y) by weighted trap diversity",
+  "(x, log-transformed)."
+)
+```
+

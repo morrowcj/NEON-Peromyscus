@@ -62,6 +62,7 @@ mammals <- mammals  %>%
 
 # estimate individuals
 iid_tab <- mammals %>% 
+  filter(!is.na(tagID)) %>% 
   group_by(siteID, tagID) %>% 
   arrange(siteID, date) %>% 
   mutate(tag_ind_num = cumsum(recapture == "N")) %>% 
@@ -69,13 +70,21 @@ iid_tab <- mammals %>%
   mutate(
     # new_tag = gsub("NEON\\.MAM\\..*\\.(.*)", "\\1", tagID),
     ind_id = paste(siteID, tagID, tag_ind_num, sep = "."),
-    iid = as.numeric(factor(ind_id))
+    iid = as.numeric(factor(ind_id)),
   ) %>% 
-  select(uid, ind_id, iid)
+  group_by(iid) %>% 
+  arrange(iid, date) %>% 
+  mutate(cap_num = row_number()) %>% 
+  ungroup() %>% 
+  select(uid, ind_id, iid, cap_num)
 
 # merge in IIDs.
 mammals <- full_join(mammals, iid_tab, by = "uid")
-  
+
+# update recap flag - differs from NEON's recapture slightly
+## since the first record of some individuals is flagged as "Y" in the recap 
+## column, indicating that they likely had an ear punch but no tag.
+mammals <- mammals %>% mutate(is_recap = as.numeric(cap_num > 1)) 
 
 ## ---- Event metadata ----
 

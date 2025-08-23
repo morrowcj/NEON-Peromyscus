@@ -70,6 +70,14 @@ stopifnot(nrow(Peros) == n_peros)
 # add in capture timing
 Peros <- left_join(Peros, cap_times, by = "uid")
 
+## TODO: add to prepare-peromyscus-data.rds
+# Add in a variable about capture time shift
+Peros <- Peros %>%
+  group_by(iid) %>%
+  arrange(iid, cap_num) %>% 
+  mutate(capprop_shift = cap_prop_night - first(cap_prop_night)) %>% 
+  ungroup()
+
 # check that merges worked
 stopifnot(nrow(Peros) == n_peros)
 
