@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Structural equation models | Borrelia Competence of Peromyscus</title>
+  <meta name="description" content="Structural equation models | Borrelia Competence of Peromyscus" />
+  <meta name="generator" content="bookdown 0.44 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Structural equation models | Borrelia Competence of Peromyscus" />
+  <meta property="og:type" content="book" />
+  
+  
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Structural equation models | Borrelia Competence of Peromyscus" />
+  
+  
+  
+
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="individual-designations.html"/>
+
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+<link href="libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet" />
+<script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="libs/viz-1.8.2/viz.js"></script>
+<link href="libs/DiagrammeR-styles-0.2/styles.css" rel="stylesheet" />
+<script src="libs/grViz-binding-1.0.11/grViz.js"></script>
+
+
+
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Introduction:</a></li>
+<li class="chapter" data-level="" data-path="neon-sites-and-data-overview.html"><a href="neon-sites-and-data-overview.html"><i class="fa fa-check"></i>Neon sites and data overview</a>
+<ul>
+<li class="chapter" data-level="" data-path="neon-sites-and-data-overview.html"><a href="neon-sites-and-data-overview.html#site-locations"><i class="fa fa-check"></i>Site locations</a></li>
+<li class="chapter" data-level="" data-path="neon-sites-and-data-overview.html"><a href="neon-sites-and-data-overview.html#small-mammal-data"><i class="fa fa-check"></i>Small mammal data</a></li>
+<li class="chapter" data-level="" data-path="neon-sites-and-data-overview.html"><a href="neon-sites-and-data-overview.html#other-data"><i class="fa fa-check"></i>Other data</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="immunity.html"><a href="immunity.html"><i class="fa fa-check"></i>Immunity</a>
+<ul>
+<li class="chapter" data-level="" data-path="immunity.html"><a href="immunity.html#genetic-correlations"><i class="fa fa-check"></i>Genetic correlations</a></li>
+<li class="chapter" data-level="" data-path="immunity.html"><a href="immunity.html#pca"><i class="fa fa-check"></i>PCA</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="climate-and-weather.html"><a href="climate-and-weather.html"><i class="fa fa-check"></i>Climate and Weather</a></li>
+<li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html"><i class="fa fa-check"></i>Behavior</a>
+<ul>
+<li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#activity-timing"><i class="fa fa-check"></i>Activity timing</a></li>
+<li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#range-size"><i class="fa fa-check"></i>Range size</a></li>
+<li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#exploration"><i class="fa fa-check"></i>Exploration</a></li>
+<li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#learning"><i class="fa fa-check"></i>Learning</a></li>
+<li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#outliers"><i class="fa fa-check"></i>Outliers?</a></li>
+<li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#tick-contact"><i class="fa fa-check"></i>Tick contact</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="infection-and-gene-expression.html"><a href="infection-and-gene-expression.html"><i class="fa fa-check"></i>Infection and gene expression</a>
+<ul>
+<li class="chapter" data-level="" data-path="infection-and-gene-expression.html"><a href="infection-and-gene-expression.html#infection"><i class="fa fa-check"></i>Infection</a></li>
+<li class="chapter" data-level="" data-path="infection-and-gene-expression.html"><a href="infection-and-gene-expression.html#resistance-tolerance"><i class="fa fa-check"></i>Resistance-Tolerance</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="individual-designations.html"><a href="individual-designations.html"><i class="fa fa-check"></i>Individual designations</a></li>
+<li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html"><i class="fa fa-check"></i>Structural equation models</a>
+<ul>
+<li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#modeling-approach"><i class="fa fa-check"></i>Modeling approach</a>
+<ul>
+<li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#latent-and-composite-variables"><i class="fa fa-check"></i>Latent and Composite variables</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#complete-cases"><i class="fa fa-check"></i>Complete cases</a>
+<ul>
+<li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#burden"><i class="fa fa-check"></i>Burden</a></li>
+<li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#infection-status"><i class="fa fa-check"></i>Infection status</a></li>
+<li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#infection-burden-hurdle"><i class="fa fa-check"></i>Infection-burden hurdle</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#maixmal-cases"><i class="fa fa-check"></i>Maixmal cases</a>
+<ul>
+<li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#burden-1"><i class="fa fa-check"></i>Burden</a></li>
+<li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#infection-status-1"><i class="fa fa-check"></i>Infection Status</a></li>
+<li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#infection-burden-hurdle-1"><i class="fa fa-check"></i>Infection-burden hurdle</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#next-steps"><i class="fa fa-check"></i>Next steps</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./"><em>Borrelia</em> Competence of <em>Peromyscus</em></a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="structural-equation-models" class="section level1 hasAnchor">
+<h1>Structural equation models<a href="structural-equation-models.html#structural-equation-models" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>Structural equation models are a special case of path analysis, which describe
+the directed dependence among sets of variables, often viewed as directed
+acyclic graphs (e.g., Figure <a href="structural-equation-models.html#fig:pathExmpl">19</a>). These are an ideal tool
+for understanding the relationships within and among many levels of
+complex system with many variables. We will use this approach to model
+<em>Borrelia</em> infection competence of <em>Peromyscus</em>.</p>
+<div class="figure"><span style="display:block;" id="fig:pathExmpl"></span>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-80788a89b92ceaf02efe" style="width:25%;height:480px;"></div>
+<script type="application/json" data-for="htmlwidget-80788a89b92ceaf02efe">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"Y1\", color = \"black\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"2\" [label = \"Y2\", color = \"black\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"3\" [label = \"X1\", color = \"black\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"4\" [label = \"X2\", color = \"black\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n\"4\"->\"2\" [color = \"black\"] \n\"4\"->\"1\" [color = \"black\"] \n\"3\"->\"1\" [color = \"black\"] \n\"1\"->\"2\" [color = \"black\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<p class="caption">
+Figure 19: Example directed acyclic graph, with two response (Y) variables and two predictor (X) variables. In this case, Y1 is both a resonse (X1, X2) and a predictor (Y2).
+</p>
+</div>
+<div id="modeling-approach" class="section level2 hasAnchor">
+<h2>Modeling approach<a href="structural-equation-models.html#modeling-approach" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Towards finding a good explanatory model of <em>Borrelia</em> infection competence
+among <em>Peromyscus</em>, we will fit a few different SEMs with different objectives.
+The key data for each approach will be <em>Peromyscus</em> data for eight NEON sites.
+The variables we will consider in each model are</p>
+<ol start="0" style="list-style-type: decimal">
+<li><p>Study design variables including NEON site and plot identity (<code>siteID</code>,
+<code>plotID</code>), and <code>year</code> of the observations;</p></li>
+<li><p>Mouse general characteristics including individual identity (<code>iid</code>), sex
+(<code>sex_male</code>), reproductive status (<code>sex_mature</code>), and weight (<code>weight</code>);</p></li>
+<li><p>Mouse behavioral characteristics including capture time (<code>cap_prop_night</code>),
+trapability (<code>weighted_trapability</code>), trap diversity
+(<code>weighted_trap_diversity</code>), and movement (<code>avg_move_dist</code>);</p></li>
+<li><p>Interactions with ticks specifically whether or not ticks were attactched
+at capture (<code>ticks_attached</code>, <code>nymphalTicksAttached</code>, <code>larvalTicksAttached</code>).</p></li>
+<li><p>Immunity information including PCA for gene expression of resistance and
+tolerance genes (<code>expr_PC1</code>, <code>expr_PC2</code>) as well as <em>Borrelia</em> infection status
+and burden (<code>Bb_infected</code>, <code>Bb_burden</code>); and</p></li>
+<li><p>Climatic information including principal components for short-term weather
+(<code>wthr_PC1</code>, <code>wthr_PC2</code>) and long-term average site climate (<code>clim_PC</code>,
+<code>clim_PC2</code>).</p></li>
+</ol>
+<p>In general, the kinds of models we want to fit are as follows:</p>
+<ul class="task-list">
+<li><p><label><input type="checkbox" checked="" />Fit with “complete cases” wherein all paths use only observations for
+which every variable is available</label></p></li>
+<li><p><label><input type="checkbox" />Fit with maximal data, wherein all paths use as many observations as
+possible</label></p></li>
+<li><p><label><input type="checkbox" />Model both infection status and burden:</label></p>
+<ul class="task-list">
+<li><p><label><input type="checkbox" />independent model with complete cases</label></p></li>
+<li><p><label><input type="checkbox" />independent model with maximal data</label></p></li>
+<li><p><label><input type="checkbox" />“hurdle” style model (both responses in one model) with complete cases</label></p></li>
+<li><p><label><input type="checkbox" />“hurdle” style model (both responses in one model) with maximal data</label></p></li>
+</ul></li>
+<li><p><label><input type="checkbox" />Compare model effects between <em>P leucopus</em> vs. <em>P maniculatus</em></label></p>
+<!-- Should this be for **all** models, or just a select model/subset? --></li>
+</ul>
+<div id="latent-and-composite-variables" class="section level3 hasAnchor">
+<h3>Latent and Composite variables<a href="structural-equation-models.html#latent-and-composite-variables" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The key feature that distinguishes SEMs from path analyses are the ability
+to include latent (i.e., unmeasured) and composite variables. We have not yet ,
+included these types of variables into our models, but some interesting options
+might be:</p>
+<ul class="task-list">
+<li><p><label><input type="checkbox" />“Behavior” is an obvious <strong>latent</strong> variable to explore. It would
+be constructed such that it depends on the behavior metrics that we have
+measured (i.e.,, activity time, movement, learning) as well as sex and
+reproductive status.</label></p></li>
+<li><p><label><input type="checkbox" />A “body condition” <strong>composite</strong> variable, constructed from all the
+size traits recorded by NEON may be a better predictor variable than weight
+alone, though it would require using a smaller data set since weight was
+by far the most measured physical trait.</label></p></li>
+<li><p><label><input type="checkbox" />“Immunity” would be a natural <strong>latent</strong> or <strong>composite</strong> variable
+constructed from the six gene expression variables. This may capture more
+variation than the principal component proxies we are currently using.</label></p></li>
+</ul>
+<p>It is unclear, and not well-documented, how to include either latent or
+composite variables in <code>piecewiseSEM</code>.</p>
+</div>
+</div>
+<div id="complete-cases" class="section level2 hasAnchor">
+<h2>Complete cases<a href="structural-equation-models.html#complete-cases" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="burden" class="section level3 hasAnchor">
+<h3>Burden<a href="structural-equation-models.html#burden" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Figure <a href="structural-equation-models.html#fig:selBurdCompSem">20</a> visualizes a SEM fit to a “complete” data set
+(i.e., only observations for which <em>all</em> variables were measured). As such,
+it has some limitations in its power, but it is the most “defensible”
+explanatory model because it does not draw conclusions beyond the scope of its
+data. Models using more of the data will be explored in the next section.</p>
+<p>While this model is very interesting, one of the primary paths of interest
+is not significant (behavior -&gt; ticks -&gt; resistance -&gt; burden -&gt; tolerance). It
+is possible
+that the “behavior -&gt; ticks” path is improved by a model which is not limited
+by the completeness restriction. Table <a href="structural-equation-models.html#tab:selBurdCompSemR2">11</a> summarizes the
+fit (<span class="math inline">\(R^2\)</span>) of each of the component models.</p>
+<div class="figure"><span style="display:block;" id="fig:selBurdCompSem"></span>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-27a9d9e6b91852abaf9f" style="width:100%;height:672px;"></div>
+<script type="application/json" data-for="htmlwidget-27a9d9e6b91852abaf9f">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"expr_PC2\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"2\" [label = \"Bb_burden\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"3\" [label = \"expr_PC1\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"4\" [label = \"ticks_attached\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"5\" [label = \"cap_prop_night\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"6\" [label = \"weighted_trap_diversity\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"7\" [label = \"weighted_trapability\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"8\" [label = \"avg_move_dist\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"9\" [label = \"sex_mature\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"10\" [label = \"sex_male\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"11\" [label = \"weight\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"12\" [label = \"sex_male:weight\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"13\" [label = \"wthr_PC1\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"14\" [label = \"clim_PC1\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"15\" [label = \"clim_PC2\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"16\" [label = \"sex_male:sex_mature\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n\"9\"->\"1\" [color = \"black\", style = \"solid\", penwidth = \"4.3812375249501\"] \n\"6\"->\"1\" [color = \"black\", style = \"solid\", penwidth = \"4.86249722776669\"] \n\"2\"->\"1\" [color = \"grey70\", style = \"dotted\", penwidth = \"3.92404080727434\"] \n\"10\"->\"2\" [color = \"grey70\", style = \"dotted\", penwidth = \"3.86271900643158\"] \n\"11\"->\"2\" [color = \"grey70\", style = \"dotted\", penwidth = \"2.35063206919494\"] \n\"4\"->\"2\" [color = \"grey70\", style = \"dotted\", penwidth = \"3.83943224661787\"] \n\"3\"->\"2\" [color = \"grey70\", style = \"dotted\", penwidth = \"2.91261920603238\"] \n\"12\"->\"2\" [color = \"black\", style = \"solid\", penwidth = \"6.00587713461965\"] \n\"10\"->\"3\" [color = \"black\", style = \"solid\", penwidth = \"4.40297183410956\"] \n\"11\"->\"3\" [color = \"black\", style = \"solid\", penwidth = \"4.57296518074961\"] \n\"13\"->\"3\" [color = \"black\", style = \"solid\", penwidth = \"4.76158793524063\"] \n\"4\"->\"3\" [color = \"grey70\", style = \"dotted\", penwidth = \"3.27977378576181\"] \n\"13\"->\"4\" [color = \"black\", style = \"solid\", penwidth = \"4.98669328010645\"] \n\"14\"->\"4\" [color = \"black\", style = \"solid\", penwidth = \"1\"] \n\"10\"->\"4\" [color = \"grey70\", style = \"dotted\", penwidth = \"4.22133510756265\"] \n\"6\"->\"4\" [color = \"grey70\", style = \"dotted\", penwidth = \"3.80217343091595\"] \n\"5\"->\"4\" [color = \"grey70\", style = \"dotted\", penwidth = \"3.37292082501663\"] \n\"8\"->\"4\" [color = \"grey70\", style = \"dotted\", penwidth = \"3.25571080062098\"] \n\"6\"->\"5\" [color = \"black\", style = \"solid\", penwidth = \"2.32656908405411\"] \n\"13\"->\"5\" [color = \"black\", style = \"solid\", penwidth = \"1.78243512974052\"] \n\"15\"->\"5\" [color = \"black\", style = \"solid\", penwidth = \"5.5455755156354\"] \n\"10\"->\"5\" [color = \"grey70\", style = \"dotted\", penwidth = \"2.44533155910401\"] \n\"9\"->\"5\" [color = \"grey70\", style = \"dotted\", penwidth = \"2.91106675537813\"] \n\"16\"->\"5\" [color = \"grey70\", style = \"dotted\", penwidth = \"4.73286759813706\"] \n\"7\"->\"6\" [color = \"black\", style = \"solid\", penwidth = \"8\"] \n\"8\"->\"6\" [color = \"black\", style = \"solid\", penwidth = \"5.55256154357951\"] \n\"13\"->\"6\" [color = \"grey70\", style = \"solid\", penwidth = \"2.77056997116877\"] \n\"10\"->\"6\" [color = \"grey70\", style = \"dotted\", penwidth = \"3.68651585717454\"] \n\"11\"->\"6\" [color = \"grey70\", style = \"solid\", penwidth = \"4.31991572410734\"] \n\"12\"->\"6\" [color = \"grey70\", style = \"dotted\", penwidth = \"2.5703038367709\"] \n\"8\"->\"7\" [color = \"black\", style = \"solid\", penwidth = \"6.97150144156132\"] \n\"15\"->\"7\" [color = \"black\", style = \"solid\", penwidth = \"1.25848303393214\"] \n\"14\"->\"7\" [color = \"grey70\", style = \"dotted\", penwidth = \"2.85440230649811\"] \n\"10\"->\"8\" [color = \"grey70\", style = \"dotted\", penwidth = \"3.31159902417387\"] \n\"11\"->\"8\" [color = \"grey70\", style = \"dotted\", penwidth = \"2.7581503659348\"] \n\"15\"->\"8\" [color = \"black\", style = \"solid\", penwidth = \"4.89044133954314\"] \n\"12\"->\"8\" [color = \"black\", style = \"solid\", penwidth = \"5.12951874029718\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<p class="caption">
+Figure 20: Directed acyclycal graph of selected burden SEM model, fit with complete cases. The goodness-of-fit P-value is 0.66, which indicates that this model is <em>not</em> statistically different from an ‘ideal’ model of these data.
+</p>
+</div>
+<p><br></p>
+<table>
+<caption><span id="tab:selBurdCompSemR2">Table 11: </span>R-squared table of the selected SEM, fit with complete cases. Marginal R-squared values represent the proportion of variation in the resposne explained by the fixed effects and Conditional values represent the proportion explained by the full model. Models without random effects (i.e., simple linear regression) do not have a conditional R-squared value.</caption>
+<colgroup>
+<col width="32%" />
+<col width="12%" />
+<col width="12%" />
+<col width="16%" />
+<col width="12%" />
+<col width="16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Response</th>
+<th align="left">family</th>
+<th align="left">link</th>
+<th align="left">method</th>
+<th align="right">Marginal</th>
+<th align="right">Conditional</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">expr_PC2</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.05</td>
+<td align="right">0.32</td>
+</tr>
+<tr class="even">
+<td align="left">Bb_burden</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.07</td>
+<td align="right">0.20</td>
+</tr>
+<tr class="odd">
+<td align="left">expr_PC1</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.07</td>
+<td align="right">0.27</td>
+</tr>
+<tr class="even">
+<td align="left">ticks_attached</td>
+<td align="left">binomial</td>
+<td align="left">logit</td>
+<td align="left">theoretical</td>
+<td align="right">0.14</td>
+<td align="right">0.27</td>
+</tr>
+<tr class="odd">
+<td align="left">cap_prop_night</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.12</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">weighted_trap_diversity</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.57</td>
+<td align="right">0.66</td>
+</tr>
+<tr class="odd">
+<td align="left">weighted_trapability</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.25</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">avg_move_dist</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.07</td>
+<td align="right">NA</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="infection-status" class="section level3 hasAnchor">
+<h3>Infection status<a href="structural-equation-models.html#infection-status" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>TBD</p>
+</div>
+<div id="infection-burden-hurdle" class="section level3 hasAnchor">
+<h3>Infection-burden hurdle<a href="structural-equation-models.html#infection-burden-hurdle" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>TBD</p>
+</div>
+</div>
+<div id="maixmal-cases" class="section level2 hasAnchor">
+<h2>Maixmal cases<a href="structural-equation-models.html#maixmal-cases" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Figure <a href="structural-equation-models.html#fig:selBurdMaxSem">21</a> shows the selected burden model, fit with the
+maximal data for each path. And Table <a href="structural-equation-models.html#tab:selBurdMaxSemR2">12</a> shows the
+corresponding <span class="math inline">\(R^2\)</span> table</p>
+<div class="figure"><span style="display:block;" id="fig:selBurdMaxSem"></span>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-524348033f94569637da" style="width:100%;height:672px;"></div>
+<script type="application/json" data-for="htmlwidget-524348033f94569637da">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"expr_PC2\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"2\" [label = \"Bb_burden\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"3\" [label = \"expr_PC1\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"4\" [label = \"ticks_attached\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"5\" [label = \"cap_prop_night\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"6\" [label = \"weighted_trap_diversity\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"7\" [label = \"weighted_trapability\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"8\" [label = \"avg_move_dist\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"9\" [label = \"sex_mature\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"10\" [label = \"sex_male\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"11\" [label = \"weight\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"12\" [label = \"wthr_PC1\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"13\" [label = \"sex_male:weight\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"14\" [label = \"clim_PC1\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"15\" [label = \"clim_PC2\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"16\" [label = \"sex_male:sex_mature\", width = \"1.5\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n\"9\"->\"1\" [color = \"black\", style = \"solid\", penwidth = \"3.77774898505658\"] \n\"6\"->\"1\" [color = \"black\", style = \"solid\", penwidth = \"5.5711324177248\"] \n\"2\"->\"1\" [color = \"grey70\", style = \"dotted\", penwidth = \"3.4300768765656\"] \n\"10\"->\"2\" [color = \"grey70\", style = \"solid\", penwidth = \"3.63021508162736\"] \n\"11\"->\"2\" [color = \"grey70\", style = \"dotted\", penwidth = \"2.20324781895137\"] \n\"4\"->\"2\" [color = \"grey70\", style = \"dotted\", penwidth = \"3.0013820506176\"] \n\"3\"->\"2\" [color = \"grey70\", style = \"dotted\", penwidth = \"2.8230111427831\"] \n\"12\"->\"2\" [color = \"black\", style = \"solid\", penwidth = \"3.80798134231666\"] \n\"13\"->\"2\" [color = \"black\", style = \"solid\", penwidth = \"4.93202038524661\"] \n\"10\"->\"3\" [color = \"grey70\", style = \"solid\", penwidth = \"3.3931934007083\"] \n\"11\"->\"3\" [color = \"black\", style = \"solid\", penwidth = \"3.74691198065129\"] \n\"12\"->\"3\" [color = \"grey70\", style = \"dotted\", penwidth = \"3.37203075062624\"] \n\"4\"->\"3\" [color = \"black\", style = \"solid\", penwidth = \"2.34654919236417\"] \n\"12\"->\"4\" [color = \"black\", style = \"solid\", penwidth = \"3.94644553856785\"] \n\"14\"->\"4\" [color = \"black\", style = \"solid\", penwidth = \"1\"] \n\"10\"->\"4\" [color = \"black\", style = \"solid\", penwidth = \"3.58305260430163\"] \n\"6\"->\"4\" [color = \"grey70\", style = \"dotted\", penwidth = \"2.74259307247128\"] \n\"9\"->\"4\" [color = \"grey70\", style = \"dotted\", penwidth = \"3.11566036106072\"] \n\"11\"->\"4\" [color = \"grey70\", style = \"dotted\", penwidth = \"2.92096398030578\"] \n\"5\"->\"4\" [color = \"grey70\", style = \"dotted\", penwidth = \"2.76436036969854\"] \n\"8\"->\"4\" [color = \"grey70\", style = \"dotted\", penwidth = \"2.64040770493219\"] \n\"7\"->\"4\" [color = \"grey70\", style = \"dotted\", penwidth = \"3.00380063919841\"] \n\"6\"->\"5\" [color = \"grey70\", style = \"dotted\", penwidth = \"2.93668480608102\"] \n\"12\"->\"5\" [color = \"black\", style = \"solid\", penwidth = \"2.53217586594109\"] \n\"15\"->\"5\" [color = \"black\", style = \"solid\", penwidth = \"3.23538049581066\"] \n\"10\"->\"5\" [color = \"grey70\", style = \"dotted\", penwidth = \"2.89556880020731\"] \n\"9\"->\"5\" [color = \"black\", style = \"solid\", penwidth = \"2.29031700786041\"] \n\"11\"->\"5\" [color = \"black\", style = \"solid\", penwidth = \"3.88053899974087\"] \n\"7\"->\"5\" [color = \"black\", style = \"solid\", penwidth = \"1.49157812904898\"] \n\"14\"->\"5\" [color = \"black\", style = \"solid\", penwidth = \"2.51403645158504\"] \n\"16\"->\"5\" [color = \"black\", style = \"solid\", penwidth = \"3.64533126025741\"] \n\"7\"->\"6\" [color = \"black\", style = \"solid\", penwidth = \"8\"] \n\"8\"->\"6\" [color = \"grey70\", style = \"dotted\", penwidth = \"2.90766174311134\"] \n\"12\"->\"6\" [color = \"black\", style = \"solid\", penwidth = \"2.69966312516196\"] \n\"10\"->\"6\" [color = \"black\", style = \"solid\", penwidth = \"3.09328841668826\"] \n\"11\"->\"6\" [color = \"black\", style = \"solid\", penwidth = \"3.09570700526907\"] \n\"13\"->\"6\" [color = \"grey70\", style = \"dotted\", penwidth = \"2.93426621750022\"] \n\"8\"->\"7\" [color = \"black\", style = \"solid\", penwidth = \"3.11747430249633\"] \n\"15\"->\"7\" [color = \"black\", style = \"solid\", penwidth = \"2.78008119547378\"] \n\"14\"->\"7\" [color = \"black\", style = \"solid\", penwidth = \"1.37185799429904\"] \n\"10\"->\"7\" [color = \"black\", style = \"solid\", penwidth = \"2.52612939448907\"] \n\"9\"->\"7\" [color = \"black\", style = \"solid\", penwidth = \"2.80305778699145\"] \n\"11\"->\"7\" [color = \"black\", style = \"solid\", penwidth = \"3.49356482681178\"] \n\"12\"->\"7\" [color = \"black\", style = \"solid\", penwidth = \"3.27226397166796\"] \n\"10\"->\"8\" [color = \"black\", style = \"solid\", penwidth = \"3.01831217068325\"] \n\"11\"->\"8\" [color = \"black\", style = \"solid\", penwidth = \"3.3931934007083\"] \n\"15\"->\"8\" [color = \"grey70\", style = \"dotted\", penwidth = \"2.94575451325905\"] \n\"9\"->\"8\" [color = \"black\", style = \"solid\", penwidth = \"2.68817482940313\"] \n\"13\"->\"8\" [color = \"grey70\", style = \"dotted\", penwidth = \"2.89677809449771\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<p class="caption">
+Figure 21: Directed acyclycal graph of selected burden SEM model, fit with maximal cases. The goodness-of-fit P-value is 0.91, which indicates that this model is <em>not</em> statistically different from an ‘ideal’ model of these data.
+</p>
+</div>
+<p><br></p>
+<table>
+<caption><span id="tab:selBurdMaxSemR2">Table 12: </span>R-squared table of the selected SEM, fit with complete cases. Marginal R-squared values represent the proportion of variation in the resposne explained by the fixed effects and Conditional values represent the proportion explained by the full model. Models without random effects (i.e., simple linear regression) do not have a conditional R-squared value.</caption>
+<colgroup>
+<col width="32%" />
+<col width="12%" />
+<col width="12%" />
+<col width="16%" />
+<col width="12%" />
+<col width="16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Response</th>
+<th align="left">family</th>
+<th align="left">link</th>
+<th align="left">method</th>
+<th align="right">Marginal</th>
+<th align="right">Conditional</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">expr_PC2</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.05</td>
+<td align="right">0.24</td>
+</tr>
+<tr class="even">
+<td align="left">Bb_burden</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.08</td>
+<td align="right">0.19</td>
+</tr>
+<tr class="odd">
+<td align="left">expr_PC1</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.03</td>
+<td align="right">0.14</td>
+</tr>
+<tr class="even">
+<td align="left">ticks_attached</td>
+<td align="left">binomial</td>
+<td align="left">logit</td>
+<td align="left">theoretical</td>
+<td align="right">0.18</td>
+<td align="right">0.29</td>
+</tr>
+<tr class="odd">
+<td align="left">cap_prop_night</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.06</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">weighted_trap_diversity</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.71</td>
+<td align="right">0.73</td>
+</tr>
+<tr class="odd">
+<td align="left">weighted_trapability</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.09</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">avg_move_dist</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.00</td>
+<td align="right">NA</td>
+</tr>
+</tbody>
+</table>
+<div id="burden-1" class="section level3 hasAnchor">
+<h3>Burden<a href="structural-equation-models.html#burden-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>TBD</p>
+</div>
+<div id="infection-status-1" class="section level3 hasAnchor">
+<h3>Infection Status<a href="structural-equation-models.html#infection-status-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>TBD</p>
+</div>
+<div id="infection-burden-hurdle-1" class="section level3 hasAnchor">
+<h3>Infection-burden hurdle<a href="structural-equation-models.html#infection-burden-hurdle-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>TBD</p>
+</div>
+</div>
+<div id="next-steps" class="section level2 hasAnchor">
+<h2>Next steps<a href="structural-equation-models.html#next-steps" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<ul>
+<li><p>Prediction: how can the expression module (smaller data) inform the larger
+things</p>
+<ul>
+<li><p>can we map expression to something else? Proxy variables for expression.</p></li>
+<li><p>use 200 mice to fine tune estimation</p></li>
+</ul></li>
+<li><p>Maybe look at proposal for machine learning hanta virus / disease?</p></li>
+</ul>
+
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="individual-designations.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+  "sharing": {
+    "github": false,
+    "facebook": true,
+    "twitter": true,
+    "linkedin": false,
+    "weibo": false,
+    "instapaper": false,
+    "vk": false,
+    "whatsapp": false,
+    "all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+  },
+  "fontsettings": {
+    "theme": "white",
+    "family": "sans",
+    "size": 2
+  },
+  "edit": {
+    "link": null,
+    "text": null
+  },
+  "history": {
+    "link": null,
+    "text": null
+  },
+  "view": {
+    "link": null,
+    "text": null
+  },
+  "download": null,
+  "search": {
+    "engine": "fuse",
+    "options": null
+  },
+  "toc": {
+    "collapse": "section"
+  }
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

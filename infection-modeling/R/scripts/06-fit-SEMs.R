@@ -33,7 +33,9 @@ mod_dat <- Peros %>%
     expr_PC1, expr_PC2, # gene expression
     wthr_PC1, wthr_PC2, # weather
     clim_PC1, clim_PC2, # climate
-  ) %>% 
+  )
+
+complete_dat <- mod_dat %>% 
   filter(
     year %in% c(2020:2024),
     complete.cases(.)
@@ -47,20 +49,32 @@ mod_dat <- Peros %>%
     Bb_burden = as.vector(scale(log(Bb_burden + 1)))
   )
 
+full_dat <- mod_dat %>% 
+  mutate(
+    across(
+      c(weight, cap_prop_night:clim_PC2),
+      ~as.vector(scale(.x))
+    ),
+    across(c(siteID, plotID, year, iid), ~as.factor(.x)),
+    Bb_burden = as.vector(scale(log(Bb_burden + 1)))
+  )
+  
+
 ## ---- Correct *correlated* PC axes... ----
 
 # Test correlation of expression PC on this dataset
-cor_test <- cor.test(mod_dat$expr_PC1, mod_dat$expr_PC2)
+cor_test <- cor.test(complete_dat$expr_PC1, complete_dat$expr_PC2)
 c(cor_test$statistic, P = cor_test$p.value, conf_int = cor_test$conf.int)
+
+## This is no longer a problem...
 
 # # read a gene lookup table
 # gene_lookup <- readRDS("infection-modeling/data/expression-lookup.rds")
 # 
 # # get expression data for this observation set
 # new_PCdat <- Peros %>% 
-#   filter(uid %in% mod_dat$uid) %>%
+#   filter(uid %in% complete_dat$uid) %>%
 #   select(uid, gene_lookup$gene, Bb_burden, Bb_infected)
-# 
 # # fit a new PCA
 # new_PCA <- new_PCdat %>% 
 #   select(-c(uid, Bb_burden, Bb_infected)) %>% 
@@ -125,8 +139,8 @@ c(cor_test$statistic, P = cor_test$p.value, conf_int = cor_test$conf.int)
 #   )
 # 
 # # add new PCs into dataset
-# mod_dat <- left_join(
-#   mod_dat %>% select(-c(expr_PC1, expr_PC2)),
+# complete_dat <- left_join(
+#   complete_dat %>% select(-c(expr_PC1, expr_PC2)),
 #   new_st %>% select(uid, expr_PC1, expr_PC2),
 #   by = "uid"
 # )
@@ -136,15 +150,15 @@ c(cor_test$statistic, P = cor_test$p.value, conf_int = cor_test$conf.int)
 #   "infection-modeling/data/immune-PCA_no2022.rds"
 # )
 # 
-# new_exprPCs <- semi_join(ipca2324_list$site_scores, mod_dat, by = "uid")
+# new_exprPCs <- semi_join(ipca2324_list$site_scores, complete_dat, by = "uid")
 # 
 # # now they are no longer correlated...
 # new_exprPCs %>%  
 #   select(-uid) %>% 
 #   with(cor.test(x = expr_PC1, y = expr_PC2))
 # 
-# mod_dat <- full_join(
-#   mod_dat %>% select(-c(expr_PC1, expr_PC2)),
+# complete_dat <- full_join(
+#   complete_dat %>% select(-c(expr_PC1, expr_PC2)),
 #   new_exprPCs,
 #   by = "uid"
 # )
@@ -152,7 +166,7 @@ c(cor_test$statistic, P = cor_test$p.value, conf_int = cor_test$conf.int)
 ## ---- Look at the model data ----
 
 # Are there duplicate individuals?
-mod_dat %>% 
+complete_dat %>% 
   group_by(iid) %>% 
   tally() %>% filter(n > 1) %>% 
   nrow() %>% all.equal(0) %>% isTRUE()
@@ -170,7 +184,7 @@ tol_full <- lmer(
     wthr_PC1 + wthr_PC2 +
     clim_PC1 + clim_PC2 + 
     (1|year) + (1|siteID),
-  data = mod_dat
+  data = complete_dat
 )
 summary(tol_full)
 
@@ -184,8 +198,8 @@ tol_red <- tol_full %>%
   get_model()
 
 # minimum viable model
-tol_min <- tol_red
-summary(tol_min)
+tol_alt <- tol_red %>% update(. ~ . + Bb_burden)
+summary(tol_alt)
 
 ## ---- Burden ----
 
@@ -201,7 +215,7 @@ burden_full <- lmer(
     wthr_PC1 + wthr_PC2 +
     clim_PC1 + clim_PC2 + 
     (1|year) + (1|siteID),
-  data = mod_dat,
+  data = complete_dat,
 )
 summary(burden_full)
 
@@ -214,14 +228,14 @@ burden_red <- update(burden_full) %>%
   get_model()
 
 # add in critical variables 
-burden_min <- burden_red %>% 
+burden_alt <- burden_red %>% 
   update(
     . ~ . 
     + ticks_attached + expr_PC1,
   )
 
 # compare to other models - not sig different
-anova(burden_full, burden_red, burden_min)
+anova(burden_full, burden_red, burden_alt)
 
 ## ---- Infection ----
 # 
@@ -235,7 +249,7 @@ anova(burden_full, burden_red, burden_min)
 #     wthr_PC1 + wthr_PC2 +
 #     clim_PC1 + clim_PC2 + 
 #     (1|year) + (1|siteID) + (1|tagID),
-#   data = mod_dat,
+#   data = complete_dat,
 #   family = "binomial"
 # )
 # summary(infect_full)
@@ -249,16 +263,16 @@ anova(burden_full, burden_red, burden_min)
 #     - avg_move_dist
 #   ) %>% summary()
 # 
-# infect_min <- glmer(
+# infect_alt <- glmer(
 #   Bb_infected ~ 
 #     expr_PC1 + 
 #     ticks_attached + 
 #     sex_male * sex_mature * weight +
 #     (1|year) + (1|siteID) + (1|tagID),
-#   data = mod_dat,
+#   data = complete_dat,
 #   family = "binomial"
 # )
-# summary(infect_min)
+# summary(infect_alt)
 
 
 ## ---- Resistance ----
@@ -274,14 +288,14 @@ res_full <- lmer(
     wthr_PC1 + wthr_PC2 +
     clim_PC1 + clim_PC2 + 
     (1|year) + (1|siteID),
-  data = mod_dat
+  data = complete_dat
 )
 
 # remove singular variable(s)
 VarCorr(res_full)
 res_nosing <- lm(
   formula = update(formula(res_full), . ~ . - (1|siteID) - (1|year)), 
-  data = mod_dat
+  data = complete_dat
 )
 
 # reduced
@@ -300,7 +314,7 @@ res_red <- update(res_full) %>%
 # ) %>% summary()
 
 # minimum
-res_min <- update(
+res_alt <- update(
   res_red,
   . ~ . + ticks_attached + sex_male 
 )
@@ -316,7 +330,7 @@ tick_full <- glmer(
     wthr_PC1 + wthr_PC2 +
     clim_PC1 + clim_PC2 + 
     (1|year) + (1|siteID),
-  data = mod_dat,
+  data = complete_dat,
   family = "binomial"
 )
 summary(tick_full)
@@ -340,7 +354,7 @@ tick_red <- tick_full %>%
 summary(tick_red)
 
 # minimum viable model
-tick_min <- tick_red %>% update(. ~ . + sex_male - (1|year))
+tick_alt <- tick_red %>% update(. ~ . + sex_male - (1|year) + weighted_trap_diversity)
 
 ## ---- Capture time ----
 
@@ -352,7 +366,7 @@ captime_full <- lmer(
     wthr_PC1 + wthr_PC2 +
     clim_PC1 + clim_PC2 + 
     (1|year) + (1|siteID),
-  data = mod_dat
+  data = complete_dat
 )
 
 # remove singular variables
@@ -366,7 +380,7 @@ captime_red <- captime_full %>%
   get_model()
 
 # add in some important variables
-captime_min <- captime_red %>% 
+captime_alt <- captime_red %>% 
   update(. ~ . + sex_male*sex_mature)
 
 ## ---- Trap diversity ----
@@ -379,7 +393,7 @@ trapdiv_full <- lmer(
     wthr_PC1 + wthr_PC2 +
     clim_PC1 + clim_PC2 + 
     (1|year) + (1|siteID),
-  data = mod_dat
+  data = complete_dat
 )
 
 # remove singular
@@ -394,8 +408,8 @@ trapdiv_red <- trapdiv_full %>%
 summary(trapdiv_red)
 
 # add in some interesting variables
-trapdiv_min <- trapdiv_red %>% update(. ~ . + sex_male*weight)
-summary(trapdiv_min)
+trapdiv_alt <- trapdiv_red %>% update(. ~ . + sex_male*weight)
+summary(trapdiv_alt)
 
 ## ---- Trapability ----
 
@@ -407,7 +421,7 @@ trapable_full <- lmer(
     wthr_PC1 + wthr_PC2 +
     clim_PC1 + clim_PC2 + 
     (1|year) + (1|siteID),
-  data = mod_dat
+  data = complete_dat
 )
 
 # remove singular
@@ -422,8 +436,8 @@ trapable_red <- trapable_full %>%
 summary(trapable_red)
 
 # add in first climate axis
-trapable_min <- trapable_red %>% update(. ~ . + clim_PC1)
-summary(trapable_min)
+trapable_alt <- trapable_red %>% update(. ~ . + clim_PC1)
+summary(trapable_alt)
 
 ## ---- Move distance ----
 
@@ -434,7 +448,7 @@ movedist_full <- lmer(
     wthr_PC1 + wthr_PC2 +
     clim_PC1 + clim_PC2 + 
     (1|year) + (1|siteID),
-  data = mod_dat
+  data = complete_dat
 )
 
 # remove singular
@@ -449,12 +463,12 @@ movedist_red <- movedist_full %>%
 summary(movedist_red)
 
 # copy
-movedist_min <- movedist_red
+movedist_alt <- movedist_red
 
-## ---- Full SEM ----
+## ---- Full SEM (complete) ----
 
 # Full model
-sem_full <- psem(
+full_burd_sem_comp <- psem(
   tol_nosing, 
   burden_nosing,
   res_nosing,
@@ -464,111 +478,205 @@ sem_full <- psem(
   trapable_nosing,
   movedist_nosing,
   # expr_PC1 %~~% expr_PC2,
-  data = mod_dat
+  data = complete_dat
 )
-sem_smry <- summary(sem_full)
+full_burd_sem_comp_smry <- summary(full_burd_sem_comp)
 
 # missing paths? - None
-sem_smry$dTable %>% data.frame() %>% filter(P.Value <= 0.1) %>% 
+full_burd_sem_comp_smry$dTable %>% data.frame() %>% filter(P.Value <= 0.1) %>% 
   select(-c(Test.Type, Crit.Value, DF))
 
 # all paths
-sem_smry$coefficients %>% 
+full_burd_sem_comp_smry$coefficients %>% 
   data.frame() %>% 
   select(Response, Predictor, P.Value, Var.9)
 
 # most important paths
-sem_smry$coefficients %>% 
+full_burd_sem_comp_smry$coefficients %>% 
   data.frame() %>% 
   select(Response, Predictor, P.Value, Var.9) %>% 
   filter(P.Value <= 0.1)
 
 # save it
 saveRDS(
-  sem_smry, 
-  file.path(mod_output_dir, "full-SEM_complete-cases.rds")
+  full_burd_sem_comp_smry, 
+  file.path(mod_output_dir, "full-burden-SEM_complete-cases.rds")
 )
 
-## ---- Minimal SEM ----
+## ---- Minimal SEM (complete) ----
 
 # model built with selected components
-sem_min <- psem(
-  tol_min, 
-  burden_min,
-  res_min,
-  tick_min,
-  captime_min,
-  trapdiv_min,
-  trapable_min,
-  movedist_min,
+alt_burd_sem_comp <- psem(
+  tol_alt, 
+  burden_alt,
+  res_alt,
+  tick_alt,
+  captime_alt,
+  trapdiv_alt,
+  trapable_alt,
+  movedist_alt,
   # expr_PC1 %~~% expr_PC2,
-  data = mod_dat
+  data = complete_dat
 )
-min_smry <- summary(sem_min)
+alt_burd_sem_comp_smry <- summary(alt_burd_sem_comp)
 
 # missing paths
-min_smry$dTable %>% data.frame() %>% filter(P.Value <= 0.1) %>% 
+alt_burd_sem_comp_smry$dTable %>% data.frame() %>% filter(P.Value <= 0.1) %>% 
   select(-c(Test.Type, Crit.Value, DF))
 
 # coefficient table
-min_smry$coefficients %>% 
+alt_burd_sem_comp_smry$coefficients %>% 
   data.frame() %>% 
   select(Response, Predictor, P.Value, Var.9)
 
 # Update with missing paths
-sem_minsel <- psem(
-  tol_min,
-  # tol_min %>% update(. ~ . + avg_move_dist),
-  burden_min %>% update(. ~ . + wthr_PC1),
-  res_min,
-  tick_min,
-  captime_min,
-  trapdiv_min,
-  trapable_min %>% update(. ~ . + sex_male),
-  movedist_min,
+red_burd_sem_comp <- psem(
+  tol_alt,
+  # tol_alt %>% update(. ~ . + avg_move_dist),
+  burden_alt %>% update(. ~ . + wthr_PC1),
+  res_alt,
+  tick_alt,
+  captime_alt,
+  trapdiv_alt,
+  trapable_alt %>% update(. ~ . + sex_male),
+  movedist_alt,
   # expr_PC1 %~~% expr_PC2,
-  data = mod_dat
+  data = complete_dat
 )
-minsel_smry <- summary(sem_minsel)
+red_burd_sem_comp_smry <- summary(red_burd_sem_comp)
 
 # missing paths? - none
-minsel_smry$dTable %>% data.frame() %>% filter(P.Value <= 0.1)
+red_burd_sem_comp_smry$dTable %>% data.frame() %>% filter(P.Value <= 0.1)
 
 # coefficient table
-minsel_smry$coefficients %>%
+red_burd_sem_comp_smry$coefficients %>%
   data.frame() %>%
   select(Response, Predictor, Std.Estimate, P.Value, Var.9) 
 
 # save it 
 saveRDS(
-  minsel_smry, 
-  file.path(mod_output_dir, "reduced-SEM_complete-cases.rds")
+  red_burd_sem_comp_smry, 
+  file.path(mod_output_dir, "reduced-burden-SEM_complete-cases.rds")
 )
 
 # Update with missing paths that seem important
-sem_sel <- psem(
-  tol_min %>% update(. ~ . + Bb_burden),
-  # tol_min %>% update(. ~ . + avg_move_dist),
-  burden_min %>% update(. ~ . + wthr_PC1),
-  res_min,
-  tick_min %>% update(. ~ . + cap_prop_night + avg_move_dist),
-  captime_min,
-  trapdiv_min,
-  trapable_min %>% update(. ~ . + sex_male),
-  movedist_min,
+sel_burd_sem_comp <- psem(
+  tol_alt,
+  # tol_alt %>% update(. ~ . + avg_move_dist),
+  burden_alt,
+  res_alt,
+  tick_alt %>% update(. ~ . + cap_prop_night + avg_move_dist),
+  captime_alt,
+  trapdiv_alt,
+  trapable_alt,
+  movedist_alt,
   # expr_PC1 %~~% expr_PC2,
-  data = mod_dat
+  data = complete_dat
 )
-sel_smry <- summary(sem_sel)
+sel_sem_complete_smry <- summary(sel_burd_sem_comp)
 
-sel_smry$coefficients %>% 
+sel_sem_complete_smry$coefficients %>% 
   data.frame() %>% 
   select(Response, Predictor, Std.Estimate, P.Value, Var.9)
 
-sel_smry$R2
+sel_sem_complete_smry$R2
 
 # save it 
 saveRDS(
-  sel_smry, 
-  file.path(mod_output_dir, "selected-alt-SEM_complete-cases.rds")
+  sel_sem_complete_smry, 
+  file.path(mod_output_dir, "selected-burden-SEM_complete-cases.rds")
+)
+
+
+## ---- Full SEM (maximal) ----
+
+# Full model
+full_burd_sem_max <- psem(
+  tol_full %>% update(data = full_dat), 
+  burden_full %>% update(data = full_dat),
+  res_full %>% update(data = full_dat),
+  tick_full %>% update(data = full_dat),
+  captime_full %>% update(data = full_dat),
+  trapdiv_full %>% update(data = full_dat),
+  trapable_full %>% update(data = full_dat),
+  movedist_full %>% update(data = full_dat),
+  # expr_PC1 %~~% expr_PC2,
+  data = full_dat
+)
+full_burd_sem_max_smry <- summary(full_burd_sem_max)
+
+saveRDS(
+  full_burd_sem_max_smry, 
+  file.path(mod_output_dir, "full-burden-SEM_maximal-cases.rds")
+)
+
+## ---- Alt model (maximal) ----
+
+# Alt model
+alt_burd_sem_max <- psem(
+  tol_alt %>% update(data = full_dat), 
+  burden_alt %>% update(data = full_dat),
+  res_alt %>% update(data = full_dat),
+  tick_alt %>% update(data = full_dat),
+  captime_alt %>% update(data = full_dat),
+  trapdiv_alt %>% update(data = full_dat),
+  trapable_alt %>% update(data = full_dat),
+  movedist_alt %>% update(data = full_dat),
+  # expr_PC1 %~~% expr_PC2,
+  data = full_dat
+)
+alt_burd_sem_max_smry <- summary(alt_burd_sem_max)
+
+alt_burd_sem_max_smry$dTable %>% data.frame() %>% 
+  select(Independ.Claim, P.Value, Var.6) %>% tibble() %>% 
+  filter(P.Value <= 0.1)
+
+alt_burd_sem_max_smry$coefficients %>% 
+  data.frame() %>% 
+  select(Response, Predictor, P.Value, Var.9) %>% tibble() %>% print(n = 100)
+
+saveRDS(
+  alt_burd_sem_max_smry, 
+  file.path(mod_output_dir, "reduced-burden-SEM_maximal-cases.rds")
+)
+
+# Updated Alt model
+sel_burd_sem_max <- psem(
+  tol_alt %>% update(
+    . ~ . , data = full_dat
+  ), 
+  burden_alt %>% update(. ~ . + wthr_PC1, data = full_dat),
+  res_alt %>% update(data = full_dat),
+  tick_alt %>% update(
+    . ~ . + sex_mature + weight + cap_prop_night + avg_move_dist + 
+      weighted_trapability, 
+    data = full_dat
+  ),
+  captime_alt %>% update(
+    . ~ . + weight + weighted_trapability + clim_PC1, 
+    data = full_dat
+  ),
+  trapdiv_alt %>% update(data = full_dat),
+  trapable_alt %>% update(
+    . ~ . + sex_male + sex_mature + weight + wthr_PC1, 
+    data = full_dat
+  ),
+  movedist_alt %>% update(. ~ . + sex_mature, data = full_dat),
+  # expr_PC1 %~~% expr_PC2,
+  data = full_dat
+)
+sel_burd_sem_max_smry <- summary(sel_burd_sem_max)
+
+sel_burd_sem_max_smry$Cstat
+
+sel_burd_sem_max_smry$dTable %>% data.frame() %>% filter(P.Value <= 0.1)
+
+
+sel_burd_sem_max_smry$coefficients %>% 
+  data.frame() %>% 
+  select(Response, Predictor, P.Value, Var.9) %>% tibble() %>% print(n = 100)
+
+saveRDS(
+  sel_burd_sem_max_smry, 
+  file.path(mod_output_dir, "selected-burden-SEM_maximal-cases.rds")
 )

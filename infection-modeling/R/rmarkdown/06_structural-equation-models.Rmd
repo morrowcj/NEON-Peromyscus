@@ -1,0 +1,305 @@
+
+```{r}
+library(tidyverse)
+library(DiagrammeR)
+```
+
+# Structural equation models
+
+Structural equation models are a special case of path analysis, which describe
+the directed dependence among sets of variables, often viewed as directed 
+acyclic graphs (e.g., Figure \@ref(fig:pathExmpl)). These are an ideal tool
+for understanding the relationships within and among many levels of
+complex system with many variables. We will use this approach to model 
+*Borrelia* infection competence of *Peromyscus*.
+
+```{r pathExmpl, fig.width = 3, out.width = "25%", fig.cap = caption}
+ndf <- create_node_df(
+  n = 4, label = c("Y1", "Y2", "X1", "X2"), color = "black"
+)
+pdf <- create_edge_df(
+  from = c(4, 4, 3, 1),
+  to =   c(2, 1, 1, 2),
+  # penwidth = c(1, 1, 3, 5),
+  color = "black"
+)
+
+create_graph(attr_theme = "bt") %>% 
+  add_global_graph_attrs("layout", "dot", "graph") %>%
+  add_node_df(ndf) %>% 
+  add_edge_df(pdf) %>% 
+  render_graph()
+
+caption = paste(
+  "Example directed acyclic graph, with two response (Y) variables and two",
+  "predictor (X) variables. In this case, Y1 is both a resonse (X1, X2) and",
+  "a predictor (Y2)."
+)
+```
+
+## Modeling approach
+
+Towards finding a good explanatory model of *Borrelia* infection competence
+among *Peromyscus*, we will fit a few different SEMs with different objectives.
+The key data for each approach will be *Peromyscus* data for eight NEON sites.
+The variables we will consider in each model are
+
+0. Study design variables including NEON site and plot identity (`siteID`, 
+`plotID`), and `year` of the observations;
+
+1. Mouse general characteristics including individual identity (`iid`), sex 
+(`sex_male`), reproductive status (`sex_mature`), and weight (`weight`);
+
+2. Mouse behavioral characteristics including capture time (`cap_prop_night`),
+trapability (`weighted_trapability`), trap diversity 
+(`weighted_trap_diversity`), and movement (`avg_move_dist`);
+
+3. Interactions with ticks specifically whether or not ticks were attactched
+at capture (`ticks_attached`, `nymphalTicksAttached`, `larvalTicksAttached`).
+
+4. Immunity information including PCA for gene expression of resistance and
+tolerance genes (`expr_PC1`, `expr_PC2`) as well as *Borrelia* infection status
+and burden (`Bb_infected`, `Bb_burden`); and
+
+5. Climatic information including principal components for short-term weather
+(`wthr_PC1`, `wthr_PC2`) and long-term average site climate (`clim_PC`, 
+`clim_PC2`).
+
+In general, the kinds of models we want to fit are as follows:
+
+* [x] Fit with "complete cases" wherein all paths use only observations for
+which every variable is available
+
+* [ ] Fit with maximal data, wherein all paths use as many observations as
+possible
+
+* [ ] Model both infection status and burden:
+
+  - [ ] independent model with complete cases
+  
+  - [ ] independent model with maximal data
+  
+  - [ ] "hurdle" style model (both responses in one model) with complete cases
+  
+  - [ ] "hurdle" style model (both responses in one model) with maximal data
+  
+* [ ] Compare model effects between *P leucopus* vs. *P maniculatus*
+
+  <!-- Should this be for **all** models, or just a select model/subset? -->
+  
+
+### Latent and Composite variables
+
+The key feature that distinguishes SEMs from path analyses are the ability
+to include latent (i.e., unmeasured) and composite variables. We have not yet , 
+included these types of variables into our models, but some interesting options
+might be:
+
+* [ ] "Behavior" is an obvious **latent** variable to explore. It would 
+be constructed such that it depends on the behavior metrics that we have 
+measured (i.e.,, activity time, movement, learning) as well as sex and 
+reproductive status.
+
+* [ ] A "body condition" **composite** variable, constructed from all the 
+size traits recorded by NEON may be a better predictor variable than weight
+alone, though it would require using a smaller data set since weight was
+by far the most measured physical trait.
+
+* [ ] "Immunity" would be a natural **latent** or **composite** variable 
+constructed from the six gene expression variables. This may capture more 
+variation than the principal component proxies we are currently using.
+
+It is unclear, and not well-documented, how to include either latent or 
+composite variables in `piecewiseSEM`.
+
+## Complete cases
+
+### Burden
+
+Figure \@ref(fig:selBurdCompSem) visualizes a SEM fit to a "complete" data set
+(i.e., only observations for which *all* variables were measured). As such, 
+it has some limitations in its power, but it is the most "defensible" 
+explanatory model because it does not draw conclusions beyond the scope of its
+data. Models using more of the data will be explored in the next section.
+
+While this model is very interesting, one of the primary paths of interest
+is not significant (behavior -> ticks -> resistance -> burden -> tolerance). It 
+is possible
+that the "behavior -> ticks" path is improved by a model which is not limited
+by the completeness restriction. Table \@ref(tab:selBurdCompSemR2) summarizes the
+fit ($R^2$) of each of the component models.
+
+```{r selBurdCompSem, out.width="100%", fig.asp = 1, fig.cap=caption}
+selBurdComp <- readRDS(
+  "infection-modeling/data/model-objects/selected-burden-SEM_complete-cases.rds"
+)
+
+pbreaks = c(0, 0.05, 0.1, 1)#, 
+pcols = c("black", "grey70", "grey70")#, 
+linetypes = c("solid", "solid", "dotted")#, 
+penwidth_range = c(1, 8)
+
+# coefficients
+coef_tab <- selBurdComp$coefficients %>% 
+  data.frame() %>% 
+  rename(sig.star = "Var.9") %>% 
+  mutate(
+    pval_group = cut(
+      P.Value, breaks = pbreaks, include.lowest = TRUE,
+      labels(seq_len(length(pbreaks) - 1))
+    ),
+    pval_col = pcols[pval_group],
+    pval_linetype = linetypes[pval_group],
+    pval_penwidth = scales::rescale(Std.Estimate, to = penwidth_range)
+  )
+
+# all variables
+the_vars <- unique(c(coef_tab$Response, coef_tab$Predictor))
+
+path_nodes <- data.frame(var = the_vars, id = seq_len(length(the_vars)))
+
+create_graph(attr_theme = "bt") %>% 
+  add_global_graph_attrs("layout", "dot", "graph") %>%
+  # add_global_graph_attrs("rankdir", "LR", "graph") %>% 
+  add_nodes_from_table(path_nodes, label_col = var) %>% 
+  add_edges_from_table(
+    coef_tab, from_col = "Predictor", to_col = "Response", 
+    from_to_map = "label"
+  ) %>% 
+  set_node_attrs(width, 1.5) %>% 
+  set_node_attrs(fontsize, 20) %>% 
+  set_edge_attrs(color, coef_tab$pval_col) %>% 
+  set_edge_attrs(style, coef_tab$pval_linetype) %>% 
+  set_edge_attrs(penwidth, coef_tab$pval_penwidth) %>% 
+  render_graph()
+
+
+caption = paste(
+  "Directed acyclycal graph of selected burden SEM model, fit with complete cases.",
+  "The goodness-of-fit P-value is", paste0(round(selBurdComp$Cstat$P.Value, 2), ","),
+  "which indicates that this model is *not* statistically different from an",
+  "'ideal' model of these data."
+)
+```
+
+<br>
+```{r selBurdCompSemR2}
+selBurdComp$R2 %>% 
+  knitr::kable(
+    digits = 2,
+    caption = paste(
+      "R-squared table of the selected SEM, fit with complete cases.",
+      "Marginal R-squared values represent the proportion of variation in",
+      "the resposne explained by the fixed effects and",
+      "Conditional values represent the proportion explained by the full model.",
+      "Models without random effects (i.e., simple linear regression) do not",
+      "have a conditional R-squared value."
+    )
+  )
+```
+
+### Infection status
+
+TBD
+
+### Infection-burden hurdle
+
+TBD
+
+## Maixmal cases
+
+Figure \@ref(fig:selBurdMaxSem) shows the selected burden model, fit with the
+maximal data for each path. And Table \@ref(tab:selBurdMaxSemR2) shows the 
+corresponding $R^2$ table
+
+```{r selBurdMaxSem, out.width="100%", fig.asp = 1, fig.cap=caption}
+selBurdMax <- readRDS(
+  "infection-modeling/data/model-objects/selected-burden-SEM_maximal-cases.rds"
+)
+
+pbreaks = c(0, 0.05, 0.1, 1)#, 
+pcols = c("black", "grey70", "grey70")#, 
+linetypes = c("solid", "solid", "dotted")#, 
+penwidth_range = c(1, 8)
+
+# coefficients
+coef_tab <- selBurdMax$coefficients %>% 
+  data.frame() %>% 
+  rename(sig.star = "Var.9") %>% 
+  mutate(
+    pval_group = cut(
+      P.Value, breaks = pbreaks, include.lowest = TRUE,
+      labels(seq_len(length(pbreaks) - 1))
+    ),
+    pval_col = pcols[pval_group],
+    pval_linetype = linetypes[pval_group],
+    pval_penwidth = scales::rescale(Std.Estimate, to = penwidth_range)
+  )
+
+# all variables
+the_vars <- unique(c(coef_tab$Response, coef_tab$Predictor))
+
+path_nodes <- data.frame(var = the_vars, id = seq_len(length(the_vars)))
+
+create_graph(attr_theme = "bt") %>% 
+  add_global_graph_attrs("layout", "dot", "graph") %>%
+  # add_global_graph_attrs("rankdir", "LR", "graph") %>% 
+  add_nodes_from_table(path_nodes, label_col = var) %>% 
+  add_edges_from_table(
+    coef_tab, from_col = "Predictor", to_col = "Response", 
+    from_to_map = "label"
+  ) %>% 
+  set_node_attrs(width, 1.5) %>% 
+  set_node_attrs(fontsize, 20) %>% 
+  set_edge_attrs(color, coef_tab$pval_col) %>% 
+  set_edge_attrs(style, coef_tab$pval_linetype) %>% 
+  set_edge_attrs(penwidth, coef_tab$pval_penwidth) %>% 
+  render_graph()
+
+
+caption = paste(
+  "Directed acyclycal graph of selected burden SEM model, fit with maximal cases.",
+  "The goodness-of-fit P-value is", paste0(round(selBurdMax$Cstat$P.Value, 2), ","),
+  "which indicates that this model is *not* statistically different from an",
+  "'ideal' model of these data."
+)
+```
+
+<br>
+```{r selBurdMaxSemR2}
+selBurdMax$R2 %>% 
+  knitr::kable(
+    digits = 2,
+    caption = paste(
+      "R-squared table of the selected SEM, fit with complete cases.",
+      "Marginal R-squared values represent the proportion of variation in",
+      "the resposne explained by the fixed effects and",
+      "Conditional values represent the proportion explained by the full model.",
+      "Models without random effects (i.e., simple linear regression) do not",
+      "have a conditional R-squared value."
+    )
+  )
+```
+
+### Burden
+
+TBD
+
+### Infection Status
+
+TBD
+
+### Infection-burden hurdle
+
+TBD
+
+## Next steps
+
+* Prediction: how can the expression module (smaller data) inform the larger 
+things
+
+  - can we map expression to something else? Proxy variables for expression.
+  
+  - use 200 mice to fine tune estimation
+  
+* Maybe look at proposal for machine learning hanta virus / disease?

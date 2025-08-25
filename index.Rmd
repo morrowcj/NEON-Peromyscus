@@ -35,7 +35,7 @@ if (params$run_scripts){
   source("infection-modeling/R/scripts/05_prepare-model-data.R")
   
   # Model fits
-  source("infection-modeling/R/scripts/06-2_fit-models_complete-cases.R")
+  source("infection-modeling/R/scripts/06-fit-SEMs.R")
   # source("infection-modeling/R/scripts/06_fit-models.R")
   
   # remove the incidental objects from memory

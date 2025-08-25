@@ -408,7 +408,7 @@ that were captured in more traps - suggesting more diverse space use -
 acquired slightly more ticks on average, regardless of sex 
 (Figure \@ref(fig:trapDivTicks)).
 
-```{r sexTickDiffs, fig.asp=1, fig.width=3.5, out.width="50%"}
+```{r sexTickDiffs, fig.asp=1, fig.width=3.5, out.width="50%", fig.cap=caption}
 Peros %>% 
   filter(sex_male != 0.5) %>% 
   mutate(sex = factor(sex_male, levels = c(0, 1), labels = c("F", "M"))) %>% 
@@ -416,6 +416,11 @@ Peros %>%
   stat_summary(fun.data = mean_cl_normal, size = 0.5) + 
   labs(x = "Sex", y = "Proportion of captures with ticks (± 95% CI)") + 
   theme_bw()
+
+caption = paste(
+  "Comparison of average tick attachement (± 95% CI) between male and female",
+  "*Peromyscus*"
+)
 ```
 
 ```{r trapDivTicks, fig.asp=0.5, fig.width=4, fig.cap=caption, out.width="50%"}

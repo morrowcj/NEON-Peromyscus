@@ -22,8 +22,12 @@ fig:trapDistTrapDIv
 fig:captimeShiftDistro
 fig:weightTrapValid
 tab:mostTrapped
+fig:sexTickDiffs
 fig:trapDivTicks
 tab:infectMethodSamps
 fig:exprOrthog
-fig:smallSelectSEM
-tab:smallSelSEMr2
+fig:pathExmpl
+fig:selBurdCompSem
+tab:selBurdCompSemR2
+fig:selBurdMaxSem
+tab:selBurdMaxSemR2
