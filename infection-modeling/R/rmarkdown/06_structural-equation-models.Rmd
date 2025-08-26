@@ -150,8 +150,14 @@ coef_tab <- selBurdComp$coefficients %>%
     ),
     pval_col = pcols[pval_group],
     pval_linetype = linetypes[pval_group],
-    pval_penwidth = scales::rescale(Std.Estimate, to = penwidth_range)
+    pval_penwidth = scales::rescale(Std.Estimate, to = penwidth_range),
+    color = case_when(
+      P.Value > 0.1 ~ "grey50",
+      Std.Estimate < 0 ~ "cornflowerblue", 
+      Std.Estimate >= 0 ~ "orange"
+    )
   )
+
 
 # all variables
 the_vars <- unique(c(coef_tab$Response, coef_tab$Predictor))
@@ -166,9 +172,12 @@ create_graph(attr_theme = "bt") %>%
     coef_tab, from_col = "Predictor", to_col = "Response", 
     from_to_map = "label"
   ) %>% 
-  set_node_attrs(width, 1.5) %>% 
+  set_node_attrs(width, 3) %>% 
   set_node_attrs(fontsize, 20) %>% 
-  set_edge_attrs(color, coef_tab$pval_col) %>% 
+  set_node_attrs(shape, "rectangle") %>% 
+  # set_edge_attrs(color, coef_tab$pval_col) %>% 
+  set_edge_attrs(arrowsize, 1) %>% 
+  set_edge_attrs(color, coef_tab$color) %>% 
   set_edge_attrs(style, coef_tab$pval_linetype) %>% 
   set_edge_attrs(penwidth, coef_tab$pval_penwidth) %>% 
   render_graph()
@@ -178,7 +187,10 @@ caption = paste(
   "Directed acyclycal graph of selected burden SEM model, fit with complete cases.",
   "The goodness-of-fit P-value is", paste0(round(selBurdComp$Cstat$P.Value, 2), ","),
   "which indicates that this model is *not* statistically different from an",
-  "'ideal' model of these data."
+  "'ideal' model of these data.", 
+  "Orange vectors represent positive effects, blue represent negative effects",
+  "and grey represents non-significant (P > 0.1) effects.",
+  "The width of a vector is proportional to the magnitude of its effect."
 )
 ```
 
@@ -233,7 +245,12 @@ coef_tab <- selBurdMax$coefficients %>%
     ),
     pval_col = pcols[pval_group],
     pval_linetype = linetypes[pval_group],
-    pval_penwidth = scales::rescale(Std.Estimate, to = penwidth_range)
+    pval_penwidth = scales::rescale(Std.Estimate, to = penwidth_range),
+    color = case_when(
+      P.Value > 0.1 ~ "grey50",
+      Std.Estimate < 0 ~ "cornflowerblue", 
+      Std.Estimate >= 0 ~ "orange"
+    )
   )
 
 # all variables
@@ -249,9 +266,14 @@ create_graph(attr_theme = "bt") %>%
     coef_tab, from_col = "Predictor", to_col = "Response", 
     from_to_map = "label"
   ) %>% 
-  set_node_attrs(width, 1.5) %>% 
+  set_node_attrs(shape, "rectangle") %>% 
+  set_node_attrs(width, 3) %>% 
   set_node_attrs(fontsize, 20) %>% 
-  set_edge_attrs(color, coef_tab$pval_col) %>% 
+  # set_node_attrs(width, 1.5) %>% 
+  # set_node_attrs(fontsize, 20) %>% 
+  # set_edge_attrs(color, coef_tab$pval_col) %>% 
+  set_edge_attrs(arrowsize, 1) %>% 
+  set_edge_attrs(color, coef_tab$color) %>% 
   set_edge_attrs(style, coef_tab$pval_linetype) %>% 
   set_edge_attrs(penwidth, coef_tab$pval_penwidth) %>% 
   render_graph()
@@ -261,7 +283,10 @@ caption = paste(
   "Directed acyclycal graph of selected burden SEM model, fit with maximal cases.",
   "The goodness-of-fit P-value is", paste0(round(selBurdMax$Cstat$P.Value, 2), ","),
   "which indicates that this model is *not* statistically different from an",
-  "'ideal' model of these data."
+  "'ideal' model of these data.",
+  "Orange vectors represent positive effects, blue represent negative effects",
+  "and grey represents non-significant (P > 0.1) effects.",
+  "The width of a vector is proportional to the magnitude of its effect."
 )
 ```
 
