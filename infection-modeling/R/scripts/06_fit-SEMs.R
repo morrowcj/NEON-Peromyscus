@@ -25,7 +25,7 @@ mod_dat <- Peros %>%
   select(
     uid,
     siteID, plotID, year, iid, # ID cols
-    Bb_infected, Bb_burden, # Borrelia
+    Bb_infected, Bb_burden, log_burden, # Borrelia
     sex_male, sex_mature, weight, # mouse traits
     ticks_attached, nymphalTicksAttached, larvalTicksAttached, # ticks
     cap_prop_night,
@@ -46,7 +46,8 @@ complete_dat <- mod_dat %>%
       ~as.vector(scale(.x))
     ),
     across(c(siteID, plotID, year, iid), ~as.factor(.x)),
-    Bb_burden = as.vector(scale(log(Bb_burden + 1)))
+    # Bb_burden = as.vector(scale(log(Bb_burden + 1)))
+    Bb_burden = log_burden
   )
 
 full_dat <- mod_dat %>% 
@@ -56,112 +57,14 @@ full_dat <- mod_dat %>%
       ~as.vector(scale(.x))
     ),
     across(c(siteID, plotID, year, iid), ~as.factor(.x)),
-    Bb_burden = as.vector(scale(log(Bb_burden + 1)))
+    # Bb_burden = as.vector(scale(log(Bb_burden + 1)))
+    Bb_burden = log_burden
   )
   
-
-## ---- Correct *correlated* PC axes... ----
 
 # Test correlation of expression PC on this dataset
 cor_test <- cor.test(complete_dat$expr_PC1, complete_dat$expr_PC2)
 c(cor_test$statistic, P = cor_test$p.value, conf_int = cor_test$conf.int)
-
-## This is no longer a problem...
-
-# # read a gene lookup table
-# gene_lookup <- readRDS("infection-modeling/data/expression-lookup.rds")
-# 
-# # get expression data for this observation set
-# new_PCdat <- Peros %>% 
-#   filter(uid %in% complete_dat$uid) %>%
-#   select(uid, gene_lookup$gene, Bb_burden, Bb_infected)
-# # fit a new PCA
-# new_PCA <- new_PCdat %>% 
-#   select(-c(uid, Bb_burden, Bb_infected)) %>% 
-#   pca(scale = TRUE)
-# 
-# # fit a new envfit object
-# new_envfit <- envfit(new_PCA, select(new_PCdat, c(Bb_burden, Bb_infected)))
-# 
-# # display it - note the axes are reversed
-# ordiplot(new_PCA) %>% 
-#   orditorp(display = "species"); plot(new_envfit, add = TRUE)
-# 
-# # extract the scores
-# new_scores <- scores(new_PCA)
-# 
-# # get the variables scores
-# new_sp <- new_scores$species %>% data.frame() %>% 
-#   rownames_to_column("gene") %>% 
-#   full_join(gene_lookup) %>% 
-#   arrange(group, PC1, PC2) %>% 
-#   tibble() %>% 
-#   mutate(expr_PC1 = -1*PC1, expr_PC2 = -1*PC2)
-# 
-# # and the observation scores
-# new_st <- bind_cols(
-#   new_PCdat,
-#   new_scores$sites %>% data.frame()
-# ) %>% 
-#   tibble() %>% 
-#   mutate(expr_PC1 = -1*PC1, expr_PC2 = -1*PC2)
-# 
-# # view resistance
-# new_st %>% 
-#   ggplot(aes(x = expr_PC1)) + 
-#   geom_hline(yintercept = 0, col = "black", linetype = "dashed") + 
-#   geom_vline(xintercept = 0, col = "black", linetype = "dashed") + 
-#   geom_smooth(aes(y = `IL-10`, col = "IL-10"), method = "lm") +
-#   geom_smooth(aes(y = `IFN-y`, col = "IFN-y"), method = "lm") + 
-#   geom_smooth(aes(y = `IL-6`, col = "IL-6"), method = "lm") + 
-#   geom_smooth(aes(y = `TLR-2`, col = "TLR-2"), method = "lm") + 
-#   geom_point(aes(y = `IL-10`, col = "IL-10"), alpha = 0.5, size = 3) + 
-#   geom_point(aes(y = `IFN-y`, col = "IFN-y"), alpha = 0.5, size = 3) + 
-#   geom_point(aes(y = `IL-6`, col = "IL-6"), alpha = 0.5, size = 3) + 
-#   geom_point(aes(y = `TLR-2`, col = "TLR-2"), alpha = 0.5, size = 3) + 
-#   labs(y = "Resistance expression", x = "Expression PC1", color = "Gene") +
-#   theme(
-#     legend.position = "inside", legend.position.inside = c(0.7, 1),
-#     legend.justification = c(1, 1), legend.background = element_blank()
-#   )
-# 
-# # view tolerance
-# new_st %>% 
-#   ggplot(aes(x = expr_PC2)) + 
-#   geom_smooth(aes(y = `GATA-3`, col = "GATA3"), method = "lm") +
-#   geom_smooth(aes(y = `TGF-B`, col = "TGFB"), method = "lm") + 
-#   geom_point(aes(y = `GATA-3`, col = "GATA3"), alpha = 0.5, size = 3) + 
-#   geom_point(aes(y = `TGF-B`, col = "TGFB"), alpha = 0.5, size = 3) + 
-#   labs(y = "Tolerance expression", x = "Expression PC2", color = "Gene") +
-#   theme(
-#     legend.position = "inside", legend.position.inside = c(0.7, 1),
-#     legend.justification = c(1, 1), legend.background = element_blank()
-#   )
-# 
-# # add new PCs into dataset
-# complete_dat <- left_join(
-#   complete_dat %>% select(-c(expr_PC1, expr_PC2)),
-#   new_st %>% select(uid, expr_PC1, expr_PC2),
-#   by = "uid"
-# )
-
-# # Older: from the clean-immune-data.R file
-# ipca2324_list <- readRDS(
-#   "infection-modeling/data/immune-PCA_no2022.rds"
-# )
-# 
-# new_exprPCs <- semi_join(ipca2324_list$site_scores, complete_dat, by = "uid")
-# 
-# # now they are no longer correlated...
-# new_exprPCs %>%  
-#   select(-uid) %>% 
-#   with(cor.test(x = expr_PC1, y = expr_PC2))
-# 
-# complete_dat <- full_join(
-#   complete_dat %>% select(-c(expr_PC1, expr_PC2)),
-#   new_exprPCs,
-#   by = "uid"
-# )
 
 ## ---- Look at the model data ----
 
@@ -237,44 +140,6 @@ burden_alt <- burden_red %>%
 # compare to other models - not sig different
 anova(burden_full, burden_red, burden_alt)
 
-## ---- Infection ----
-# 
-# infect_full <- glmer(
-#   Bb_infected ~ 
-#     sex_male*sex_mature*weight + cap_prop_night +
-#     weighted_trap_diversity + weighted_trapability + avg_move_dist +
-#     # nymphalTicksAttached + larvalTicksAttached + 
-#     ticks_attached + 
-#     expr_PC1 + # expr_PC2 + 
-#     wthr_PC1 + wthr_PC2 +
-#     clim_PC1 + clim_PC2 + 
-#     (1|year) + (1|siteID) + (1|tagID),
-#   data = complete_dat,
-#   family = "binomial"
-# )
-# summary(infect_full)
-# 
-# # reduce the model
-# infect_red <- infect_full %>% 
-#   update(
-#     . ~ . 
-#     - clim_PC1 - clim_PC2 - wthr_PC2
-#     - cap_prop_night - weighted_trapability - weighted_trap_diversity
-#     - avg_move_dist
-#   ) %>% summary()
-# 
-# infect_alt <- glmer(
-#   Bb_infected ~ 
-#     expr_PC1 + 
-#     ticks_attached + 
-#     sex_male * sex_mature * weight +
-#     (1|year) + (1|siteID) + (1|tagID),
-#   data = complete_dat,
-#   family = "binomial"
-# )
-# summary(infect_alt)
-
-
 ## ---- Resistance ----
 
 # fit omnibus resistance model
@@ -302,16 +167,6 @@ res_nosing <- lm(
 res_red <- update(res_full) %>% 
   step() %>% 
   get_model()
-
-# update(
-#   res_full, 
-#   . ~ . 
-#   - sex_male:sex_mature:weight - sex_male:sex_mature - sex_mature:weight 
-#   - sex_male:weight
-#   - clim_PC2 - clim_PC1
-#   - weighted_trapability - avg_move_dist
-#   - ticks_attached
-# ) %>% summary()
 
 # minimum
 res_alt <- update(
@@ -453,7 +308,7 @@ movedist_full <- lmer(
 
 # remove singular
 VarCorr(movedist_full)
-movedist_nosing <- update(movedist_full, . ~ . - (siteID))
+movedist_nosing <- update(movedist_full, . ~ . - (1|siteID))
 summary(movedist_nosing)
 
 # reduced
@@ -573,17 +428,17 @@ sel_burd_sem_comp <- psem(
   # expr_PC1 %~~% expr_PC2,
   data = complete_dat
 )
-sel_sem_complete_smry <- summary(sel_burd_sem_comp)
+sel_burd_sem_comp_smry <- summary(sel_burd_sem_comp)
 
-sel_sem_complete_smry$coefficients %>% 
+sel_burd_sem_comp_smry$coefficients %>% 
   data.frame() %>% 
   select(Response, Predictor, Std.Estimate, P.Value, Var.9)
 
-sel_sem_complete_smry$R2
+sel_burd_sem_comp_smry$R2
 
 # save it 
 saveRDS(
-  sel_sem_complete_smry, 
+  sel_burd_sem_comp_smry, 
   file.path(mod_output_dir, "selected-burden-SEM_complete-cases.rds")
 )
 
@@ -679,4 +534,157 @@ sel_burd_sem_max_smry$coefficients %>%
 saveRDS(
   sel_burd_sem_max_smry, 
   file.path(mod_output_dir, "selected-burden-SEM_maximal-cases.rds")
+)
+
+## ---- Complete infection SEM ----
+
+## Tolerance
+tol_nosing2 <- update(tol_nosing, . ~ . - Bb_burden + Bb_infected)
+tol_red2 <- update(tol_red, . ~ . - Bb_burden + Bb_infected)
+tol_alt2 <- update(tol_alt, . ~ . - Bb_burden + Bb_infected)
+
+## Infection
+infect_nosing <- glmer(
+  formula = update(formula(burden_nosing), Bb_infected ~ .),
+  data = complete_dat, family = "binomial"
+)
+infect_red <- update(
+  infect_nosing, 
+  . ~ . - clim_PC2 - clim_PC1 - sex_mature:weight - wthr_PC2
+  - cap_prop_night - avg_move_dist - weighted_trapability 
+  - weighted_trap_diversity - expr_PC1
+)
+infect_alt <- update(infect_red, . ~ . + expr_PC1)
+
+# Note that the other component models do not include borrelia, 
+# and therefore, do not need changing.
+
+## Full model
+full_inf_sem_comp <- psem(
+  tol_nosing,
+  infect_nosing,
+  res_nosing,
+  tick_nosing,
+  captime_nosing,
+  trapdiv_nosing,
+  trapable_nosing,
+  movedist_nosing,
+  data = complete_dat
+)
+full_inf_sem_comp_smry <- summary(full_inf_sem_comp)
+saveRDS(
+  full_inf_sem_comp_smry, 
+  file.path(mod_output_dir, "full-infection-SEM_complete-cases.rds")
+)
+
+## Alternative model
+alt_inf_sem_comp <- psem(
+  tol_alt2, 
+  infect_alt,
+  res_alt,
+  tick_alt,
+  captime_alt,
+  trapdiv_alt,
+  trapable_alt,
+  movedist_alt,
+  data = complete_dat
+)
+alt_inf_sem_comp_smry <- summary(alt_inf_sem_comp)
+alt_inf_sem_comp_smry$dTable %>% data.frame() %>% 
+  filter(P.Value <= 0.1) %>% 
+  select(-c(Test.Type, Crit.Value, DF))
+## Reduced model
+red_inf_sem_comp <- psem(
+  tol_alt2, 
+  infect_alt,
+  res_alt,
+  tick_alt,
+  captime_alt,
+  trapdiv_alt,
+  trapable_alt %>% update(. ~ . + sex_male),
+  movedist_alt,
+  data = complete_dat
+)
+red_inf_sem_comp_smry <- summary(red_inf_sem_comp)
+## Selected model
+sel_inf_sem_comp <- psem(
+  tol_alt2, 
+  infect_alt,
+  res_alt,
+  tick_alt %>% update(. ~ . + cap_prop_night + avg_move_dist),
+  captime_alt,
+  trapdiv_alt,
+  trapable_alt %>% update(. ~ . + sex_male),
+  movedist_alt,
+  data = complete_dat
+)
+sel_inf_sem_comp_smry <- summary(sel_inf_sem_comp)
+saveRDS(
+  sel_inf_sem_comp_smry, 
+  file.path(mod_output_dir, "selected-infection-SEM_complete-cases.rds")
+)
+
+## ---- Maximal Infection SEM ----
+
+## Full model
+full_inf_sem_max <- psem(
+  tol_nosing %>% update(data = full_dat),
+  infect_nosing %>% update(data = full_dat),
+  res_nosing %>% update(data = full_dat),
+  tick_nosing %>% update(data = full_dat),
+  captime_nosing %>% update(data = full_dat),
+  trapdiv_nosing %>% update(data = full_dat),
+  trapable_nosing %>% update(data = full_dat),
+  movedist_nosing %>% update(data = full_dat),
+  data = full_dat
+)
+full_inf_sem_max_smry <- summary(full_inf_sem_max)
+saveRDS(
+  full_inf_sem_max_smry, 
+  file.path(mod_output_dir, "full-infection-SEM_maximal-cases.rds")
+)
+## Alternate model
+alt_inf_sem_max <- psem(
+  tol_alt2 %>% update(data = full_dat),
+  infect_alt %>% update(data = full_dat),
+  res_alt %>% update(data = full_dat),
+  tick_alt %>% update(data = full_dat),
+  captime_alt %>% update(data = full_dat),
+  trapdiv_alt %>% update(data = full_dat),
+  trapable_alt %>% update(data = full_dat),
+  movedist_alt %>% update(data = full_dat),
+  data = full_dat
+)
+alt_inf_sem_max_smry <- summary(alt_inf_sem_max)
+alt_inf_sem_max_smry$dTable %>% data.frame() %>% 
+  filter(P.Value <= 0.1) %>% 
+  select(-c(Test.Type, Crit.Value, DF))
+## Selected model
+sel_inf_sem_max <- psem(
+  tol_alt2 %>% update(data = full_dat),
+  infect_alt %>% update(data = full_dat),
+  res_alt %>% update(data = full_dat),
+  tick_alt %>% update(
+    . ~ . + sex_mature + weight + cap_prop_night + avg_move_dist + 
+      weighted_trapability, 
+    data = full_dat
+  ),
+  captime_alt %>% update(
+    . ~ . + weight + weighted_trapability + clim_PC1, 
+    data = full_dat
+  ),
+  trapdiv_alt %>% update(data = full_dat),
+  trapable_alt %>% update(
+    . ~ . + sex_male + sex_mature + weight + wthr_PC1, data = full_dat
+  ),
+  movedist_alt %>% update(. ~ . + sex_mature, data = full_dat),
+  data = full_dat
+)
+sel_inf_sem_max_smry <- summary(sel_inf_sem_max)
+sel_inf_sem_max_smry$dTable %>% data.frame() %>% 
+  filter(P.Value <= 0.1) %>% 
+  select(-c(Test.Type, Crit.Value, DF))
+saveRDS(
+  sel_inf_sem_max_smry, 
+  file.path(mod_output_dir, "selected-infection-SEM_maximal-cases.rds")
 )

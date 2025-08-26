@@ -29,5 +29,7 @@ fig:exprOrthog
 fig:pathExmpl
 fig:selBurdCompSem
 tab:selBurdCompSemR2
+fig:selInfCompSem
 fig:selBurdMaxSem
 tab:selBurdMaxSemR2
+fig:selInfMaxSem
