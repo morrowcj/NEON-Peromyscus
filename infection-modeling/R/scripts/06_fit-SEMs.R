@@ -16,7 +16,7 @@ mod_output_dir <- file.path(
   "model-objects"
 )
 
-# Load in the mode ldata
+# Load in the model data
 Peros <- readRDS("infection-modeling/data/peromyscus-model-data.rds")
 
 # get only the complete cases for variables to use
@@ -25,7 +25,7 @@ mod_dat <- Peros %>%
   select(
     uid,
     siteID, plotID, year, iid, # ID cols
-    Bb_infected, Bb_burden, log_burden, # Borrelia
+    Bb_infected, log_burden, log_burden, # Borrelia
     sex_male, sex_mature, weight, # mouse traits
     ticks_attached, nymphalTicksAttached, larvalTicksAttached, # ticks
     cap_prop_night,
@@ -46,8 +46,8 @@ complete_dat <- mod_dat %>%
       ~as.vector(scale(.x))
     ),
     across(c(siteID, plotID, year, iid), ~as.factor(.x)),
-    # Bb_burden = as.vector(scale(log(Bb_burden + 1)))
-    Bb_burden = log_burden
+    # log_burden = as.vector(scale(log(log_burden + 1)))
+    # log_burden = log_burden
   )
 
 full_dat <- mod_dat %>% 
@@ -57,8 +57,8 @@ full_dat <- mod_dat %>%
       ~as.vector(scale(.x))
     ),
     across(c(siteID, plotID, year, iid), ~as.factor(.x)),
-    # Bb_burden = as.vector(scale(log(Bb_burden + 1)))
-    Bb_burden = log_burden
+    # log_burden = as.vector(scale(log(log_burden + 1)))
+    # log_burden = log_burden
   )
   
 
@@ -79,7 +79,7 @@ complete_dat %>%
 # fit full model
 tol_full <- lmer(
   expr_PC2 ~ 
-    Bb_burden + 
+    log_burden + 
     sex_male*sex_mature*weight + cap_prop_night + 
     weighted_trap_diversity + weighted_trapability + avg_move_dist + 
     # nymphalTicksAttached + larvalTicksAttached +
@@ -101,14 +101,14 @@ tol_red <- tol_full %>%
   get_model()
 
 # minimum viable model
-tol_alt <- tol_red %>% update(. ~ . + Bb_burden)
+tol_alt <- tol_red %>% update(. ~ . + log_burden)
 summary(tol_alt)
 
 ## ---- Burden ----
 
 # fit omnibus burden model
 burden_full <- lmer(
-  Bb_burden ~ 
+  log_burden ~ 
     # Bb_infected + 
     sex_male*sex_mature*weight + cap_prop_night +
     weighted_trap_diversity + weighted_trapability + avg_move_dist +
@@ -145,7 +145,7 @@ anova(burden_full, burden_red, burden_alt)
 # fit omnibus resistance model
 res_full <- lmer(
   expr_PC1 ~ 
-    # Bb_infected + Bb_burden + 
+    # Bb_infected + log_burden + 
     sex_male * sex_mature * weight + cap_prop_night +
     weighted_trap_diversity + weighted_trapability + avg_move_dist +
     # nymphalTicksAttached + larvalTicksAttached + 
@@ -179,7 +179,7 @@ res_alt <- update(
 # fit omnibus tick model
 tick_full <- glmer(
   ticks_attached ~ 
-    # Bb_infected + Bb_burden + 
+    # Bb_infected + log_burden + 
     sex_male * sex_mature * weight + cap_prop_night +
     weighted_trap_diversity + weighted_trapability + avg_move_dist +
     wthr_PC1 + wthr_PC2 +
@@ -539,9 +539,9 @@ saveRDS(
 ## ---- Complete infection SEM ----
 
 ## Tolerance
-tol_nosing2 <- update(tol_nosing, . ~ . - Bb_burden + Bb_infected)
-tol_red2 <- update(tol_red, . ~ . - Bb_burden + Bb_infected)
-tol_alt2 <- update(tol_alt, . ~ . - Bb_burden + Bb_infected)
+tol_nosing2 <- update(tol_nosing, . ~ . - log_burden + Bb_infected)
+tol_red2 <- update(tol_red, . ~ . - log_burden + Bb_infected)
+tol_alt2 <- update(tol_alt, . ~ . - log_burden + Bb_infected)
 
 ## Infection
 infect_nosing <- glmer(
@@ -688,3 +688,66 @@ saveRDS(
   sel_inf_sem_max_smry, 
   file.path(mod_output_dir, "selected-infection-SEM_maximal-cases.rds")
 )
+
+## ---- Infection and burden ----
+
+## Alternative model (skipping full)
+alt_both_sem_max <- psem(
+  tol_alt2 %>% update(. ~ . + log_burden, data = full_dat),
+  infect_alt %>% update(data = full_dat),
+  burden_alt %>% update(data = full_dat %>% filter(Bb_infected > 0)),
+  res_alt %>% update(data = full_dat),
+  tick_alt %>% update(data = full_dat),
+  captime_alt %>% update(data = full_dat),
+  trapdiv_alt %>% update(data = full_dat),
+  trapable_alt %>% update(data = full_dat),
+  movedist_alt %>% update(. ~ . - clim_PC2, data = full_dat),
+  data = full_dat
+)
+alt_both_sem_max_smry <- summary(alt_both_sem_max)
+alt_both_sem_max_smry$dTable %>% data.frame() %>% 
+  filter(P.Value <= 0.1) %>% 
+  select(-c(Test.Type, Crit.Value, DF))
+alt_both_sem_max_smry$coefficients %>% data.frame() %>% 
+  select(Response, Predictor, P.Value, Var.9)
+## Selected model
+sel_both_sem_max <- psem(
+  tol_alt2 %>% 
+    update(. ~ ., 
+           # + log_burden, 
+           data = full_dat),
+  burden_alt %>% 
+    update(
+      . ~ . + Bb_infected - ticks_attached + wthr_PC1, 
+      data = full_dat #%>% filter(Bb_infected > 0)
+    ),
+  infect_alt %>% update(. ~ . - weight?, data = full_dat),
+  res_alt %>% update(data = full_dat),
+  tick_alt %>% 
+    update(
+    . ~ . + sex_mature + weight + cap_prop_night + weighted_trapability
+      + avg_move_dist, data = full_dat
+    ),
+  captime_alt %>% 
+    update(. ~ . + weight + clim_PC1 + weighted_trapability, data = full_dat),
+  trapdiv_alt %>% 
+    update(. ~ . - avg_move_dist - sex_male:weight, data = full_dat),
+  trapable_alt %>% 
+    update(. ~ . + sex_male + sex_mature + weight + wthr_PC1, data = full_dat),
+  movedist_alt %>% 
+    update(. ~ . + sex_mature - clim_PC2 - sex_male:weight, data = full_dat),
+  data = full_dat
+)
+sel_both_sem_max_smry <- summary(sel_both_sem_max)
+sel_both_sem_max_smry$dTable %>% data.frame() %>% 
+  filter(P.Value <= 0.1) %>% 
+  select(-c(Test.Type, Crit.Value, DF))
+sel_both_sem_max_smry$coefficients %>% data.frame() %>% 
+  select(Response, Predictor, P.Value, Var.9)
+saveRDS(
+  sel_both_sem_max_smry, 
+  file.path(mod_output_dir, "selected-BurdenInfection-SEM_maximal-cases.rds")
+)
+## --- Burden among infections ----
+
+

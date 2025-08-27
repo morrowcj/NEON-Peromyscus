@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Structural equation models | Borrelia Competence of Peromyscus</title>
   <meta name="description" content="Structural equation models | Borrelia Competence of Peromyscus" />
-  <meta name="generator" content="bookdown 0.43 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.44 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Structural equation models | Borrelia Competence of Peromyscus" />
   <meta property="og:type" content="book" />
@@ -113,14 +113,14 @@
 <ul>
 <li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#burden"><i class="fa fa-check"></i>Burden</a></li>
 <li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#infection-status"><i class="fa fa-check"></i>Infection status</a></li>
-<li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#infection-burden-hurdle"><i class="fa fa-check"></i>Infection-burden hurdle</a></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#maximal-cases"><i class="fa fa-check"></i>Maximal cases</a>
 <ul>
 <li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#burden-1"><i class="fa fa-check"></i>Burden</a></li>
 <li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#infection-status-1"><i class="fa fa-check"></i>Infection Status</a></li>
-<li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#infection-burden-hurdle-1"><i class="fa fa-check"></i>Infection-burden hurdle</a></li>
+<li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#burden-and-infection"><i class="fa fa-check"></i>Burden and Infection</a></li>
 </ul></li>
+<li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#p.-leucopus-vs.-p.-maniculatus"><i class="fa fa-check"></i><em>P. leucopus</em> vs. <em>P. maniculatus</em></a></li>
 <li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#next-steps"><i class="fa fa-check"></i>Next steps</a></li>
 </ul></li>
 </ul>
@@ -149,8 +149,8 @@ for understanding the relationships within and among many levels of
 complex system with many variables. We will use this approach to model
 <em>Borrelia</em> infection competence of <em>Peromyscus</em>.</p>
 <div class="figure"><span style="display:block;" id="fig:pathExmpl"></span>
-<div class="grViz html-widget html-fill-item" id="htmlwidget-ff560586cb3ae1498795" style="width:25%;height:480px;"></div>
-<script type="application/json" data-for="htmlwidget-ff560586cb3ae1498795">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"Y1\", color = \"black\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"2\" [label = \"Y2\", color = \"black\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"3\" [label = \"X1\", color = \"black\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"4\" [label = \"X2\", color = \"black\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n\"4\"->\"2\" [color = \"black\"] \n\"4\"->\"1\" [color = \"black\"] \n\"3\"->\"1\" [color = \"black\"] \n\"1\"->\"2\" [color = \"black\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-80e5d600ccce4539ee4b" style="width:50%;height:480px;"></div>
+<script type="application/json" data-for="htmlwidget-80e5d600ccce4539ee4b">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"LR\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"Y1\", color = \"black\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"2\" [label = \"Y2\", color = \"black\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"3\" [label = \"X1\", color = \"black\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"4\" [label = \"X2\", color = \"black\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n\"4\"->\"2\" [color = \"black\"] \n\"4\"->\"1\" [color = \"black\"] \n\"3\"->\"1\" [color = \"black\"] \n\"1\"->\"2\" [color = \"black\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 <p class="caption">
 Figure 19: Example directed acyclic graph, with two response (Y) variables and two predictor (X) variables. In this case, Y1 is both a resonse (X1, X2) and a predictor (Y2).
 </p>
@@ -182,17 +182,15 @@ and burden (<code>Bb_infected</code>, <code>Bb_burden</code>); and</p></li>
 <ul class="task-list">
 <li><p><label><input type="checkbox" checked="" />Fit with “complete cases” wherein all paths use only observations for
 which every variable is available</label></p></li>
-<li><p><label><input type="checkbox" />Fit with maximal data, wherein all paths use as many observations as
+<li><p><label><input type="checkbox" checked="" />Fit with maximal data, wherein all paths use as many observations as
 possible</label></p></li>
-<li><p><label><input type="checkbox" />Model both infection status and burden:</label></p>
+<li><p><label><input type="checkbox" checked="" />Model both infection status and burden:</label></p>
 <ul class="task-list">
-<li><p><label><input type="checkbox" />independent model with complete cases</label></p></li>
-<li><p><label><input type="checkbox" />independent model with maximal data</label></p></li>
-<li><p><label><input type="checkbox" />“hurdle” style model (both responses in one model) with complete cases</label></p></li>
-<li><p><label><input type="checkbox" />“hurdle” style model (both responses in one model) with maximal data</label></p></li>
+<li><p><label><input type="checkbox" checked="" />independent model, with complete cases</label></p></li>
+<li><p><label><input type="checkbox" checked="" />independent model, with maximal data</label></p></li>
+<li><p><label><input type="checkbox" checked="" />both responses in one model, with maximal data</label></p></li>
 </ul></li>
-<li><p><label><input type="checkbox" />Compare model effects between <em>P leucopus</em> vs. <em>P maniculatus</em></label></p>
-<!-- Should this be for **all** models, or just a select model/subset? --></li>
+<li><p><label><input type="checkbox" />Compare model effects between <em>P leucopus</em> vs. <em>P maniculatus</em></label></p></li>
 </ul>
 <div id="latent-and-composite-variables" class="section level3 hasAnchor">
 <h3>Latent and Composite variables<a href="structural-equation-models.html#latent-and-composite-variables" class="anchor-section" aria-label="Anchor link to header"></a></h3>
@@ -200,48 +198,54 @@ possible</label></p></li>
 to include latent (i.e., unmeasured) and composite variables. We have not yet ,
 included these types of variables into our models, but some interesting options
 might be:</p>
-<ul class="task-list">
-<li><p><label><input type="checkbox" />“Behavior” is an obvious <strong>latent</strong> variable to explore. It would
+<ul>
+<li><p>“Behavior” is an obvious <strong>latent</strong> variable to explore. It would
 be constructed such that it depends on the behavior metrics that we have
 measured (i.e.,, activity time, movement, learning) as well as sex and
-reproductive status.</label></p></li>
-<li><p><label><input type="checkbox" />A “body condition” <strong>composite</strong> variable, constructed from all the
+reproductive status.</p></li>
+<li><p>A “body condition” <strong>composite</strong> variable, constructed from all the
 size traits recorded by NEON may be a better predictor variable than weight
 alone, though it would require using a smaller data set since weight was
-by far the most measured physical trait.</label></p></li>
-<li><p><label><input type="checkbox" />“Immunity” would be a natural <strong>latent</strong> or <strong>composite</strong> variable
+by far the most measured physical trait.</p></li>
+<li><p>“Immunity” would be a natural <strong>latent</strong> or <strong>composite</strong> variable
 constructed from the six gene expression variables. This may capture more
-variation than the principal component proxies we are currently using.</label></p></li>
+variation than the principal component proxies we are currently using.</p></li>
 </ul>
 <p>It is unclear, and not well-documented, how to include either latent or
 composite variables in <code>piecewiseSEM</code>.</p>
+<hr />
+<p><strong>Update</strong>: After further investigation, <code>piecewiseSEM</code> <em>does not</em> support
+either of these use cases. If needed, the Bayesian implementation in the
+<a href="https://jebyrnes.github.io/bayesian_sem/bayesian_sem.html"><code>brms</code> package</a>
+supposedly supports it.</p>
 </div>
 </div>
 <div id="complete-cases" class="section level2 hasAnchor">
 <h2>Complete cases<a href="structural-equation-models.html#complete-cases" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<div id="burden" class="section level3 hasAnchor">
-<h3>Burden<a href="structural-equation-models.html#burden" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>Figure <a href="structural-equation-models.html#fig:selBurdCompSem">20</a> visualizes a SEM fit to a “complete” data set
-(i.e., only observations for which <em>all</em> variables were measured). As such,
+<p>The first set of models is fit with only the subset of observations for which
+information for <em>all</em> variables is available. As such,
 it has some limitations in its power, but it is the most “defensible”
 explanatory model because it does not draw conclusions beyond the scope of its
 data. Models using more of the data will be explored in the next section.</p>
-<p>While this model is very interesting, one of the primary paths of interest
+<div id="burden" class="section level3 hasAnchor">
+<h3>Burden<a href="structural-equation-models.html#burden" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Figure <a href="structural-equation-models.html#fig:selBurdCompSem">20</a> visualize a burden SEM fit to a “complete”
+data set.
+While this model is very interesting, one of the primary paths of interest
 is not significant (behavior -&gt; ticks -&gt; resistance -&gt; burden -&gt; tolerance). It
-is possible
-that the “behavior -&gt; ticks” path is improved by a model which is not limited
-by the completeness restriction. Table <a href="structural-equation-models.html#tab:selBurdCompSemR2">11</a> summarizes the
-fit (<span class="math inline">\(R^2\)</span>) of each of the component models.</p>
+is possible that the “behavior -&gt; ticks” path is improved by a model which is
+not limited by the completeness restriction. Table <a href="structural-equation-models.html#tab:selBurdCompSemR2">11</a>
+summarizes the fit (<span class="math inline">\(R^2\)</span>) of each of the component models.</p>
 <div class="figure"><span style="display:block;" id="fig:selBurdCompSem"></span>
-<div class="grViz html-widget html-fill-item" id="htmlwidget-8e39dc7e0abc8034f38b" style="width:100%;height:672px;"></div>
-<script type="application/json" data-for="htmlwidget-8e39dc7e0abc8034f38b">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"expr_PC2\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"2\" [label = \"Bb_burden\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"3\" [label = \"expr_PC1\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"4\" [label = \"ticks_attached\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"5\" [label = \"cap_prop_night\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"6\" [label = \"weighted_trap_diversity\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"7\" [label = \"weighted_trapability\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"8\" [label = \"avg_move_dist\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"9\" [label = \"sex_mature\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"10\" [label = \"sex_male\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"11\" [label = \"weight\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"12\" [label = \"sex_male:weight\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"13\" [label = \"wthr_PC1\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"14\" [label = \"clim_PC1\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"15\" [label = \"clim_PC2\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"16\" [label = \"sex_male:sex_mature\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n\"9\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.3812375249501\"] \n\"6\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.86249722776669\"] \n\"2\"->\"1\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.92404080727434\"] \n\"10\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.86271900643158\"] \n\"11\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.35063206919494\"] \n\"4\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.83943224661787\"] \n\"3\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.91261920603238\"] \n\"12\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"6.00587713461965\"] \n\"10\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.40297183410956\"] \n\"11\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.57296518074961\"] \n\"13\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.76158793524063\"] \n\"4\"->\"3\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.27977378576181\"] \n\"13\"->\"4\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.98669328010645\"] \n\"14\"->\"4\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1\"] \n\"10\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"4.22133510756265\"] \n\"6\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.80217343091595\"] \n\"5\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.37292082501663\"] \n\"8\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.25571080062098\"] \n\"6\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.32656908405411\"] \n\"13\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1.78243512974052\"] \n\"15\"->\"5\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.5455755156354\"] \n\"10\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.44533155910401\"] \n\"9\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.91106675537813\"] \n\"16\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"4.73286759813706\"] \n\"7\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"8\"] \n\"8\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.55256154357951\"] \n\"13\"->\"6\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.77056997116877\"] \n\"10\"->\"6\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.68651585717454\"] \n\"11\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.31991572410734\"] \n\"12\"->\"6\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.5703038367709\"] \n\"8\"->\"7\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"6.97150144156132\"] \n\"15\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1.25848303393214\"] \n\"14\"->\"7\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.85440230649811\"] \n\"10\"->\"8\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.31159902417387\"] \n\"11\"->\"8\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.7581503659348\"] \n\"15\"->\"8\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.89044133954314\"] \n\"12\"->\"8\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.12951874029718\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-a206b050d744948f63fc" style="width:100%;height:672px;"></div>
+<script type="application/json" data-for="htmlwidget-a206b050d744948f63fc">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"expr_PC2\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"2\" [label = \"log_burden\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"3\" [label = \"expr_PC1\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"4\" [label = \"ticks_attached\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"5\" [label = \"cap_prop_night\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"6\" [label = \"weighted_trap_diversity\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"7\" [label = \"weighted_trapability\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"8\" [label = \"avg_move_dist\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"9\" [label = \"sex_mature\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"10\" [label = \"sex_male\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"11\" [label = \"weight\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"12\" [label = \"sex_male:weight\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"13\" [label = \"wthr_PC1\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"14\" [label = \"clim_PC1\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"15\" [label = \"clim_PC2\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"16\" [label = \"sex_male:sex_mature\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n\"9\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.3812375249501\"] \n\"6\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.86249722776669\"] \n\"2\"->\"1\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.92404080727434\"] \n\"10\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.86271900643158\"] \n\"11\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.35063206919494\"] \n\"4\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.83943224661787\"] \n\"3\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.91261920603238\"] \n\"12\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"6.00587713461965\"] \n\"10\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.40297183410956\"] \n\"11\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.57296518074961\"] \n\"13\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.76158793524063\"] \n\"4\"->\"3\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.27977378576181\"] \n\"13\"->\"4\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.98669328010645\"] \n\"14\"->\"4\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1\"] \n\"10\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"4.22133510756265\"] \n\"6\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.80217343091595\"] \n\"5\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.37292082501663\"] \n\"8\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.25571080062098\"] \n\"6\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.32656908405411\"] \n\"13\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1.78243512974052\"] \n\"15\"->\"5\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.5455755156354\"] \n\"10\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.44533155910401\"] \n\"9\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.91106675537813\"] \n\"16\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"4.73286759813706\"] \n\"7\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"8\"] \n\"8\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.55256154357951\"] \n\"13\"->\"6\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.77056997116877\"] \n\"10\"->\"6\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.68651585717454\"] \n\"11\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.31991572410734\"] \n\"12\"->\"6\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.5703038367709\"] \n\"8\"->\"7\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"6.97150144156132\"] \n\"15\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1.25848303393214\"] \n\"14\"->\"7\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.85440230649811\"] \n\"10\"->\"8\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.31159902417387\"] \n\"11\"->\"8\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.7581503659348\"] \n\"15\"->\"8\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.89044133954314\"] \n\"12\"->\"8\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.12951874029718\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 <p class="caption">
 Figure 20: Directed acyclycal graph of selected burden SEM model, fit with complete cases. The goodness-of-fit P-value is 0.66, which indicates that this model is <em>not</em> statistically different from an ‘ideal’ model of these data. Orange vectors represent positive effects, blue represent negative effects and grey represents non-significant (P &gt; 0.1) effects. The width of a vector is proportional to the magnitude of its effect.
 </p>
 </div>
 <p><br></p>
 <table>
-<caption><span id="tab:selBurdCompSemR2">Table 11: </span>R-squared table of the selected SEM, fit with complete cases. Marginal R-squared values represent the proportion of variation in the resposne explained by the fixed effects and Conditional values represent the proportion explained by the full model. Models without random effects (i.e., simple linear regression) do not have a conditional R-squared value.</caption>
+<caption><span id="tab:selBurdCompSemR2">Table 11: </span>R-squared table of the selected SEM, fit with complete cases. Marginal R-squared values represent the proportion of variation in the response explained by the fixed effects and Conditional values represent the proportion explained by the full model. Models without random effects (i.e., simple linear regression) do not have a conditional R-squared value.</caption>
 <colgroup>
 <col width="32%" />
 <col width="12%" />
@@ -270,7 +274,7 @@ Figure 20: Directed acyclycal graph of selected burden SEM model, fit with compl
 <td align="right">0.32</td>
 </tr>
 <tr class="even">
-<td align="left">Bb_burden</td>
+<td align="left">log_burden</td>
 <td align="left">gaussian</td>
 <td align="left">identity</td>
 <td align="left">none</td>
@@ -330,36 +334,132 @@ Figure 20: Directed acyclycal graph of selected burden SEM model, fit with compl
 </div>
 <div id="infection-status" class="section level3 hasAnchor">
 <h3>Infection status<a href="structural-equation-models.html#infection-status" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Figure <a href="structural-equation-models.html#fig:selInfCompSem">21</a> and Table <a href="structural-equation-models.html#tab:selInfCompSemR2">12</a> visualize
+a the infection SEM fit to a “complete” data set. Again, while this model
+is interesting, there are no significant paths between our primary variables
+of interest (behavior -&gt; ticks -&gt; resistance -&gt; infection -&gt; tolerance).</p>
 <div class="figure"><span style="display:block;" id="fig:selInfCompSem"></span>
-<div class="grViz html-widget html-fill-item" id="htmlwidget-4b2e9d3a62990c295456" style="width:100%;height:672px;"></div>
-<script type="application/json" data-for="htmlwidget-4b2e9d3a62990c295456">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"expr_PC2\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"2\" [label = \"Bb_infected\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"3\" [label = \"expr_PC1\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"4\" [label = \"ticks_attached\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"5\" [label = \"cap_prop_night\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"6\" [label = \"weighted_trap_diversity\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"7\" [label = \"weighted_trapability\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"8\" [label = \"avg_move_dist\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"9\" [label = \"sex_mature\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"10\" [label = \"sex_male\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"11\" [label = \"weight\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"12\" [label = \"wthr_PC1\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"13\" [label = \"sex_male:sex_mature\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"14\" [label = \"sex_male:weight\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"15\" [label = \"sex_male:sex_mature:weight\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"16\" [label = \"clim_PC1\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"17\" [label = \"clim_PC2\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n\"9\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.24462186737636\"] \n\"6\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.81902860944777\"] \n\"2\"->\"1\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"4.20115324905744\"] \n\"10\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.83089376801952\"] \n\"9\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.30416943889998\"] \n\"11\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.32734530938124\"] \n\"4\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.65136393878909\"] \n\"12\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.55744067420714\"] \n\"3\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.33178088267909\"] \n\"13\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"1.86704369039698\"] \n\"14\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"4.97194499889111\"] \n\"15\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"6.78132623641606\"] \n\"10\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.40297183410956\"] \n\"11\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.57296518074961\"] \n\"12\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.76158793524063\"] \n\"4\"->\"3\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.27977378576181\"] \n\"12\"->\"4\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.98669328010645\"] \n\"16\"->\"4\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1\"] \n\"10\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"4.22133510756265\"] \n\"6\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.80217343091595\"] \n\"5\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.37292082501663\"] \n\"8\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.25571080062098\"] \n\"6\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.32656908405411\"] \n\"12\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1.78243512974052\"] \n\"17\"->\"5\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.5455755156354\"] \n\"10\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.44533155910401\"] \n\"9\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.91106675537813\"] \n\"13\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"4.73286759813706\"] \n\"7\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"8\"] \n\"8\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.55256154357951\"] \n\"12\"->\"6\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.77056997116877\"] \n\"10\"->\"6\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.68651585717454\"] \n\"11\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.31991572410734\"] \n\"14\"->\"6\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.5703038367709\"] \n\"8\"->\"7\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"6.96917276557995\"] \n\"17\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1.23209137280994\"] \n\"16\"->\"7\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.88157019294744\"] \n\"10\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.51208693723664\"] \n\"10\"->\"8\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.31159902417387\"] \n\"11\"->\"8\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.7581503659348\"] \n\"17\"->\"8\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.89044133954314\"] \n\"14\"->\"8\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.12951874029718\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-248d2d487939a3495f49" style="width:100%;height:672px;"></div>
+<script type="application/json" data-for="htmlwidget-248d2d487939a3495f49">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"expr_PC2\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"2\" [label = \"Bb_infected\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"3\" [label = \"expr_PC1\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"4\" [label = \"ticks_attached\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"5\" [label = \"cap_prop_night\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"6\" [label = \"weighted_trap_diversity\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"7\" [label = \"weighted_trapability\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"8\" [label = \"avg_move_dist\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"9\" [label = \"sex_mature\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"10\" [label = \"sex_male\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"11\" [label = \"weight\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"12\" [label = \"wthr_PC1\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"13\" [label = \"sex_male:sex_mature\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"14\" [label = \"sex_male:weight\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"15\" [label = \"sex_male:sex_mature:weight\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"16\" [label = \"clim_PC1\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"17\" [label = \"clim_PC2\", width = \"3\", fontsize = \"20\", shape = \"rectangle\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n\"9\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.24462186737636\"] \n\"6\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.81902860944777\"] \n\"2\"->\"1\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"4.20115324905744\"] \n\"10\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.83089376801952\"] \n\"9\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.30416943889998\"] \n\"11\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.32734530938124\"] \n\"4\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.65136393878909\"] \n\"12\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.55744067420714\"] \n\"3\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.33178088267909\"] \n\"13\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"1.86626746506986\"] \n\"14\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"4.97194499889111\"] \n\"15\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"6.78132623641606\"] \n\"10\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.40297183410956\"] \n\"11\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.57296518074961\"] \n\"12\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.76158793524063\"] \n\"4\"->\"3\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.27977378576181\"] \n\"12\"->\"4\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.98669328010645\"] \n\"16\"->\"4\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1\"] \n\"10\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"4.22133510756265\"] \n\"6\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.80217343091595\"] \n\"5\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.37292082501663\"] \n\"8\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.25571080062098\"] \n\"6\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.32656908405411\"] \n\"12\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1.78243512974052\"] \n\"17\"->\"5\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.5455755156354\"] \n\"10\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.44533155910401\"] \n\"9\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.91106675537813\"] \n\"13\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"4.73286759813706\"] \n\"7\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"8\"] \n\"8\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.55256154357951\"] \n\"12\"->\"6\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.77056997116877\"] \n\"10\"->\"6\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.68651585717454\"] \n\"11\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.31991572410734\"] \n\"14\"->\"6\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.5703038367709\"] \n\"8\"->\"7\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"6.96917276557995\"] \n\"17\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1.23209137280994\"] \n\"16\"->\"7\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.88157019294744\"] \n\"10\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.51208693723664\"] \n\"10\"->\"8\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.31159902417387\"] \n\"11\"->\"8\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.7581503659348\"] \n\"17\"->\"8\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.89044133954314\"] \n\"14\"->\"8\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.12951874029718\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 <p class="caption">
 Figure 21: Directed acyclycal graph of selected infection SEM model, fit with complete cases. The goodness-of-fit P-value is 0.9, which indicates that this model is <em>not</em> statistically different from an ‘ideal’ model of these data. Orange vectors represent positive effects, blue represent negative effects and grey represents non-significant (P &gt; 0.1) effects. The width of a vector is proportional to the magnitude of its effect.
 </p>
 </div>
-</div>
-<div id="infection-burden-hurdle" class="section level3 hasAnchor">
-<h3>Infection-burden hurdle<a href="structural-equation-models.html#infection-burden-hurdle" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>TBD</p>
+<p><br></p>
+<table>
+<caption><span id="tab:selInfCompSemR2">Table 12: </span>R-squared table of the selected infection SEM, fit with complete cases. Marginal R-squared values represent the proportion of variation in the responne explained by the fixed effects and Conditional values represent the proportion explained by the full model. Models without random effects (i.e., simple linear regression) do not have a conditional R-squared value.</caption>
+<colgroup>
+<col width="32%" />
+<col width="12%" />
+<col width="12%" />
+<col width="16%" />
+<col width="12%" />
+<col width="16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Response</th>
+<th align="left">family</th>
+<th align="left">link</th>
+<th align="left">method</th>
+<th align="right">Marginal</th>
+<th align="right">Conditional</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">expr_PC2</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.06</td>
+<td align="right">0.30</td>
+</tr>
+<tr class="even">
+<td align="left">Bb_infected</td>
+<td align="left">binomial</td>
+<td align="left">logit</td>
+<td align="left">theoretical</td>
+<td align="right">0.31</td>
+<td align="right">0.64</td>
+</tr>
+<tr class="odd">
+<td align="left">expr_PC1</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.07</td>
+<td align="right">0.27</td>
+</tr>
+<tr class="even">
+<td align="left">ticks_attached</td>
+<td align="left">binomial</td>
+<td align="left">logit</td>
+<td align="left">theoretical</td>
+<td align="right">0.14</td>
+<td align="right">0.27</td>
+</tr>
+<tr class="odd">
+<td align="left">cap_prop_night</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.12</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">weighted_trap_diversity</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.57</td>
+<td align="right">0.66</td>
+</tr>
+<tr class="odd">
+<td align="left">weighted_trapability</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.27</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">avg_move_dist</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.07</td>
+<td align="right">NA</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div id="maximal-cases" class="section level2 hasAnchor">
 <h2>Maximal cases<a href="structural-equation-models.html#maximal-cases" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>In contrast to the (#complete-cases) section above, these next SEMs are fit
+with component models that use all available observations. This means that some
+paths (i.e., those involving resistance and tolerance expression) are fit with
+fewer samples than other. This gives the both the components and overall model
+more power to estimate the effects, but does assume that the patterns among
+individuals with observed characteristics are representative of individuals
+with characteristics not directly observed.</p>
 <div id="burden-1" class="section level3 hasAnchor">
 <h3>Burden<a href="structural-equation-models.html#burden-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Figure <a href="structural-equation-models.html#fig:selBurdMaxSem">22</a> shows the selected burden model, fit with the
-maximal data for each path. And Table <a href="structural-equation-models.html#tab:selBurdMaxSemR2">12</a> shows the
-corresponding <span class="math inline">\(R^2\)</span> table</p>
+maximal data for each path. And Table <a href="structural-equation-models.html#tab:selBurdMaxSemR2">13</a> shows the
+corresponding <span class="math inline">\(R^2\)</span> table. Still the paths between burden, gene expression,
+and ticks, and behavior are not significant.</p>
 <div class="figure"><span style="display:block;" id="fig:selBurdMaxSem"></span>
-<div class="grViz html-widget html-fill-item" id="htmlwidget-ef43462ebd348c82f89e" style="width:100%;height:672px;"></div>
-<script type="application/json" data-for="htmlwidget-ef43462ebd348c82f89e">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"expr_PC2\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"2\" [label = \"Bb_burden\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"3\" [label = \"expr_PC1\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"4\" [label = \"ticks_attached\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"5\" [label = \"cap_prop_night\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"6\" [label = \"weighted_trap_diversity\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"7\" [label = \"weighted_trapability\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"8\" [label = \"avg_move_dist\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"9\" [label = \"sex_mature\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"10\" [label = \"sex_male\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"11\" [label = \"weight\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"12\" [label = \"wthr_PC1\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"13\" [label = \"sex_male:weight\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"14\" [label = \"clim_PC1\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"15\" [label = \"clim_PC2\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"16\" [label = \"sex_male:sex_mature\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n\"9\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.77774898505658\"] \n\"6\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.5711324177248\"] \n\"2\"->\"1\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.4300768765656\"] \n\"10\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.63021508162736\"] \n\"11\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.20324781895137\"] \n\"4\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.0013820506176\"] \n\"3\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.8230111427831\"] \n\"12\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.80798134231666\"] \n\"13\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.93202038524661\"] \n\"10\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.3931934007083\"] \n\"11\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.74691198065129\"] \n\"12\"->\"3\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.37203075062624\"] \n\"4\"->\"3\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.34654919236417\"] \n\"12\"->\"4\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.94644553856785\"] \n\"14\"->\"4\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1\"] \n\"10\"->\"4\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.58305260430163\"] \n\"6\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.74259307247128\"] \n\"9\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.11566036106072\"] \n\"11\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.92096398030578\"] \n\"5\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.76436036969854\"] \n\"8\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.64040770493219\"] \n\"7\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.00380063919841\"] \n\"6\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.93668480608102\"] \n\"12\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.53217586594109\"] \n\"15\"->\"5\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.23538049581066\"] \n\"10\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.89556880020731\"] \n\"9\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.29031700786041\"] \n\"11\"->\"5\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.88053899974087\"] \n\"7\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1.49157812904898\"] \n\"14\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.51403645158504\"] \n\"16\"->\"5\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.64533126025741\"] \n\"7\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"8\"] \n\"8\"->\"6\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.90766174311134\"] \n\"12\"->\"6\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.69966312516196\"] \n\"10\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.09328841668826\"] \n\"11\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.09570700526907\"] \n\"13\"->\"6\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.93426621750022\"] \n\"8\"->\"7\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.11747430249633\"] \n\"15\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.78008119547378\"] \n\"14\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1.37185799429904\"] \n\"10\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.52612939448907\"] \n\"9\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.80305778699145\"] \n\"11\"->\"7\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.49356482681178\"] \n\"12\"->\"7\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.27226397166796\"] \n\"10\"->\"8\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.01831217068325\"] \n\"11\"->\"8\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.3931934007083\"] \n\"15\"->\"8\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.94575451325905\"] \n\"9\"->\"8\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.68817482940313\"] \n\"13\"->\"8\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.89677809449771\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-af5c334a437033b989d6" style="width:100%;height:672px;"></div>
+<script type="application/json" data-for="htmlwidget-af5c334a437033b989d6">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"expr_PC2\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"2\" [label = \"log_burden\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"3\" [label = \"expr_PC1\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"4\" [label = \"ticks_attached\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"5\" [label = \"cap_prop_night\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"6\" [label = \"weighted_trap_diversity\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"7\" [label = \"weighted_trapability\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"8\" [label = \"avg_move_dist\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"9\" [label = \"sex_mature\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"10\" [label = \"sex_male\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"11\" [label = \"weight\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"12\" [label = \"wthr_PC1\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"13\" [label = \"sex_male:weight\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"14\" [label = \"clim_PC1\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"15\" [label = \"clim_PC2\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"16\" [label = \"sex_male:sex_mature\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n\"9\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.77774898505658\"] \n\"6\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.5711324177248\"] \n\"2\"->\"1\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.4300768765656\"] \n\"10\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.63021508162736\"] \n\"11\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.20324781895137\"] \n\"4\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.0013820506176\"] \n\"3\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.8230111427831\"] \n\"12\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.80798134231666\"] \n\"13\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.93202038524661\"] \n\"10\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.3931934007083\"] \n\"11\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.74691198065129\"] \n\"12\"->\"3\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.37203075062624\"] \n\"4\"->\"3\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.34654919236417\"] \n\"12\"->\"4\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.94644553856785\"] \n\"14\"->\"4\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1\"] \n\"10\"->\"4\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.58305260430163\"] \n\"6\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.74259307247128\"] \n\"9\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.11566036106072\"] \n\"11\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.92096398030578\"] \n\"5\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.76436036969854\"] \n\"8\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.64040770493219\"] \n\"7\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.00380063919841\"] \n\"6\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.93668480608102\"] \n\"12\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.53217586594109\"] \n\"15\"->\"5\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.23538049581066\"] \n\"10\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.89556880020731\"] \n\"9\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.29031700786041\"] \n\"11\"->\"5\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.88053899974087\"] \n\"7\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1.49157812904898\"] \n\"14\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.51403645158504\"] \n\"16\"->\"5\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.64533126025741\"] \n\"7\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"8\"] \n\"8\"->\"6\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.90766174311134\"] \n\"12\"->\"6\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.69966312516196\"] \n\"10\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.09328841668826\"] \n\"11\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.09570700526907\"] \n\"13\"->\"6\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.93426621750022\"] \n\"8\"->\"7\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.11747430249633\"] \n\"15\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.78008119547378\"] \n\"14\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1.37185799429904\"] \n\"10\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.52612939448907\"] \n\"9\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.80305778699145\"] \n\"11\"->\"7\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.49356482681178\"] \n\"12\"->\"7\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.27226397166796\"] \n\"10\"->\"8\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.01831217068325\"] \n\"11\"->\"8\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.3931934007083\"] \n\"15\"->\"8\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.94575451325905\"] \n\"9\"->\"8\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.68817482940313\"] \n\"13\"->\"8\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.89677809449771\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 <p class="caption">
 Figure 22: Directed acyclycal graph of selected burden SEM model, fit with maximal cases. The goodness-of-fit P-value is 0.91, which indicates that this model is <em>not</em> statistically different from an ‘ideal’ model of these data. Orange vectors represent positive effects, blue represent negative effects and grey represents non-significant (P &gt; 0.1) effects. The width of a vector is proportional to the magnitude of its effect.
 </p>
 </div>
 <p><br></p>
 <table>
-<caption><span id="tab:selBurdMaxSemR2">Table 12: </span>R-squared table of the selected SEM, fit with complete cases. Marginal R-squared values represent the proportion of variation in the resposne explained by the fixed effects and Conditional values represent the proportion explained by the full model. Models without random effects (i.e., simple linear regression) do not have a conditional R-squared value.</caption>
+<caption><span id="tab:selBurdMaxSemR2">Table 13: </span>R-squared table of the selected SEM, fit with complete cases. Marginal R-squared values represent the proportion of variation in the response explained by the fixed effects and Conditional values represent the proportion explained by the full model. Models without random effects (i.e., simple linear regression) do not have a conditional R-squared value.</caption>
 <colgroup>
 <col width="32%" />
 <col width="12%" />
@@ -388,7 +488,7 @@ Figure 22: Directed acyclycal graph of selected burden SEM model, fit with maxim
 <td align="right">0.24</td>
 </tr>
 <tr class="even">
-<td align="left">Bb_burden</td>
+<td align="left">log_burden</td>
 <td align="left">gaussian</td>
 <td align="left">identity</td>
 <td align="left">none</td>
@@ -448,19 +548,242 @@ Figure 22: Directed acyclycal graph of selected burden SEM model, fit with maxim
 </div>
 <div id="infection-status-1" class="section level3 hasAnchor">
 <h3>Infection Status<a href="structural-equation-models.html#infection-status-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p><strong>THESE RESULTS ARE COOL</strong></p>
+<p>Figure <a href="structural-equation-models.html#fig:selInfMaxSem">23</a> and Table (<a href="structural-equation-models.html#tab:selInfMaxSemR2">14</a>) summarize the infection status
+SEM, fit with maximal data. This is the first model that suggests a link from
+ticks -&gt; infection -&gt; tolerance expression.</p>
 <div class="figure"><span style="display:block;" id="fig:selInfMaxSem"></span>
-<div class="grViz html-widget html-fill-item" id="htmlwidget-55fd79c9dc705bdf9943" style="width:100%;height:672px;"></div>
-<script type="application/json" data-for="htmlwidget-55fd79c9dc705bdf9943">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"expr_PC2\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"2\" [label = \"Bb_infected\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"3\" [label = \"expr_PC1\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"4\" [label = \"ticks_attached\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"5\" [label = \"cap_prop_night\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"6\" [label = \"weighted_trap_diversity\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"7\" [label = \"weighted_trapability\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"8\" [label = \"avg_move_dist\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"9\" [label = \"sex_mature\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"10\" [label = \"sex_male\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"11\" [label = \"weight\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"12\" [label = \"wthr_PC1\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"13\" [label = \"sex_male:sex_mature\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"14\" [label = \"sex_male:weight\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"15\" [label = \"sex_male:sex_mature:weight\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"16\" [label = \"clim_PC1\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"17\" [label = \"clim_PC2\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n\"9\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.71184244622959\"] \n\"6\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.55964412196597\"] \n\"2\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.62900578733696\"] \n\"10\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.65802885030664\"] \n\"9\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.60430163254729\"] \n\"11\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"1.95231925369267\"] \n\"4\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.89928306124212\"] \n\"12\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.8563531139328\"] \n\"3\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.08724194523624\"] \n\"13\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.11496933575192\"] \n\"14\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.23183899110305\"] \n\"15\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.46108663729809\"] \n\"10\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.3931934007083\"] \n\"11\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.74691198065129\"] \n\"12\"->\"3\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.37203075062624\"] \n\"4\"->\"3\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.34654919236417\"] \n\"12\"->\"4\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.94644553856785\"] \n\"16\"->\"4\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1\"] \n\"10\"->\"4\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.58305260430163\"] \n\"6\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.74259307247128\"] \n\"9\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.11566036106072\"] \n\"11\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.92096398030578\"] \n\"5\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.76436036969854\"] \n\"8\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.64040770493219\"] \n\"7\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.00380063919841\"] \n\"6\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.93668480608102\"] \n\"12\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.53217586594109\"] \n\"17\"->\"5\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.23538049581066\"] \n\"10\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.89556880020731\"] \n\"9\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.29031700786041\"] \n\"11\"->\"5\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.88053899974087\"] \n\"7\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1.49157812904898\"] \n\"16\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.51403645158504\"] \n\"13\"->\"5\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.64533126025741\"] \n\"7\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"8\"] \n\"8\"->\"6\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.90766174311134\"] \n\"12\"->\"6\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.69966312516196\"] \n\"10\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.09328841668826\"] \n\"11\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.09570700526907\"] \n\"14\"->\"6\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.93426621750022\"] \n\"8\"->\"7\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.11747430249633\"] \n\"17\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.78008119547378\"] \n\"16\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1.37185799429904\"] \n\"10\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.52612939448907\"] \n\"9\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.80305778699145\"] \n\"11\"->\"7\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.49356482681178\"] \n\"12\"->\"7\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.27226397166796\"] \n\"10\"->\"8\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.01831217068325\"] \n\"11\"->\"8\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.3931934007083\"] \n\"17\"->\"8\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.94575451325905\"] \n\"9\"->\"8\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.68817482940313\"] \n\"14\"->\"8\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.89677809449771\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-2b6e1f87184e49339b01" style="width:100%;height:672px;"></div>
+<script type="application/json" data-for="htmlwidget-2b6e1f87184e49339b01">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"expr_PC2\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"2\" [label = \"Bb_infected\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"3\" [label = \"expr_PC1\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"4\" [label = \"ticks_attached\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"5\" [label = \"cap_prop_night\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"6\" [label = \"weighted_trap_diversity\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"7\" [label = \"weighted_trapability\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"8\" [label = \"avg_move_dist\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"9\" [label = \"sex_mature\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"10\" [label = \"sex_male\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"11\" [label = \"weight\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"12\" [label = \"wthr_PC1\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"13\" [label = \"sex_male:sex_mature\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"14\" [label = \"sex_male:weight\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"15\" [label = \"sex_male:sex_mature:weight\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"16\" [label = \"clim_PC1\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"17\" [label = \"clim_PC2\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n\"9\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.71184244622959\"] \n\"6\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.55964412196597\"] \n\"2\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.62900578733696\"] \n\"10\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.65802885030664\"] \n\"9\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.60430163254729\"] \n\"11\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"1.95231925369267\"] \n\"4\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.89928306124212\"] \n\"12\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.8563531139328\"] \n\"3\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.08724194523624\"] \n\"13\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.11496933575192\"] \n\"14\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.23183899110305\"] \n\"15\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.46108663729809\"] \n\"10\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.3931934007083\"] \n\"11\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.74691198065129\"] \n\"12\"->\"3\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.37203075062624\"] \n\"4\"->\"3\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.34654919236417\"] \n\"12\"->\"4\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.94644553856785\"] \n\"16\"->\"4\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1\"] \n\"10\"->\"4\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.58305260430163\"] \n\"6\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.74259307247128\"] \n\"9\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.11566036106072\"] \n\"11\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.92096398030578\"] \n\"5\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.76436036969854\"] \n\"8\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.64040770493219\"] \n\"7\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.00380063919841\"] \n\"6\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.93668480608102\"] \n\"12\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.53217586594109\"] \n\"17\"->\"5\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.23538049581066\"] \n\"10\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.89556880020731\"] \n\"9\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.29031700786041\"] \n\"11\"->\"5\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.88053899974087\"] \n\"7\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1.49157812904898\"] \n\"16\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.51403645158504\"] \n\"13\"->\"5\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.64533126025741\"] \n\"7\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"8\"] \n\"8\"->\"6\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.90766174311134\"] \n\"12\"->\"6\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.69966312516196\"] \n\"10\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.09328841668826\"] \n\"11\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.09570700526907\"] \n\"14\"->\"6\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.93426621750022\"] \n\"8\"->\"7\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.11747430249633\"] \n\"17\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.78008119547378\"] \n\"16\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1.37185799429904\"] \n\"10\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.52612939448907\"] \n\"9\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.80305778699145\"] \n\"11\"->\"7\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.49356482681178\"] \n\"12\"->\"7\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.27226397166796\"] \n\"10\"->\"8\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.01831217068325\"] \n\"11\"->\"8\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.3931934007083\"] \n\"17\"->\"8\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.94575451325905\"] \n\"9\"->\"8\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.68817482940313\"] \n\"14\"->\"8\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.89677809449771\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 <p class="caption">
 Figure 23: Directed acyclycal graph of selected burden SEM model, fit with maximal cases. The goodness-of-fit P-value is 0.95, which indicates that this model is <em>not</em> statistically different from an ‘ideal’ model of these data. Orange vectors represent positive effects, blue represent negative effects and grey represents non-significant (P &gt; 0.1) effects. The width of a vector is proportional to the magnitude of its effect.
 </p>
 </div>
+<p><br></p>
+<table>
+<caption><span id="tab:selInfMaxSemR2">Table 14: </span>R-squared table of the selected infection SEM, fit with complete cases. Marginal R-squared values represent the proportion of variation in the response explained by the fixed effects and Conditional values represent the proportion explained by the full model. Models without random effects (i.e., simple linear regression) do not have a conditional R-squared value.</caption>
+<colgroup>
+<col width="32%" />
+<col width="12%" />
+<col width="12%" />
+<col width="16%" />
+<col width="12%" />
+<col width="16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Response</th>
+<th align="left">family</th>
+<th align="left">link</th>
+<th align="left">method</th>
+<th align="right">Marginal</th>
+<th align="right">Conditional</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">expr_PC2</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.06</td>
+<td align="right">0.23</td>
+</tr>
+<tr class="even">
+<td align="left">Bb_infected</td>
+<td align="left">binomial</td>
+<td align="left">logit</td>
+<td align="left">theoretical</td>
+<td align="right">0.30</td>
+<td align="right">0.65</td>
+</tr>
+<tr class="odd">
+<td align="left">expr_PC1</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.03</td>
+<td align="right">0.14</td>
+</tr>
+<tr class="even">
+<td align="left">ticks_attached</td>
+<td align="left">binomial</td>
+<td align="left">logit</td>
+<td align="left">theoretical</td>
+<td align="right">0.18</td>
+<td align="right">0.29</td>
+</tr>
+<tr class="odd">
+<td align="left">cap_prop_night</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.06</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">weighted_trap_diversity</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.71</td>
+<td align="right">0.73</td>
+</tr>
+<tr class="odd">
+<td align="left">weighted_trapability</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.09</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">avg_move_dist</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.00</td>
+<td align="right">NA</td>
+</tr>
+</tbody>
+</table>
 </div>
-<div id="infection-burden-hurdle-1" class="section level3 hasAnchor">
-<h3>Infection-burden hurdle<a href="structural-equation-models.html#infection-burden-hurdle-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="burden-and-infection" class="section level3 hasAnchor">
+<h3>Burden and Infection<a href="structural-equation-models.html#burden-and-infection" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Figure <a href="structural-equation-models.html#fig:selBothMaxSem">24</a> and Table <a href="structural-equation-models.html#tab:selBothMaxSemR2">15</a>
+summarize what is probably the most
+interesting model of this system; it includes both infection and burden and is
+fit with the maximal data set. This SEM suggests that:</p>
+<ul>
+<li><p><em>Borrelia</em> infection in an individual <em>Peromyscus</em> is most explained by
+the three-way interaction between the individual’s sex, reproductive status,
+and weight; interaction with ticks; and weather conditions, in
+addition to random spatial and temporal effects (35% variation).</p></li>
+<li><p>The quantitative <em>Borrelia</em> burden within an individual, beyond its infection
+status, is best explained by the individuals sex (there is also a marginal
+interaction between sex and weight: P=0.12), in addition to random spatial
+effects (1% variation). Unsurprisingly, most of the variation in burden is
+explained by infection status.</p></li>
+<li><p>Expression of tolerance genes was best explained by individual reproductive
+status, behavior (trap diversity), and <em>Borrelia</em> infection status, in addition
+to random spatial and temporal effects. The burden of <em>Borrelia</em> apparently had
+no bearing on tolerance expression (removed during model selection).</p></li>
+<li><p>Expression of resistance genes was best explained by individual sex, weight,
+and interaction with ticks (there is also a marginal effect of weather: P=0.13),
+in addition to random spatial effects. Resistance expression apparently
+had no bearing on either <strong>Borrelia</strong> infection status or burden (P&gt;0.75).</p></li>
+<li><p>Our metrics of behavior (capture time, trapability, trap diversity,
+movement distance) did not explain significant variation in <em>Borrelia</em>
+infection, burden, or interaction with ticks – beyond that already
+explained by sex, reproductive status, and weight.</p></li>
+</ul>
+<div class="figure"><span style="display:block;" id="fig:selBothMaxSem"></span>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-3c4f84d145ba2e0a23fe" style="width:100%;height:672px;"></div>
+<script type="application/json" data-for="htmlwidget-3c4f84d145ba2e0a23fe">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"expr_PC2\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"2\" [label = \"log_burden\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"3\" [label = \"Bb_infected\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"4\" [label = \"expr_PC1\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"5\" [label = \"ticks_attached\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"6\" [label = \"cap_prop_night\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"7\" [label = \"weighted_trap_diversity\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"8\" [label = \"weighted_trapability\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"9\" [label = \"avg_move_dist\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"10\" [label = \"sex_mature\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"11\" [label = \"sex_male\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"12\" [label = \"weight\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"13\" [label = \"wthr_PC1\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"14\" [label = \"sex_male:weight\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"15\" [label = \"sex_male:sex_mature\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"16\" [label = \"sex_male:sex_mature:weight\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"17\" [label = \"clim_PC1\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"18\" [label = \"clim_PC2\", shape = \"rectangle\", width = \"3\", fontsize = \"20\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n\"10\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.71207671043538\"] \n\"7\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.56003800967519\"] \n\"3\"->\"1\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.62923289564616\"] \n\"11\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.3728403593642\"] \n\"12\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.57221838286109\"] \n\"4\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.88303386316517\"] \n\"3\"->\"2\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"7.41465100207325\"] \n\"13\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.14244989633725\"] \n\"14\"->\"2\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.56513476157567\"] \n\"11\"->\"3\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.38735314443677\"] \n\"10\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"4.10996890117484\"] \n\"5\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.92372149274361\"] \n\"13\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.92795438838977\"] \n\"4\"->\"3\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.04690739460954\"] \n\"15\"->\"3\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.53835521769178\"] \n\"14\"->\"3\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.60262612301313\"] \n\"16\"->\"3\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"5.52194194885971\"] \n\"11\"->\"4\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.393400138217\"] \n\"12\"->\"4\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.74714927436075\"] \n\"13\"->\"4\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.37223565998618\"] \n\"5\"->\"4\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.34666551485833\"] \n\"13\"->\"5\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.9467000691085\"] \n\"17\"->\"5\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1\"] \n\"11\"->\"5\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.58327574291638\"] \n\"7\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.74274360746372\"] \n\"10\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.11584312370422\"] \n\"12\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.92112992398065\"] \n\"6\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.76451278507256\"] \n\"8\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"3.00397373876987\"] \n\"9\"->\"5\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.64054941257775\"] \n\"7\"->\"6\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.93685210780926\"] \n\"13\"->\"6\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.53230822391154\"] \n\"18\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.23557360055287\"] \n\"11\"->\"6\" [color = \"grey50\", arrowsize = \"1\", style = \"dotted\", penwidth = \"2.89573255010366\"] \n\"10\"->\"6\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.29042847270214\"] \n\"12\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.88078783690394\"] \n\"17\"->\"6\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.51416724257084\"] \n\"8\"->\"6\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1.4916205943331\"] \n\"15\"->\"6\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.6455597788528\"] \n\"8\"->\"7\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"8\"] \n\"13\"->\"7\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.70041465100207\"] \n\"11\"->\"7\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.09286454733932\"] \n\"12\"->\"7\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.09709744298549\"] \n\"9\"->\"8\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.11765722183829\"] \n\"18\"->\"8\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.78023496890117\"] \n\"17\"->\"8\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"1.37189011748445\"] \n\"11\"->\"8\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.52626123013131\"] \n\"10\"->\"8\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.80321354526607\"] \n\"12\"->\"8\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.4937802349689\"] \n\"13\"->\"8\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.2724602626123\"] \n\"11\"->\"9\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.01848652384243\"] \n\"12\"->\"9\" [color = \"orange\", arrowsize = \"1\", style = \"solid\", penwidth = \"3.37042156185211\"] \n\"10\"->\"9\" [color = \"cornflowerblue\", arrowsize = \"1\", style = \"solid\", penwidth = \"2.69013476157567\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<p class="caption">
+Figure 24: Directed acyclycal graph of selected burden SEM model, fit with maximal cases. The goodness-of-fit P-value is 0.92, which indicates that this model is <em>not</em> statistically different from an ‘ideal’ model of these data. Orange vectors represent positive effects, blue represent negative effects and grey represents non-significant (P &gt; 0.1) effects. The width of a vector is proportional to the magnitude of its effect.
+</p>
+</div>
+<p><br></p>
+<table>
+<caption><span id="tab:selBothMaxSemR2">Table 15: </span>R-squared table of the selected burden-infection SEM, fit with complete cases. Marginal R-squared values represent the proportion of variation in the response explained by the fixed effects and Conditional values represent the proportion explained by the full model. Models without random effects (i.e., simple linear regression) do not have a conditional R-squared value.</caption>
+<colgroup>
+<col width="32%" />
+<col width="12%" />
+<col width="12%" />
+<col width="16%" />
+<col width="12%" />
+<col width="16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Response</th>
+<th align="left">family</th>
+<th align="left">link</th>
+<th align="left">method</th>
+<th align="right">Marginal</th>
+<th align="right">Conditional</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">expr_PC2</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.06</td>
+<td align="right">0.23</td>
+</tr>
+<tr class="even">
+<td align="left">log_burden</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.53</td>
+<td align="right">0.54</td>
+</tr>
+<tr class="odd">
+<td align="left">Bb_infected</td>
+<td align="left">binomial</td>
+<td align="left">logit</td>
+<td align="left">theoretical</td>
+<td align="right">0.30</td>
+<td align="right">0.65</td>
+</tr>
+<tr class="even">
+<td align="left">expr_PC1</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.03</td>
+<td align="right">0.14</td>
+</tr>
+<tr class="odd">
+<td align="left">ticks_attached</td>
+<td align="left">binomial</td>
+<td align="left">logit</td>
+<td align="left">theoretical</td>
+<td align="right">0.18</td>
+<td align="right">0.29</td>
+</tr>
+<tr class="even">
+<td align="left">cap_prop_night</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.06</td>
+<td align="right">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">weighted_trap_diversity</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.71</td>
+<td align="right">0.73</td>
+</tr>
+<tr class="even">
+<td align="left">weighted_trapability</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.09</td>
+<td align="right">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">avg_move_dist</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+<td align="left">none</td>
+<td align="right">0.00</td>
+<td align="right">NA</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="p.-leucopus-vs.-p.-maniculatus" class="section level2 hasAnchor">
+<h2><em>P. leucopus</em> vs. <em>P. maniculatus</em><a href="structural-equation-models.html#p.-leucopus-vs.-p.-maniculatus" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>TBD</p>
-</div>
 </div>
 <div id="next-steps" class="section level2 hasAnchor">
 <h2>Next steps<a href="structural-equation-models.html#next-steps" class="anchor-section" aria-label="Anchor link to header"></a></h2>
@@ -471,7 +794,8 @@ things</p>
 <li><p>can we map expression to something else? Proxy variables for expression.</p></li>
 <li><p>use 200 mice to fine tune estimation</p></li>
 </ul></li>
-<li><p>Maybe look at proposal for machine learning hanta virus / disease?</p></li>
+<li><p>Maybe look at proposal for machine learning for more general disease
+(all kinds) prediction?</p></li>
 </ul>
 
 </div>

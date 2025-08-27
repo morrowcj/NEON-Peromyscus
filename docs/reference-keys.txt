@@ -30,6 +30,10 @@ fig:pathExmpl
 fig:selBurdCompSem
 tab:selBurdCompSemR2
 fig:selInfCompSem
+tab:selInfCompSemR2
 fig:selBurdMaxSem
 tab:selBurdMaxSemR2
 fig:selInfMaxSem
+tab:selInfMaxSemR2
+fig:selBothMaxSem
+tab:selBothMaxSemR2

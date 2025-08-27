@@ -13,7 +13,7 @@ for understanding the relationships within and among many levels of
 complex system with many variables. We will use this approach to model 
 *Borrelia* infection competence of *Peromyscus*.
 
-```{r pathExmpl, fig.width = 3, out.width = "25%", fig.cap = caption}
+```{r pathExmpl, fig.width = 3, out.width = "50%", fig.cap = caption}
 ndf <- create_node_df(
   n = 4, label = c("Y1", "Y2", "X1", "X2"), color = "black"
 )
@@ -25,7 +25,8 @@ pdf <- create_edge_df(
 )
 
 create_graph(attr_theme = "bt") %>% 
-  add_global_graph_attrs("layout", "dot", "graph") %>%
+  # add_global_graph_attrs("layout", "dot", "graph") %>%
+  add_global_graph_attrs("rankdir", "LR", "graph") %>%
   add_node_df(ndf) %>% 
   add_edge_df(pdf) %>% 
   render_graph()
@@ -70,23 +71,18 @@ In general, the kinds of models we want to fit are as follows:
 * [x] Fit with "complete cases" wherein all paths use only observations for
 which every variable is available
 
-* [ ] Fit with maximal data, wherein all paths use as many observations as
+* [x] Fit with maximal data, wherein all paths use as many observations as
 possible
 
-* [ ] Model both infection status and burden:
+* [x] Model both infection status and burden:
 
-  - [ ] independent model with complete cases
+  - [x] independent model, with complete cases
   
-  - [ ] independent model with maximal data
+  - [x] independent model, with maximal data
   
-  - [ ] "hurdle" style model (both responses in one model) with complete cases
-  
-  - [ ] "hurdle" style model (both responses in one model) with maximal data
+  - [x] both responses in one model, with maximal data
   
 * [ ] Compare model effects between *P leucopus* vs. *P maniculatus*
-
-  <!-- Should this be for **all** models, or just a select model/subset? -->
-  
 
 ### Latent and Composite variables
 
@@ -95,39 +91,47 @@ to include latent (i.e., unmeasured) and composite variables. We have not yet ,
 included these types of variables into our models, but some interesting options
 might be:
 
-* [ ] "Behavior" is an obvious **latent** variable to explore. It would 
+* "Behavior" is an obvious **latent** variable to explore. It would 
 be constructed such that it depends on the behavior metrics that we have 
 measured (i.e.,, activity time, movement, learning) as well as sex and 
 reproductive status.
 
-* [ ] A "body condition" **composite** variable, constructed from all the 
+* A "body condition" **composite** variable, constructed from all the 
 size traits recorded by NEON may be a better predictor variable than weight
 alone, though it would require using a smaller data set since weight was
 by far the most measured physical trait.
 
-* [ ] "Immunity" would be a natural **latent** or **composite** variable 
+* "Immunity" would be a natural **latent** or **composite** variable 
 constructed from the six gene expression variables. This may capture more 
 variation than the principal component proxies we are currently using.
 
 It is unclear, and not well-documented, how to include either latent or 
 composite variables in `piecewiseSEM`.
 
+---- 
+
+**Update**: After further investigation, `piecewiseSEM` *does not* support 
+either of these use cases. If needed, the Bayesian implementation in the 
+[`brms` package](https://jebyrnes.github.io/bayesian_sem/bayesian_sem.html)
+supposedly supports it.
+
 ## Complete cases
 
-### Burden
-
-Figure \@ref(fig:selBurdCompSem) visualizes a SEM fit to a "complete" data set
-(i.e., only observations for which *all* variables were measured). As such, 
+The first set of models is fit with only the subset of observations for which
+information for *all* variables is available. As such, 
 it has some limitations in its power, but it is the most "defensible" 
 explanatory model because it does not draw conclusions beyond the scope of its
 data. Models using more of the data will be explored in the next section.
 
+### Burden
+
+Figure \@ref(fig:selBurdCompSem) visualize a burden SEM fit to a "complete" 
+data set. 
 While this model is very interesting, one of the primary paths of interest
 is not significant (behavior -> ticks -> resistance -> burden -> tolerance). It 
-is possible
-that the "behavior -> ticks" path is improved by a model which is not limited
-by the completeness restriction. Table \@ref(tab:selBurdCompSemR2) summarizes the
-fit ($R^2$) of each of the component models.
+is possible that the "behavior -> ticks" path is improved by a model which is 
+not limited by the completeness restriction. Table \@ref(tab:selBurdCompSemR2)
+summarizes the fit ($R^2$) of each of the component models.
 
 ```{r selBurdCompSem, out.width="100%", fig.asp = 1, fig.cap=caption}
 selBurdComp <- readRDS(
@@ -158,7 +162,6 @@ coef_tab <- selBurdComp$coefficients %>%
     )
   )
 
-
 # all variables
 the_vars <- unique(c(coef_tab$Response, coef_tab$Predictor))
 
@@ -166,7 +169,7 @@ path_nodes <- data.frame(var = the_vars, id = seq_len(length(the_vars)))
 
 create_graph(attr_theme = "bt") %>% 
   add_global_graph_attrs("layout", "dot", "graph") %>%
-  # add_global_graph_attrs("rankdir", "LR", "graph") %>% 
+  # add_global_graph_attrs("rankdir", "LR", "graph") %>%
   add_nodes_from_table(path_nodes, label_col = var) %>% 
   add_edges_from_table(
     coef_tab, from_col = "Predictor", to_col = "Response", 
@@ -181,7 +184,6 @@ create_graph(attr_theme = "bt") %>%
   set_edge_attrs(style, coef_tab$pval_linetype) %>% 
   set_edge_attrs(penwidth, coef_tab$pval_penwidth) %>% 
   render_graph()
-
 
 caption = paste(
   "Directed acyclycal graph of selected burden SEM model, fit with complete cases.",
@@ -202,7 +204,7 @@ selBurdComp$R2 %>%
     caption = paste(
       "R-squared table of the selected SEM, fit with complete cases.",
       "Marginal R-squared values represent the proportion of variation in",
-      "the resposne explained by the fixed effects and",
+      "the response explained by the fixed effects and",
       "Conditional values represent the proportion explained by the full model.",
       "Models without random effects (i.e., simple linear regression) do not",
       "have a conditional R-squared value."
@@ -211,6 +213,11 @@ selBurdComp$R2 %>%
 ```
 
 ### Infection status
+
+Figure \@ref(fig:selInfCompSem) and Table \@ref(tab:selInfCompSemR2) visualize 
+a the infection SEM fit to a "complete" data set. Again, while this model
+is interesting, there are no significant paths between our primary variables
+of interest (behavior -> ticks -> resistance -> infection -> tolerance).
 
 ```{r selInfCompSem, out.width="100%", fig.asp = 1, fig.cap=caption}
 selInfComp <- readRDS(
@@ -249,7 +256,7 @@ path_nodes <- data.frame(var = the_vars, id = seq_len(length(the_vars)))
 
 create_graph(attr_theme = "bt") %>% 
   add_global_graph_attrs("layout", "dot", "graph") %>%
-  # add_global_graph_attrs("rankdir", "LR", "graph") %>% 
+  # add_global_graph_attrs("rankdir", "LR", "graph") %>%
   add_nodes_from_table(path_nodes, label_col = var) %>% 
   add_edges_from_table(
     coef_tab, from_col = "Predictor", to_col = "Response", 
@@ -277,17 +284,38 @@ caption = paste(
 )
 ```
 
-### Infection-burden hurdle
-
-TBD
+<br>
+```{r selInfCompSemR2}
+selInfComp$R2 %>% 
+  knitr::kable(
+    digits = 2,
+    caption = paste(
+      "R-squared table of the selected infection SEM, fit with complete cases.",
+      "Marginal R-squared values represent the proportion of variation in",
+      "the responne explained by the fixed effects and",
+      "Conditional values represent the proportion explained by the full model.",
+      "Models without random effects (i.e., simple linear regression) do not",
+      "have a conditional R-squared value."
+    )
+  )
+```
 
 ## Maximal cases
+
+In contrast to the (#complete-cases) section above, these next SEMs are fit
+with component models that use all available observations. This means that some
+paths (i.e., those involving resistance and tolerance expression) are fit with
+fewer samples than other. This gives the both the components and overall model
+more power to estimate the effects, but does assume that the patterns among
+individuals with observed characteristics are representative of individuals 
+with characteristics not directly observed.
 
 ### Burden
 
 Figure \@ref(fig:selBurdMaxSem) shows the selected burden model, fit with the
 maximal data for each path. And Table \@ref(tab:selBurdMaxSemR2) shows the 
-corresponding $R^2$ table
+corresponding $R^2$ table. Still the paths between burden, gene expression,
+and ticks, and behavior are not significant.
 
 ```{r selBurdMaxSem, out.width="100%", fig.asp = 1, fig.cap=caption}
 selBurdMax <- readRDS(
@@ -325,7 +353,7 @@ path_nodes <- data.frame(var = the_vars, id = seq_len(length(the_vars)))
 
 create_graph(attr_theme = "bt") %>% 
   add_global_graph_attrs("layout", "dot", "graph") %>%
-  # add_global_graph_attrs("rankdir", "LR", "graph") %>% 
+  # add_global_graph_attrs("rankdir", "LR", "graph") %>%
   add_nodes_from_table(path_nodes, label_col = var) %>% 
   add_edges_from_table(
     coef_tab, from_col = "Predictor", to_col = "Response", 
@@ -363,7 +391,7 @@ selBurdMax$R2 %>%
     caption = paste(
       "R-squared table of the selected SEM, fit with complete cases.",
       "Marginal R-squared values represent the proportion of variation in",
-      "the resposne explained by the fixed effects and",
+      "the response explained by the fixed effects and",
       "Conditional values represent the proportion explained by the full model.",
       "Models without random effects (i.e., simple linear regression) do not",
       "have a conditional R-squared value."
@@ -373,7 +401,9 @@ selBurdMax$R2 %>%
 
 ### Infection Status
 
-**THESE RESULTS ARE COOL**
+Figure \@ref(fig:selInfMaxSem) and Table (\@ref(tab:selInfMaxSemR2)) summarize the infection status
+SEM, fit with maximal data. This is the first model that suggests a link from
+ticks -> infection -> tolerance expression. 
 
 ```{r selInfMaxSem, out.width="100%", fig.asp = 1, fig.cap=caption}
 selInfMax <- readRDS(
@@ -441,8 +471,139 @@ caption = paste(
 )
 ```
 
+<br>
+```{r selInfMaxSemR2}
+selInfMax$R2 %>% 
+  knitr::kable(
+    digits = 2,
+    caption = paste(
+      "R-squared table of the selected infection SEM, fit with complete cases.",
+      "Marginal R-squared values represent the proportion of variation in",
+      "the response explained by the fixed effects and",
+      "Conditional values represent the proportion explained by the full model.",
+      "Models without random effects (i.e., simple linear regression) do not",
+      "have a conditional R-squared value."
+    )
+  )
+```
+### Burden and Infection
 
-### Infection-burden hurdle
+Figure \@ref(fig:selBothMaxSem) and Table \@ref(tab:selBothMaxSemR2) 
+summarize what is probably the most
+interesting model of this system; it includes both infection and burden and is
+fit with the maximal data set. This SEM suggests that:
+
+* *Borrelia* infection in an individual *Peromyscus* is most explained by 
+the three-way interaction between the individual's sex, reproductive status,
+and weight; interaction with ticks; and weather conditions, in
+addition to random spatial and temporal effects (35% variation).
+
+* The quantitative *Borrelia* burden within an individual, beyond its infection
+status, is best explained by the individuals sex (there is also a marginal
+interaction between sex and weight: P=0.12), in addition to random spatial
+effects (1% variation). Unsurprisingly, most of the variation in burden is 
+explained by infection status.
+
+* Expression of tolerance genes was best explained by individual reproductive 
+status, behavior (trap diversity), and *Borrelia* infection status, in addition 
+to random spatial and temporal effects. The burden of *Borrelia* apparently had
+no bearing on tolerance expression (removed during model selection).
+
+* Expression of resistance genes was best explained by individual sex, weight,
+and interaction with ticks (there is also a marginal effect of weather: P=0.13),
+in addition to random spatial effects. Resistance expression apparently
+had no bearing on either **Borrelia** infection status or burden (P>0.75). 
+
+* Our metrics of behavior (capture time, trapability, trap diversity,
+movement distance) did not explain significant variation in *Borrelia*
+infection, burden, or interaction with ticks -- beyond that already
+explained by sex, reproductive status, and weight. 
+
+```{r selBothMaxSem, out.width="100%", fig.asp = 1, fig.cap=caption}
+selBothMax <- readRDS(
+  file.path(
+    "infection-modeling/data/model-objects",
+    "selected-BurdenInfection-SEM_maximal-cases.rds"
+  )
+)
+
+pbreaks = c(0, 0.05, 0.1, 1)#, 
+pcols = c("black", "grey70", "grey70")#, 
+linetypes = c("solid", "solid", "dotted")#, 
+penwidth_range = c(1, 8)
+
+# coefficients
+coef_tab <- selBothMax$coefficients %>% 
+  data.frame() %>% 
+  rename(sig.star = "Var.9") %>% 
+  mutate(
+    pval_group = cut(
+      P.Value, breaks = pbreaks, include.lowest = TRUE,
+      labels(seq_len(length(pbreaks) - 1))
+    ),
+    pval_col = pcols[pval_group],
+    pval_linetype = linetypes[pval_group],
+    pval_penwidth = scales::rescale(Std.Estimate, to = penwidth_range),
+    color = case_when(
+      P.Value > 0.1 ~ "grey50",
+      Std.Estimate < 0 ~ "cornflowerblue", 
+      Std.Estimate >= 0 ~ "orange"
+    )
+  )
+
+# all variables
+the_vars <- unique(c(coef_tab$Response, coef_tab$Predictor))
+
+path_nodes <- data.frame(var = the_vars, id = seq_len(length(the_vars)))
+
+create_graph(attr_theme = "bt") %>% 
+  add_global_graph_attrs("layout", "dot", "graph") %>%
+  # add_global_graph_attrs("rankdir", "LR", "graph") %>%
+  add_nodes_from_table(path_nodes, label_col = var) %>% 
+  add_edges_from_table(
+    coef_tab, from_col = "Predictor", to_col = "Response", 
+    from_to_map = "label"
+  ) %>% 
+  set_node_attrs(shape, "rectangle") %>% 
+  set_node_attrs(width, 3) %>% 
+  set_node_attrs(fontsize, 20) %>% 
+  # set_node_attrs(width, 1.5) %>% 
+  # set_node_attrs(fontsize, 20) %>% 
+  # set_edge_attrs(color, coef_tab$pval_col) %>% 
+  set_edge_attrs(arrowsize, 1) %>% 
+  set_edge_attrs(color, coef_tab$color) %>% 
+  set_edge_attrs(style, coef_tab$pval_linetype) %>% 
+  set_edge_attrs(penwidth, coef_tab$pval_penwidth) %>% 
+  render_graph()
+
+caption = paste(
+  "Directed acyclycal graph of selected burden SEM model, fit with maximal cases.",
+  "The goodness-of-fit P-value is", paste0(round(selBothMax$Cstat$P.Value, 2), ","),
+  "which indicates that this model is *not* statistically different from an",
+  "'ideal' model of these data.",
+  "Orange vectors represent positive effects, blue represent negative effects",
+  "and grey represents non-significant (P > 0.1) effects.",
+  "The width of a vector is proportional to the magnitude of its effect."
+)
+```
+
+<br>
+```{r selBothMaxSemR2}
+selBothMax$R2 %>% 
+  knitr::kable(
+    digits = 2,
+    caption = paste(
+      "R-squared table of the selected burden-infection SEM, fit with complete cases.",
+      "Marginal R-squared values represent the proportion of variation in",
+      "the response explained by the fixed effects and",
+      "Conditional values represent the proportion explained by the full model.",
+      "Models without random effects (i.e., simple linear regression) do not",
+      "have a conditional R-squared value."
+    )
+  )
+```
+
+## *P. leucopus* vs. *P. maniculatus*
 
 TBD
 
@@ -455,4 +616,5 @@ things
   
   - use 200 mice to fine tune estimation
   
-* Maybe look at proposal for machine learning hanta virus / disease?
+* Maybe look at proposal for machine learning for more general disease 
+(all kinds) prediction?
