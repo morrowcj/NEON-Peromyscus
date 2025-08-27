@@ -500,7 +500,7 @@ addition to random spatial and temporal effects (35% variation).
 
 * The quantitative *Borrelia* burden within an individual, beyond its infection
 status, is best explained by the individuals sex (there is also a marginal
-interaction between sex and weight: P=0.12), in addition to random spatial
+interaction between sex and weight: $P=0.12$), in addition to random spatial
 effects (1% variation). Unsurprisingly, most of the variation in burden is 
 explained by infection status.
 
@@ -510,9 +510,9 @@ to random spatial and temporal effects. The burden of *Borrelia* apparently had
 no bearing on tolerance expression (removed during model selection).
 
 * Expression of resistance genes was best explained by individual sex, weight,
-and interaction with ticks (there is also a marginal effect of weather: P=0.13),
+and interaction with ticks (there is also a marginal effect of weather: $P=0.13$),
 in addition to random spatial effects. Resistance expression apparently
-had no bearing on either **Borrelia** infection status or burden (P>0.75). 
+had no bearing on either **Borrelia** infection status or burden ($P>0.75$). 
 
 * Our metrics of behavior (capture time, trapability, trap diversity,
 movement distance) did not explain significant variation in *Borrelia*
