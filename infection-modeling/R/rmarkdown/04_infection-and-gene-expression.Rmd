@@ -18,7 +18,7 @@ Peros <- readRDS("infection-modeling/data/peromyscus-model-data.rds")
 
 Our colleagues at USF did measured gene expression, but not *Borrelia* in 2022.
 NEON did measure infection during that year, but we can only compare
-*Borrelia*-positive samples accross methods (we can be confident that a 
+*Borrelia*-positive samples across methods (we can be confident that a 
 "positive" is correct, but a "negative" is not certain with NEON's PCR 
 technique). Adding these samples would only net us 5 total samples 
 (\@ref(tab:infectMethodSamps)), which is likely not worth the cost of the new

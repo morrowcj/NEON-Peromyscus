@@ -92,7 +92,7 @@ in a principal component analysis (PCA; Figure \@ref(fig:genPCPlot)), with
 "resistance" expression aligning with 
 the first principal component (PC) and "tolerance" expression aligning with the
 second PC. Overall, these first two PCs explain 87% of the variation among the
-genetic expression varaibles (Table \@ref(tab:genPCImport)). It also appears
+genetic expression variables (Table \@ref(tab:genPCImport)). It also appears
 that *Borrelia* infection status is not strongly associated with either 
 resistance or tolerance, but *Borrelia* burden may be associated with
 tolerance expression (Figure Figure \@ref(fig:genPCPlot), blue lines).
