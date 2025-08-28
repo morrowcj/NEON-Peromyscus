@@ -7,6 +7,7 @@ fig:genPCPlot
 tab:genPCImport
 tab:genEnvFitSig
 tab:BbMvr
+tab:infectMethodSamps
 fig:wthrPCA
 tab:wthrPCimport
 fig:climPCA
@@ -24,8 +25,6 @@ fig:weightTrapValid
 tab:mostTrapped
 fig:sexTickDiffs
 fig:trapDivTicks
-tab:infectMethodSamps
-fig:exprOrthog
 fig:pathExmpl
 fig:selBurdCompSem
 tab:selBurdCompSemR2

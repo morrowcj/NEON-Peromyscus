@@ -4,6 +4,51 @@ library(tidyverse)
 library(DiagrammeR)
 ```
 
+```{r}
+# Lookup table to recode variables
+recode_tab <- tibble::tribble(
+  ~old, ~new,
+  "sex_male", "male",
+  "sex_mature", "mature",
+  "weight", "weight",
+  "sex_male:weight", "male:weight",
+  "sex_male:sex_mature", "male:mature",
+  "sex_male:sex_mature:weight", "male:mature:weight",
+  "ticks_attached", "ticks", 
+  "expr_PC2", "tol PC",
+  "expr_PC1", "res PC",
+  "Bb_burden", "burden",
+  "log_burden", "log burden",
+  "Bb_infected", "infected",
+  "cap_prop_night", "captime",
+  "weighted_trapability", "trapable",
+  "weighted_trap_diversity", "trapdiv",
+  "avg_move_dist", "movement",
+  "wthr_PC1", "wthr PC1",
+  "wthr_PC2", "wthr PC2",
+  "clim_PC1", "clim PC1",
+  "clim_PC2", "clim PC2"
+)
+# Function to...
+#' Replace values from key-value pairs
+#'
+#' @param x vector of values
+#' @param old vector of values to be replaced
+#' @param new vector of values to replace with
+#'
+#' @examples
+#' key_val_recode(
+#'   x = c("ham", "eggs", "eggs", "cheese"), 
+#'   old = c("ham", "eggs"),
+#'   new = c("green ham", "green eggs")
+#' )
+key_val_recode <- function(x, old = recode_tab$old, new = recode_tab$new){
+  inx = match(x, old)
+  dplyr::if_else(condition = is.na(inx), true = x, false = new[inx])
+}
+```
+
+
 # Structural equation models
 
 Structural equation models are a special case of path analysis, which describe
@@ -49,22 +94,22 @@ The variables we will consider in each model are
 `plotID`), and `year` of the observations;
 
 1. Mouse general characteristics including individual identity (`iid`), sex 
-(`sex_male`), reproductive status (`sex_mature`), and weight (`weight`);
+(`male`), reproductive status (`sex_mature`), and weight (`weight`);
 
-2. Mouse behavioral characteristics including capture time (`cap_prop_night`),
-trapability (`weighted_trapability`), trap diversity 
-(`weighted_trap_diversity`), and movement (`avg_move_dist`);
+2. Mouse behavioral characteristics including capture time (`captime`),
+trapability (`trapable`), trap diversity 
+(`trapdiv`), and movement (`movement`);
 
-3. Interactions with ticks specifically whether or not ticks were attactched
-at capture (`ticks_attached`, `nymphalTicksAttached`, `larvalTicksAttached`).
+3. Interactions with ticks specifically whether or not ticks were attached
+at capture (`ticks`).
 
 4. Immunity information including PCA for gene expression of resistance and
-tolerance genes (`expr_PC1`, `expr_PC2`) as well as *Borrelia* infection status
-and burden (`Bb_infected`, `Bb_burden`); and
+tolerance genes (`res PC`, `tol PC`) as well as *Borrelia* infection status
+and burden (`infected`, `log burden`); and
 
 5. Climatic information including principal components for short-term weather
-(`wthr_PC1`, `wthr_PC2`) and long-term average site climate (`clim_PC`, 
-`clim_PC2`).
+(`wthr PC1`, `wthr PC2`) and long-term average site climate (`clim PC1`, 
+`clim PC2`).
 
 In general, the kinds of models we want to fit are as follows:
 
@@ -160,6 +205,10 @@ coef_tab <- selBurdComp$coefficients %>%
       Std.Estimate < 0 ~ "cornflowerblue", 
       Std.Estimate >= 0 ~ "orange"
     )
+  ) %>% 
+  mutate(
+    Predictor = key_val_recode(Predictor),
+    Response = key_val_recode(Response)
   )
 
 # all variables
@@ -175,7 +224,7 @@ create_graph(attr_theme = "bt") %>%
     coef_tab, from_col = "Predictor", to_col = "Response", 
     from_to_map = "label"
   ) %>% 
-  set_node_attrs(width, 3) %>% 
+  set_node_attrs(width, 2) %>% 
   set_node_attrs(fontsize, 20) %>% 
   set_node_attrs(shape, "rectangle") %>% 
   # set_edge_attrs(color, coef_tab$pval_col) %>% 
@@ -198,7 +247,10 @@ caption = paste(
 
 <br>
 ```{r selBurdCompSemR2}
-selBurdComp$R2 %>% 
+selBurdComp$R2 %>%
+    mutate(
+    Response = key_val_recode(Response)
+  ) %>%
   knitr::kable(
     digits = 2,
     caption = paste(
@@ -246,6 +298,10 @@ coef_tab <- selInfComp$coefficients %>%
       Std.Estimate < 0 ~ "cornflowerblue", 
       Std.Estimate >= 0 ~ "orange"
     )
+  ) %>% 
+  mutate(
+    Predictor = key_val_recode(Predictor),
+    Response = key_val_recode(Response)
   )
 
 
@@ -262,7 +318,7 @@ create_graph(attr_theme = "bt") %>%
     coef_tab, from_col = "Predictor", to_col = "Response", 
     from_to_map = "label"
   ) %>% 
-  set_node_attrs(width, 3) %>% 
+  set_node_attrs(width, 2.2) %>% 
   set_node_attrs(fontsize, 20) %>% 
   set_node_attrs(shape, "rectangle") %>% 
   # set_edge_attrs(color, coef_tab$pval_col) %>% 
@@ -287,6 +343,9 @@ caption = paste(
 <br>
 ```{r selInfCompSemR2}
 selInfComp$R2 %>% 
+  mutate(
+    Response = key_val_recode(Response)
+  ) %>% 
   knitr::kable(
     digits = 2,
     caption = paste(
@@ -344,6 +403,10 @@ coef_tab <- selBurdMax$coefficients %>%
       Std.Estimate < 0 ~ "cornflowerblue", 
       Std.Estimate >= 0 ~ "orange"
     )
+  ) %>% 
+  mutate(
+    Predictor = key_val_recode(Predictor),
+    Response = key_val_recode(Response)
   )
 
 # all variables
@@ -360,7 +423,7 @@ create_graph(attr_theme = "bt") %>%
     from_to_map = "label"
   ) %>% 
   set_node_attrs(shape, "rectangle") %>% 
-  set_node_attrs(width, 3) %>% 
+  set_node_attrs(width, 1.8) %>% 
   set_node_attrs(fontsize, 20) %>% 
   # set_node_attrs(width, 1.5) %>% 
   # set_node_attrs(fontsize, 20) %>% 
@@ -386,6 +449,9 @@ caption = paste(
 <br>
 ```{r selBurdMaxSemR2}
 selBurdMax$R2 %>% 
+  mutate(
+    Response = key_val_recode(Response)
+  ) %>% 
   knitr::kable(
     digits = 2,
     caption = paste(
@@ -401,7 +467,8 @@ selBurdMax$R2 %>%
 
 ### Infection Status
 
-Figure \@ref(fig:selInfMaxSem) and Table (\@ref(tab:selInfMaxSemR2)) summarize the infection status
+Figure \@ref(fig:selInfMaxSem) and Table (\@ref(tab:selInfMaxSemR2)) summarize 
+the infection status
 SEM, fit with maximal data. This is the first model that suggests a link from
 ticks -> infection -> tolerance expression. 
 
@@ -432,6 +499,10 @@ coef_tab <- selInfMax$coefficients %>%
       Std.Estimate < 0 ~ "cornflowerblue", 
       Std.Estimate >= 0 ~ "orange"
     )
+  ) %>% 
+  mutate(
+    Predictor = key_val_recode(Predictor),
+    Response = key_val_recode(Response)
   )
 
 # all variables
@@ -448,7 +519,7 @@ create_graph(attr_theme = "bt") %>%
     from_to_map = "label"
   ) %>% 
   set_node_attrs(shape, "rectangle") %>% 
-  set_node_attrs(width, 3) %>% 
+  set_node_attrs(width, 2.2) %>% 
   set_node_attrs(fontsize, 20) %>% 
   # set_node_attrs(width, 1.5) %>% 
   # set_node_attrs(fontsize, 20) %>% 
@@ -474,6 +545,9 @@ caption = paste(
 <br>
 ```{r selInfMaxSemR2}
 selInfMax$R2 %>% 
+  mutate(
+    Response = key_val_recode(Response)
+  ) %>% 
   knitr::kable(
     digits = 2,
     caption = paste(
@@ -510,7 +584,8 @@ to random spatial and temporal effects. The burden of *Borrelia* apparently had
 no bearing on tolerance expression (removed during model selection).
 
 * Expression of resistance genes was best explained by individual sex, weight,
-and interaction with ticks (there is also a marginal effect of weather: $P=0.13$),
+and interaction with ticks (there is also a marginal effect of weather: 
+$P=0.13$),
 in addition to random spatial effects. Resistance expression apparently
 had no bearing on either **Borrelia** infection status or burden ($P>0.75$). 
 
@@ -549,6 +624,10 @@ coef_tab <- selBothMax$coefficients %>%
       Std.Estimate < 0 ~ "cornflowerblue", 
       Std.Estimate >= 0 ~ "orange"
     )
+  ) %>% 
+  mutate(
+    Predictor = key_val_recode(Predictor),
+    Response = key_val_recode(Response)
   )
 
 # all variables
@@ -565,7 +644,7 @@ create_graph(attr_theme = "bt") %>%
     from_to_map = "label"
   ) %>% 
   set_node_attrs(shape, "rectangle") %>% 
-  set_node_attrs(width, 3) %>% 
+  set_node_attrs(width, if_else(path_nodes$var == "sex:mature:weight", 2.2, 2)) %>% 
   set_node_attrs(fontsize, 20) %>% 
   # set_node_attrs(width, 1.5) %>% 
   # set_node_attrs(fontsize, 20) %>% 
@@ -590,6 +669,9 @@ caption = paste(
 <br>
 ```{r selBothMaxSemR2}
 selBothMax$R2 %>% 
+  mutate(
+    Response = key_val_recode(Response)
+  ) %>% 
   knitr::kable(
     digits = 2,
     caption = paste(

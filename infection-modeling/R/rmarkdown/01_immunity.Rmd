@@ -196,3 +196,64 @@ bind_rows(
 ## resistance-tolerance.Rmd file.
 ```
 
+```{r}
+Peros <- readRDS("infection-modeling/data/peromyscus-model-data.rds")
+```
+
+## Infection sample sizes
+
+This project measured gene expression, but not *Borrelia* in 2022.
+NEON did measure infection during that year, but we can only compare
+*Borrelia*-positive samples across methods (we can be confident that a 
+"positive" is correct, but a "negative" is not certain with NEON's PCR 
+technique). Adding these samples would only net us 5 total samples 
+(\@ref(tab:infectMethodSamps)), which is likely not worth the cost of the new
+"method" variable that would be required to differentiate between the two
+infection screening methodologies.
+
+```{r infectMethodSamps}
+methodSamps <- Peros %>% 
+  select(
+    year, siteID, plotID, expr_PC1, expr_PC2, Bb_infected, NEON_Bb_infected,
+    cap_prop_night
+  ) %>% 
+  filter(year %in% c(2020:2024)) %>% 
+  group_by(year, siteID, plotID) %>% 
+  summarize(
+    expression = sum(!is.na(expr_PC1) | !is.na(expr_PC2), na.rm = TRUE),
+    captime = sum(!is.na(cap_prop_night), na.rm = TRUE),
+    USF = sum(!is.na(Bb_infected), na.rm = TRUE),
+    NEON = sum(!is.na(NEON_Bb_infected) & 
+                        NEON_Bb_infected == 1, na.rm = TRUE),
+    without_NEON = sum(
+      (!is.na(expr_PC1)|!is.na(expr_PC2)) &
+        !is.na(cap_prop_night) &
+        (!is.na(Bb_infected)),
+      na.rm = TRUE
+    ),
+    with_NEON = sum(
+      (!is.na(expr_PC1)|!is.na(expr_PC2)) &
+        !is.na(cap_prop_night) &
+        (!is.na(Bb_infected) | 
+           (!is.na(NEON_Bb_infected) & NEON_Bb_infected == 1)),
+      na.rm = TRUE
+    ), .groups = "drop"
+  ) %>% 
+  mutate(added = with_NEON - without_NEON) %>% 
+  filter(expression > 0) %>% 
+  arrange(year, siteID, plotID, expression)
+
+methodSamps %>% 
+  select(-c(siteID, without_NEON, with_NEON)) %>% 
+  knitr::kable(
+    digits = 2,
+    caption = paste(
+      "Tabulation of expression, behavior, and infection samples across NEON",
+      "plots. Columns correspond to the year, sand plot by which counts",
+      "are grouped; the number of samples for which we have expression,",
+      "capture timing, and infection data (either from USF or NEON);",
+      "and the samples gained by including NEON infection data."
+    ),
+    format = "pipe"
+  )
+```

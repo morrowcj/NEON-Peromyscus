@@ -86,6 +86,7 @@
 <ul>
 <li class="chapter" data-level="" data-path="immunity.html"><a href="immunity.html#genetic-correlations"><i class="fa fa-check"></i>Genetic correlations</a></li>
 <li class="chapter" data-level="" data-path="immunity.html"><a href="immunity.html#pca"><i class="fa fa-check"></i>PCA</a></li>
+<li class="chapter" data-level="" data-path="immunity.html"><a href="immunity.html#infection-sample-sizes"><i class="fa fa-check"></i>Infection sample sizes</a></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="climate-and-weather.html"><a href="climate-and-weather.html"><i class="fa fa-check"></i>Climate and Weather</a></li>
 <li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html"><i class="fa fa-check"></i>Behavior</a>
@@ -97,12 +98,6 @@
 <li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#outliers"><i class="fa fa-check"></i>Outliers?</a></li>
 <li class="chapter" data-level="" data-path="behavior.html"><a href="behavior.html#tick-contact"><i class="fa fa-check"></i>Tick contact</a></li>
 </ul></li>
-<li class="chapter" data-level="" data-path="infection-and-gene-expression.html"><a href="infection-and-gene-expression.html"><i class="fa fa-check"></i>Infection and gene expression</a>
-<ul>
-<li class="chapter" data-level="" data-path="infection-and-gene-expression.html"><a href="infection-and-gene-expression.html#infection"><i class="fa fa-check"></i>Infection</a></li>
-<li class="chapter" data-level="" data-path="infection-and-gene-expression.html"><a href="infection-and-gene-expression.html#resistance-tolerance"><i class="fa fa-check"></i>Resistance-Tolerance</a></li>
-</ul></li>
-<li class="chapter" data-level="" data-path="individual-designations.html"><a href="individual-designations.html"><i class="fa fa-check"></i>Individual designations</a></li>
 <li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html"><i class="fa fa-check"></i>Structural equation models</a>
 <ul>
 <li class="chapter" data-level="" data-path="structural-equation-models.html"><a href="structural-equation-models.html#modeling-approach"><i class="fa fa-check"></i>Modeling approach</a>
@@ -397,6 +392,249 @@ assessed more vigorously in later sections.</p>
 <td align="right">2.74</td>
 <td align="right">0.01</td>
 <td align="right">0.02</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="infection-sample-sizes" class="section level2 hasAnchor">
+<h2>Infection sample sizes<a href="immunity.html#infection-sample-sizes" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>This project measured gene expression, but not <em>Borrelia</em> in 2022.
+NEON did measure infection during that year, but we can only compare
+<em>Borrelia</em>-positive samples across methods (we can be confident that a
+“positive” is correct, but a “negative” is not certain with NEON’s PCR
+technique). Adding these samples would only net us 5 total samples
+(<a href="immunity.html#tab:infectMethodSamps">7</a>), which is likely not worth the cost of the new
+“method” variable that would be required to differentiate between the two
+infection screening methodologies.</p>
+<table>
+<caption><span id="tab:infectMethodSamps">Table 7: </span>Tabulation of expression, behavior, and infection samples across NEON plots. Columns correspond to the year, sand plot by which counts are grouped; the number of samples for which we have expression, capture timing, and infection data (either from USF or NEON); and the samples gained by including NEON infection data.</caption>
+<thead>
+<tr class="header">
+<th align="right">year</th>
+<th align="left">plotID</th>
+<th align="right">expression</th>
+<th align="right">captime</th>
+<th align="right">USF</th>
+<th align="right">NEON</th>
+<th align="right">added</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">2022</td>
+<td align="left">BLAN_009</td>
+<td align="right">11</td>
+<td align="right">64</td>
+<td align="right">0</td>
+<td align="right">4</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="right">2022</td>
+<td align="left">HARV_008</td>
+<td align="right">36</td>
+<td align="right">264</td>
+<td align="right">0</td>
+<td align="right">4</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="right">2022</td>
+<td align="left">MLBS_006</td>
+<td align="right">21</td>
+<td align="right">240</td>
+<td align="right">0</td>
+<td align="right">4</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="right">2022</td>
+<td align="left">ORNL_003</td>
+<td align="right">5</td>
+<td align="right">36</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="right">2022</td>
+<td align="left">SCBI_008</td>
+<td align="right">17</td>
+<td align="right">167</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="right">2022</td>
+<td align="left">SERC_015</td>
+<td align="right">8</td>
+<td align="right">64</td>
+<td align="right">0</td>
+<td align="right">4</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="right">2022</td>
+<td align="left">STEI_012</td>
+<td align="right">64</td>
+<td align="right">235</td>
+<td align="right">0</td>
+<td align="right">4</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="right">2022</td>
+<td align="left">UNDE_027</td>
+<td align="right">45</td>
+<td align="right">184</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="right">2023</td>
+<td align="left">BLAN_009</td>
+<td align="right">19</td>
+<td align="right">67</td>
+<td align="right">17</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="right">2023</td>
+<td align="left">HARV_008</td>
+<td align="right">4</td>
+<td align="right">5</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="right">2023</td>
+<td align="left">MLBS_006</td>
+<td align="right">44</td>
+<td align="right">272</td>
+<td align="right">32</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="right">2023</td>
+<td align="left">ORNL_003</td>
+<td align="right">7</td>
+<td align="right">25</td>
+<td align="right">8</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="right">2023</td>
+<td align="left">SCBI_008</td>
+<td align="right">23</td>
+<td align="right">121</td>
+<td align="right">16</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="right">2023</td>
+<td align="left">SERC_015</td>
+<td align="right">13</td>
+<td align="right">103</td>
+<td align="right">6</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="right">2023</td>
+<td align="left">STEI_012</td>
+<td align="right">99</td>
+<td align="right">406</td>
+<td align="right">52</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="right">2023</td>
+<td align="left">UNDE_027</td>
+<td align="right">20</td>
+<td align="right">109</td>
+<td align="right">14</td>
+<td align="right">1</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="right">2024</td>
+<td align="left">BLAN_009</td>
+<td align="right">34</td>
+<td align="right">161</td>
+<td align="right">60</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="right">2024</td>
+<td align="left">HARV_008</td>
+<td align="right">38</td>
+<td align="right">149</td>
+<td align="right">44</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="right">2024</td>
+<td align="left">MLBS_006</td>
+<td align="right">64</td>
+<td align="right">270</td>
+<td align="right">70</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="right">2024</td>
+<td align="left">ORNL_003</td>
+<td align="right">19</td>
+<td align="right">46</td>
+<td align="right">22</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="right">2024</td>
+<td align="left">SCBI_008</td>
+<td align="right">18</td>
+<td align="right">101</td>
+<td align="right">28</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="right">2024</td>
+<td align="left">SERC_015</td>
+<td align="right">9</td>
+<td align="right">128</td>
+<td align="right">35</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="right">2024</td>
+<td align="left">STEI_012</td>
+<td align="right">20</td>
+<td align="right">278</td>
+<td align="right">79</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="right">2024</td>
+<td align="left">UNDE_027</td>
+<td align="right">12</td>
+<td align="right">136</td>
+<td align="right">56</td>
+<td align="right">0</td>
+<td align="right">0</td>
 </tr>
 </tbody>
 </table>
