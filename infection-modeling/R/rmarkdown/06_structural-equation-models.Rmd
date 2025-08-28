@@ -91,7 +91,7 @@ The key data for each approach will be *Peromyscus* data for eight NEON sites.
 The variables we will consider in each model are
 
 0. Study design variables including NEON site and plot identity (`siteID`, 
-`plotID`), and `year` of the observations;
+`plotID`), and `year` of the observations as random effects;
 
 1. Mouse general characteristics including individual identity (`iid`), sex 
 (`male`), reproductive status (`sex_mature`), and weight (`weight`);
@@ -128,6 +128,44 @@ possible
   - [x] both responses in one model, with maximal data
   
 * [ ] Compare model effects between *P leucopus* vs. *P maniculatus*
+
+## Model selection
+
+The form of each SEM presented below were arrived at with the following 
+procedure:
+
+1. Omnibus models were created for each component model, which were combined
+into an omnibus SEM.
+
+2. Model selection was performed on each component model by:
+
+  i. removing any "singular" (i.e., variance = 0) random effects,
+  
+  ii. recursively removing variables with non-significant (fixed) effects, 
+  one by one.   if any higher-order effects (interactions) were significant, 
+  all constituent first-order (main) effects were retained regardless of 
+  significance.
+  
+  iii. some non-significant fixed effects were added back into the model if 
+  either a) the effect was considered "crucial" to our hypothesis. In practice
+  this meant including links along the path behavior -> ticks -> resistance ->
+  infection -> tolerance *or*; b) the removal resulted in other non-removed
+  factors losing significance. 
+  
+3. A reduced SEM was fit by combining the selected component models from
+step (2).
+
+4. Additional paths were added to the SEM according tests of directed
+separation (dsep), which indicates that a missing path is important for
+explaining the observed data.
+
+5. Some non-significant paths were removed if: a) they were not considered
+critical to our understanding of the system *and*; b) the removal was not 
+contraindicated by a follow-up dsep test.
+  
+Due to the complexity of these models, and at the recommendation of the 
+`piecewiseSEM` package authors, This study considers $P < 0.1$ as the
+p-value cutoff for statistical significance in the SEMs.
 
 ### Latent and Composite variables
 
