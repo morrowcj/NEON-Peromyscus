@@ -100,7 +100,7 @@ The variables we will consider in each model are
 trapability (`trapable`), trap diversity 
 (`trapdiv`), and movement (`movement`);
 
-3. Interactions with ticks specifically whether or not ticks were attached
+3. Contact with ticks, specifically whether or not ticks were attached
 at capture (`ticks`).
 
 4. Immunity information including PCA for gene expression of resistance and
@@ -569,13 +569,13 @@ fit with the maximal data set. This SEM suggests that:
 
 * *Borrelia* infection in an individual *Peromyscus* is most explained by 
 the three-way interaction between the individual's sex, reproductive status,
-and weight; interaction with ticks; and weather conditions, in
-addition to random spatial and temporal effects (35% variation).
+and weight; contact with ticks; and weather conditions, in
+addition to random spatial and temporal effects (35% of variation).
 
 * The quantitative *Borrelia* burden within an individual, beyond its infection
 status, is best explained by the individuals sex (there is also a marginal
 interaction between sex and weight: $P=0.12$), in addition to random spatial
-effects (1% variation). Unsurprisingly, most of the variation in burden is 
+effects (1% of total variation). Unsurprisingly, most of the variation in burden is 
 explained by infection status.
 
 * Expression of tolerance genes was best explained by individual reproductive 
@@ -584,14 +584,14 @@ to random spatial and temporal effects. The burden of *Borrelia* apparently had
 no bearing on tolerance expression (removed during model selection).
 
 * Expression of resistance genes was best explained by individual sex, weight,
-and interaction with ticks (there is also a marginal effect of weather: 
+and contact with ticks (there is also a marginal effect of weather: 
 $P=0.13$),
 in addition to random spatial effects. Resistance expression apparently
 had no bearing on either **Borrelia** infection status or burden ($P>0.75$). 
 
 * Our metrics of behavior (capture time, trapability, trap diversity,
 movement distance) did not explain significant variation in *Borrelia*
-infection, burden, or interaction with ticks -- beyond that already
+infection, burden, or contact with ticks -- beyond that already
 explained by sex, reproductive status, and weight. 
 
 ```{r selBothMaxSem, out.width="100%", fig.asp = 1, fig.cap=caption}
