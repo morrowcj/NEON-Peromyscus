@@ -723,6 +723,108 @@ selBothMax$R2 %>%
   )
 ```
 
+## Alternate Models
+
+Here, we'll look at some olternate versions of a model
+
+### Tolerance as predictor
+
+Swapping tolerance from a response to a predictor of infection/burden yields a
+model where the link between tolerance and infection is not significant 
+(Figure \@ref(fig:altBothMaxSem)).
+
+```{r altBothMaxSem, out.width="100%", fig.asp = 1, fig.cap=caption}
+altBothMax <- readRDS(
+  file.path(
+    "infection-modeling/data/model-objects",
+    "alternate-BurdenInfection-SEM_maximal-cases.rds"
+  )
+)
+
+pbreaks = c(0, 0.05, 0.1, 1)#, 
+pcols = c("black", "grey70", "grey70")#, 
+linetypes = c("solid", "solid", "dotted")#, 
+penwidth_range = c(1, 8)
+
+# coefficients
+coef_tab <- altBothMax$coefficients %>% 
+  data.frame() %>% 
+  rename(sig.star = "Var.9") %>% 
+  mutate(
+    pval_group = cut(
+      P.Value, breaks = pbreaks, include.lowest = TRUE,
+      labels(seq_len(length(pbreaks) - 1))
+    ),
+    pval_col = pcols[pval_group],
+    pval_linetype = linetypes[pval_group],
+    pval_penwidth = scales::rescale(Std.Estimate, to = penwidth_range),
+    color = case_when(
+      P.Value > 0.1 ~ "grey50",
+      Std.Estimate < 0 ~ "cornflowerblue", 
+      Std.Estimate >= 0 ~ "orange"
+    )
+  ) %>% 
+  mutate(
+    Predictor = key_val_recode(Predictor),
+    Response = key_val_recode(Response)
+  )
+
+# all variables
+the_vars <- unique(c(coef_tab$Response, coef_tab$Predictor))
+
+path_nodes <- data.frame(var = the_vars, id = seq_len(length(the_vars)))
+
+create_graph(attr_theme = "bt") %>% 
+  add_global_graph_attrs("layout", "dot", "graph") %>%
+  add_nodes_from_table(path_nodes, label_col = var) %>% 
+  add_edges_from_table(
+    coef_tab, from_col = "Predictor", to_col = "Response", 
+    from_to_map = "label"
+  ) %>% 
+  set_node_attrs(shape, "rectangle") %>% 
+  set_node_attrs(width, if_else(path_nodes$var == "sex:mature:weight", 2.2, 2)) %>% 
+  set_node_attrs(fontsize, 20) %>% 
+  set_edge_attrs(arrowsize, 1) %>% 
+  set_edge_attrs(color, coef_tab$color) %>% 
+  set_edge_attrs(style, coef_tab$pval_linetype) %>% 
+  set_edge_attrs(penwidth, coef_tab$pval_penwidth) %>% 
+  render_graph()
+
+caption = paste(
+  "Directed acyclycal graph of an alternate (tolerance as a response)",
+  "burden SEM model, fit with maximal cases.",
+  "The goodness-of-fit P-value is", 
+  paste0(round(altBothMax$Cstat$P.Value, 2), ","),
+  "which indicates that this model is *not* statistically different from an",
+  "'ideal' model of these data.",
+  "Orange vectors represent positive effects, blue represent negative effects",
+  "and grey represents non-significant (P > 0.1) effects.",
+  "The width of a vector is proportional to the magnitude of its effect."
+)
+```
+
+### Condensed behaviors (PCA)
+
+Figure \@ref(fig:behavior_PCA) shows the principal component analysis of our 
+four behavioral traits. These behavior traits were transformed with the function
+`log(x + min(x) + 1)`. Here, the primary PC is associated with trapability,
+trap diversity, and movement distance, while the the second axis is associated 
+capture timing.
+
+```{r behavior_PCA, fig.asp = 1, fig.width = 6, fig.cap = caption}
+bpca_list <- readRDS("infection-modeling/data/peromyscus-behavior-pca.rds")
+
+# ordiplot(bpca_list$pca_obj, display = "species", type = "text", arrows = TRUE)
+ordiplot(bpca_list$pca_obj, xlim = c(-5.5, 2.5), cex = .2); orditorp(bpca_list$pca_obj, display = "species")
+
+bpca_import <- summary(bpca_list$pca_obj)$cont$importance
+
+caption = paste(
+  "Peromyscus behavior PCA. PC1 explains 47% of the variation and PC2 explains",
+  "an additional 25%."
+)
+```
+
 ## *P. leucopus* vs. *P. maniculatus*
 
 TBD
