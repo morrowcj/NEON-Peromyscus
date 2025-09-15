@@ -674,7 +674,7 @@ the_vars <- unique(c(coef_tab$Response, coef_tab$Predictor))
 
 path_nodes <- data.frame(var = the_vars, id = seq_len(length(the_vars)))
 
-create_graph(attr_theme = "bt") %>% 
+grph <- create_graph(attr_theme = "bt") %>% 
   add_global_graph_attrs("layout", "dot", "graph") %>%
   # add_global_graph_attrs("rankdir", "LR", "graph") %>%
   add_nodes_from_table(path_nodes, label_col = var) %>% 
@@ -691,7 +691,9 @@ create_graph(attr_theme = "bt") %>%
   set_edge_attrs(arrowsize, 1) %>% 
   set_edge_attrs(color, coef_tab$color) %>% 
   set_edge_attrs(style, coef_tab$pval_linetype) %>% 
-  set_edge_attrs(penwidth, coef_tab$pval_penwidth) %>% 
+  set_edge_attrs(penwidth, coef_tab$pval_penwidth) 
+
+grph %>% 
   render_graph()
 
 caption = paste(
@@ -723,6 +725,76 @@ selBothMax$R2 %>%
     )
   )
 ```
+
+```{r DirIndBothMod, include = FALSE}
+# TODO: Create a table/figure of direct, indirect and total effects of demographics on immunity.
+
+## Here, the direct effects of X on Y is the path coefficient from X -> Y
+## and the indirect effect of X on Y through Z is the product of the
+## paths from X->Z and Z->Y.
+
+# coef_tab <- selBothMax$coefficients %>% 
+#   data.frame() %>% 
+#   rename(sig.star = "Var.9") %>% 
+#   select(Response, Predictor, Std.Estimate, P.Value)
+# 
+# coef_tab %>% 
+#   filter(grepl("(sex|weight|mature)", .data$Predictor))
+# 
+# ## Try to calculate the direct and indirect effects of sex on infection...
+# 
+# coef_tab %>% filter(Predictor == "sex_male")
+# 
+# # get the direct effect of sex on infection status...
+# dir_eff <- coef_tab %>% 
+#   filter(Response == "Bb_infected", Predictor == "sex_male") %>% 
+#   pull(Std.Estimate)
+# 
+# # get all the predictors of infection status...
+# other_preds <- coef_tab %>% 
+#   filter(Response == "Bb_infected", Predictor != "sex_male") %>% 
+#   pull(Predictor)
+# 
+# for (pred in other_preds) {
+#   x = pred
+#   while(x != "sex_male") {
+#     
+#   }
+# }
+# 
+# 
+# 
+# 
+# # get all the predictors of infection status that are affected by sex...
+# keep_preds <- coef_tab %>% 
+#   filter(Response %in% infect_preds, Predictor == "sex_male") %>% 
+#   pull(Response)
+# 
+# coef_tab %>% 
+#   filter(Response == "Bb_infected", Predictor %in% keep_preds)
+# 
+# coef_tab %>% 
+#   mutate(sex_pred = grepl(Predictor == "sex_male", .data$Predictor))
+
+## Possible to use `diagrammeR::get_paths(from = "sex_male", to = "infected")`?
+frm = "male"
+frm_id = path_nodes$id[match(frm, path_nodes$var)]
+to = "infected"
+to_id = path_nodes$id[match(to, path_nodes$var)]
+
+# get a list of all paths from sex to infected...
+paths <- get_paths(grph, from = frm_id, to = to_id) %>% unique()
+# logical varaible indicating direct path
+is_direct = lapply(paths, function(x)length(x) == 2) %>% unlist()
+dir_path = paths[is_direct] %>% unlist()
+indir_paths = paths[!is_direct]
+
+# convert numeric ids to names
+name_paths <- lapply(
+  paths, function(x)path_nodes$var[match(x, path_nodes$id)]
+)
+```
+
 
 ## Alternate Models
 
@@ -901,10 +973,18 @@ caption = paste(
 )
 ```
 
+## No interactions
+
+Because of the interaction effect of sex:male:mature on infection
+status in model \@ref(fig:selBothMaxSem), it is not possible to
+calculate the full scope of the direct and indirect effects of
+sex (for example) on infection.
+
+**TODO**: Fit a SEM without interactions - main effects only.
 
 ## *P. leucopus* vs. *P. maniculatus*
 
-TBD
+**TODO**
 
 ## Next steps
 

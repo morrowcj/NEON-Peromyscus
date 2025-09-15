@@ -142,6 +142,20 @@ Peros %>%
 set.seed(NULL) # unset seed
 ```
 
+## Disease prevalence across sites
+
+**TODO**: *Borrelia* prevalence in ticks... 
+
+## Habitat differences across sites
+
+**TODO** 
+
+## Community differences across sites
+
+* small-mammal communitites: **TODO**
+
+* Other animal communities (e.g., deer, predators): **TODO**
+
 ## Other data
 
 In addition to the 

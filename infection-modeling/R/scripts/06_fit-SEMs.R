@@ -696,7 +696,10 @@ saveRDS(
 alt_both_sem_max <- psem(
   tol_alt2 %>% update(. ~ . + log_burden, data = full_dat),
   infect_alt %>% update(data = full_dat),
-  burden_alt %>% update(data = full_dat %>% filter(Bb_infected > 0)),
+  burden_alt %>% 
+    update(
+      data = full_dat %>% filter(Bb_infected > 0), 
+    ),
   res_alt %>% update(data = full_dat),
   tick_alt %>% update(data = full_dat),
   captime_alt %>% update(data = full_dat),
