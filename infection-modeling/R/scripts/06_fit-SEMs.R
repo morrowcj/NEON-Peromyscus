@@ -790,6 +790,9 @@ saveRDS(
   file.path(mod_output_dir, "alternate-BurdenInfection-SEM_maximal-cases.rds")
 )
 
+# # Is this model different from the selected model?
+# anova(sel_both_sem_max, alt_both_sem_max)
+
 ## ---- Condensed behavior PCA ----
 
 tol_bhv <- tol_alt2 %>%
@@ -838,6 +841,14 @@ saveRDS(
   bhv_both_sem_max_smry,
   file.path(mod_output_dir, "behaviorPCA-BurdenInfection-SEM_maximal-cases.rds")
 )
+
+# # Is this model different from the selected model?
+# anova(
+#   sel_both_sem_max, 
+#   bhv_both_sem_max,
+#   alt_both_sem_max
+# ) # I don't think these models are comparable.
+
 
 # NOTE: Behavior was only important for tolerance...
 
