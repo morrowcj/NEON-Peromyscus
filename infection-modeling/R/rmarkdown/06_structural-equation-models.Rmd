@@ -13,6 +13,7 @@ recode_tab <- tibble::tribble(
   "weight", "weight",
   "sex_male:weight", "male:weight",
   "sex_male:sex_mature", "male:mature",
+  "sex_mature:weight", "mature:weight",
   "sex_male:sex_mature:weight", "male:mature:weight",
   "ticks_attached", "ticks", 
   "expr_PC2", "tol PC",
