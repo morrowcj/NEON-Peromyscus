@@ -24,7 +24,7 @@ mod_dat <- Peros %>%
   filter(new_taxonID != "PESP") %>% # exclude uncertain species
   select(
     uid,
-    siteID, plotID, year, iid, # ID cols
+    siteID, plotID, year, iid, new_taxonID,# ID cols
     Bb_infected, log_burden, log_burden, # Borrelia
     sex_male, sex_mature, weight, # mouse traits
     ticks_attached, nymphalTicksAttached, larvalTicksAttached, # ticks
@@ -878,7 +878,3 @@ saveRDS(
 )
 
 # NOTE: Behavior was only important for tolerance...
-
-## --- Burden among infections ----
-
-
