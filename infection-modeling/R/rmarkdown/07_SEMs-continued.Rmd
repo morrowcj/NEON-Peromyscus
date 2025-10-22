@@ -1,0 +1,211 @@
+---
+title: "SEMs (continued)"
+output: html_document
+date: "2025-10-22"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(DiagrammeR)
+```
+
+
+```{r}
+simple_model_objects <- readRDS(
+  "infection-modeling/data/model-objects/simplified-SEM-objects.rds"
+)
+
+simple_out <- simple_model_objects$sem_mod$fit
+
+## reformat the tables
+simple_out$dTable <- simple_out$dTable %>%
+  data.frame() %>% rename(sig = "Var.6") %>% tibble()
+simple_out$coefficients <- simple_out$coefficients %>%
+  data.frame() %>% rename(sig = "Var.9") %>% tibble()
+```
+
+
+```{r}
+group_tiers <- c(
+  "environment", "trait", "behavior", "parasitism", "expression", "infection"
+)
+
+group_cols <- RColorBrewer::brewer.pal(length(group_tiers) + 1, "Pastel2")[-2]
+
+# group_cols <- c(
+#   "green", "burlywood", "azure", "grey80", "darkorchid1", "hotpink1"
+# )
+
+var_table <- tibble(
+  var = c(
+    "expr_PC2", "Bb_infected", "expr_PC1", "ticks_attached", "capprop_shift",
+    "cap_prop_night", "weight", "sex_mature", 
+    "sex_male", "wthr_PC1", "clim_PC1"
+  ),
+  label = c(
+    "Tolerance\nexpression", "Infection\nstatus", "Resistance\nexpression", "Tick\nparasitism", "Capture\ntime shift", 
+    "Capture\ntime", "Weight", "Reproductive\nmaturity", 
+    "Sex", "Weather\nPC", "Climate\nPC"
+  ),
+  response = c(
+    TRUE, TRUE, TRUE, TRUE, TRUE, 
+    TRUE, TRUE, TRUE, 
+    FALSE, FALSE, FALSE
+  ),
+  group = c(
+    "expression", "infection", "expression", "parasitism", "behavior",
+    "behavior", "trait", "trait", 
+    "trait", "environment", "environment"
+  ) %>% 
+    factor(levels = group_tiers)
+)
+```
+
+
+```{r}
+scales::pal_area(range = c(0, 1))
+
+pos_col = "cornflowerblue"
+neg_col = "orange"
+
+effect_cols <- c(
+  pos_col, colorspace::lighten(pos_col, 0.4), colorspace::lighten(pos_col, 0.8),
+  neg_col, colorspace::lighten(neg_col, 0.4), colorspace::lighten(neg_col, 0.8)
+)
+  
+# scales::show_col(effect_cols)
+```
+
+```{r}
+paths <- simple_out$coefficients %>% 
+  select(Response, Predictor, DF, Std.Estimate, P.Value) %>% 
+  mutate(
+    # pos_effect = Std.Estimate >= 0,
+    Response = factor(
+      Response, levels = var_table$var, labels = var_table$label
+    ),
+    Predictor = factor(
+      Predictor, levels = var_table$var, labels = var_table$label
+    ),
+    # color = case_when(
+    #   Std.Estimate >= 0 & P.Value <= 0.5 ~ pos_col,
+    #   Std.Estimate >= 0 & P.Value <= 0.1 ~
+    #     colorspace::lighten(pos_col, 0.4),
+    #   Std.Estimate >= 0 & P.Value > 0.1 ~ 
+    #     colorspace::lighten(pos_col, 0.6),
+    #   Std.Estimate < 0 & P.Value <= 0.5 ~ neg_col,
+    #   Std.Estimate < 0 & P.Value <= 0.1 ~ 
+    #     colorspace::lighten(neg_col, 0.4),
+    #   Std.Estimate < 0 & P.Value > 0.1 ~ 
+    #     colorspace::lighten(neg_col, 0.6),
+    #   .default = "grey50"
+    # ),
+    color = if_else(Std.Estimate >= 0, pos_col, neg_col),
+    penwidth = scales::rescale(x = abs(Std.Estimate) ,to = c(0.5, 9)),
+    style = if_else(P.Value <= 0.1, "solid", "dashed")
+  )
+
+nodes <- tibble(
+  var = unique(
+    c(simple_out$coefficients$Response, simple_out$coefficients$Predictor)
+  )
+) %>% 
+  mutate(
+    var = factor(var, levels = var_table$var, labels = var_table$label),
+    id = row_number(),
+    group = var_table$group[match(var, var_table$label)],
+    # y = as.numeric(group),
+    shape = "rectangle",
+    fillcolor = group_cols[match(group, group_tiers)]
+  )
+```
+
+```{r}
+sem_graph <- create_graph(attr_theme = "bt") %>% 
+  add_global_graph_attrs("layout", "dot", "graph") %>%
+  # add_global_graph_attrs("rankdir", "LR", "graph") %>%
+  add_nodes_from_table(nodes, label_col = var) %>% 
+  add_edges_from_table(
+    paths, from_col = Predictor, to_col = Response, from_to_map = label
+  ) %>% 
+  set_node_attrs(width, 1.4) %>% 
+  set_node_attrs(height, .7) %>% 
+  set_node_attrs(fontsize, 16) %>% 
+  set_node_attrs(fontcolor, "black") %>% 
+  set_node_attrs(color, "black")
+  
+
+sem_graph %>% render_graph() 
+```
+
+
+```{r selBurdCompSem, out.width="100%", fig.asp = 1, fig.cap=caption}
+# selBurdComp <- readRDS(
+#   "infection-modeling/data/model-objects/selected-burden-SEM_complete-cases.rds"
+# )
+# 
+# pbreaks = c(0, 0.05, 0.1, 1)#, 
+# pcols = c("black", "grey70", "grey70")#, 
+# linetypes = c("solid", "solid", "dotted")#, 
+# penwidth_range = c(1, 8)
+# 
+# # coefficients
+# coef_tab <- selBurdComp$coefficients %>% 
+#   data.frame() %>% 
+#   rename(sig.star = "Var.9") %>% 
+#   mutate(
+#     pval_group = cut(
+#       P.Value, breaks = pbreaks, include.lowest = TRUE,
+#       labels(seq_len(length(pbreaks) - 1))
+#     ),
+#     pval_col = pcols[pval_group],
+#     pval_linetype = linetypes[pval_group],
+#     pval_penwidth = scales::rescale(Std.Estimate, to = penwidth_range),
+#     color = case_when(
+#       P.Value > 0.1 ~ "grey50",
+#       Std.Estimate < 0 ~ "cornflowerblue", 
+#       Std.Estimate >= 0 ~ "orange"
+#     )
+#   ) %>% 
+#   mutate(
+#     Predictor = key_val_recode(Predictor),
+#     Response = key_val_recode(Response)
+#   )
+# 
+# # all variables
+# the_vars <- unique(c(coef_tab$Response, coef_tab$Predictor))
+# 
+# path_nodes <- data.frame(var = the_vars, id = seq_len(length(the_vars)))
+# 
+# create_graph(attr_theme = "bt") %>% 
+#   add_global_graph_attrs("layout", "dot", "graph") %>%
+#   # add_global_graph_attrs("rankdir", "LR", "graph") %>%
+#   add_nodes_from_table(path_nodes, label_col = var) %>% 
+#   add_edges_from_table(
+#     coef_tab, from_col = "Predictor", to_col = "Response", 
+#     from_to_map = "label"
+#   ) %>% 
+#   set_node_attrs(width, 2) %>% 
+#   set_node_attrs(fontsize, 20) %>% 
+#   set_node_attrs(shape, "rectangle") %>% 
+#   # set_edge_attrs(color, coef_tab$pval_col) %>% 
+#   set_edge_attrs(arrowsize, 1) %>% 
+#   set_edge_attrs(color, coef_tab$color) %>% 
+#   set_edge_attrs(style, coef_tab$pval_linetype) %>% 
+#   set_edge_attrs(penwidth, coef_tab$pval_penwidth) %>% 
+#   render_graph()
+# 
+# caption = paste(
+#   "Directed acyclycal graph of selected burden SEM model, fit with complete cases.",
+#   "The goodness-of-fit P-value is", paste0(round(selBurdComp$Cstat$P.Value, 2), ","),
+#   "which indicates that this model is *not* statistically different from an",
+#   "'ideal' model of these data.", 
+#   "Orange vectors represent positive effects, blue represent negative effects",
+#   "and grey represents non-significant (P > 0.1) effects.",
+#   "The width of a vector is proportional to the magnitude of its effect."
+# )
+```
