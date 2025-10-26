@@ -45,3 +45,6 @@ neon-data/data/eight_sites/biological-temperatures/
 neon-data/data/eight_sites/relative-humidity/
 neon-data/data/eight_sites/precipitation/
 
+infection-modeling/R/scripts/Alli-DFA/
+
+!NEON-manuscript-preparation*.docx

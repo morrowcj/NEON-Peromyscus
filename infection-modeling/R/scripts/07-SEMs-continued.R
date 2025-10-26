@@ -13,11 +13,46 @@ mod_output_dir <- file.path(
 )
 
 # Load in the model data
-Peros <- readRDS("infection-modeling/data/peromyscus-model-data.rds")
+Peros <- readRDS("infection-modeling/data/peromyscus-model-data.rds") %>%
+  mutate(
+    new_taxonID = if_else(new_taxonID == "PESP", "PELEPEMA", new_taxonID)
+  )
+
+
+## ---- Discriminant ----
+
+#
+# da_mod <- lmer(
+#   formula = is_PELE ~ lifeStage + weight + sex_male + sex_mature +
+#     year + (1|siteID),
+#   data = Peros %>% filter(new_taxonID %in% c("PELE", "PEMA")) %>%
+#     mutate(is_PELE = as.numeric(new_taxonID == "PELE"))
+# )
+#
+# MuMIn::r.squaredGLMM(da_mod) # bad
+#
+# predict(da_mod, newdata = Peros %>% filter(new_taxonID %in% c("PELEPEMA")))
+#
+# da_lm <- glm(
+#   formula = is_PELE ~ lifeStage + weight + sex_male + sex_mature + year +
+#     tailLength + earLength,
+#   data = Peros %>% filter(new_taxonID %in% c("PELE", "PEMA")) %>%
+#     mutate(is_PELE = as.numeric(new_taxonID == "PELE")),
+#   family = "binomial"
+# )
+#
+# summary(da_lm) # also bad
+#
+# predict(
+#   da_lm, newdata = Peros %>% filter(new_taxonID %in% c("PELEPEMA")),
+#   type = "response"
+# )
+
+## ----
 
 # get only the complete cases for variables to use
 mod_dat <- Peros %>%
-  # filter(new_taxonID != "PESP") %>%  # exclude uncertain species
+  # filter(!new_taxonID %in% c("PESP", "PELEPEMA")) %>%  # exclude uncertain species
   mutate(
     across(c(siteID, plotID, year, iid, new_taxonID), ~as.factor(.x)) # factor vars
   )
@@ -228,8 +263,6 @@ simple_sem <- psem(
 )
 simple_out <- summary(simple_sem)
 
-
-
 ## save the results to a file
 simple_model_objects <- list(
   component_mods = list(
@@ -286,3 +319,23 @@ simple_out$dTable %>% filter(P.Value <= 0.5)
 ## (N = 23 individuals), and capprop_shift had to be dropped due to
 ## rank-defficiency, the models differ for those individuals...
 ## PEMA individuals
+
+## Example RE plot ----
+
+# mod <- simple_inf
+# taxonRE <- ranef(mod)$new_taxonID
+# vc = data.frame(VarCorr(mod))
+# sd <- vc[which(vc$grp == "new_taxonID"), "sdcor"]
+#
+# tibble(
+#   var = row.names(taxonRE),
+#   int = unlist(taxonRE),
+#   lower = int - (sd),
+#   upper = int + (sd)
+# ) %>%
+#   ggplot(aes(x = var, y = int, ymax = upper, ymin = lower)) +
+#   geom_pointrange() +
+#   labs(
+#     x = "Species classification", y = "Random intercept (\U00B1 SD)",
+#     title = "Random variation in tick attachment by species"
+#   )

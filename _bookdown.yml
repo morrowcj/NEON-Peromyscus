@@ -1,7 +1,7 @@
 ---
 book_filename: "neon-peromyscus.Rmd"
 rmd_files:
-  html: 
+  html:
   - "index.Rmd"
   - "infection-modeling/R/rmarkdown/00_sites-and-data-info.Rmd"
   - "infection-modeling/R/rmarkdown/01_immunity.Rmd"
@@ -10,6 +10,7 @@ rmd_files:
   # - "infection-modeling/R/rmarkdown/04_infection-and-gene-expression.Rmd"
   # - "infection-modeling/R/rmarkdown/05_individuals.Rmd"
   - "infection-modeling/R/rmarkdown/06_structural-equation-models.Rmd"
+  - "infection-modeling/R/rmarkdown/07_SEMs-continued.Rmd"
   # - "infection-modeling/R/rmarkdown/resistance-tolerance.Rmd"
 output_dir: "docs"
 delete_merged_file: true

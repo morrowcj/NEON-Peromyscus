@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Climate and Weather | SEMs (continued)</title>
-  <meta name="description" content="Climate and Weather | SEMs (continued)" />
+  <title>Simplified SEMs | SEMs (continued)</title>
+  <meta name="description" content="Simplified SEMs | SEMs (continued)" />
   <meta name="generator" content="bookdown 0.44 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Climate and Weather | SEMs (continued)" />
+  <meta property="og:title" content="Simplified SEMs | SEMs (continued)" />
   <meta property="og:type" content="book" />
   
   
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Climate and Weather | SEMs (continued)" />
+  <meta name="twitter:title" content="Simplified SEMs | SEMs (continued)" />
   
   
   
@@ -29,8 +29,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="immunity.html"/>
-<link rel="next" href="behavior.html"/>
+<link rel="prev" href="structural-equation-models.html"/>
+
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -147,135 +147,34 @@
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="climate-and-weather" class="section level1 hasAnchor">
-<h1>Climate and Weather<a href="climate-and-weather.html#climate-and-weather" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>Another important component of our models will be measures of short-term and
-long-term weather conditions. For short-term variables (weather), we consider
-the minimum, mean, and maximum temperature, total precipitation, and mean
-relative humidity on the day an individual was captured as well as the
-cumulative daily precipitation for the year up to the capture date. Long-term
-variables (climate) include the average monthly (mean) temperature, average
-monthly precipitation, and the average monthly rain days (as a proportion)
-across 7 years (2017 - 2024) at a site. Additionally, coefficients of
-variation are for the climate variables were also considered.</p>
-<p>To reduce complexity in our weather and climate information, we conducted
-PCA for both short-term (weather) and long-term (climate) data. Positive
-values of the first weather PC are associated with warmer and wetter
-observations (Fig <a href="climate-and-weather.html#fig:wthrPCA">4</a>) and the first two PCs account for
-73% of the variation in the weather data (Table <a href="climate-and-weather.html#tab:wthrPCimport">8</a>).
-Positive values of the first climate PC are associated with cooler, dryer,
-and more variable sites (Fig <a href="climate-and-weather.html#fig:climPCA">5</a>) and the first two PCs
-explain 94% of the climatic variation among sites
-(Table <a href="climate-and-weather.html#tab:climPCimport">9</a>).</p>
-<div class="figure"><span style="display:block;" id="fig:wthrPCA"></span>
-<img src="neon-peromyscus_files/figure-html/wthrPCA-1.png" alt="Principal component ordination of weather on the day of an individual capture." width="80%" />
-<p class="caption">
-Figure 4: Principal component ordination of weather on the day of an individual capture.
-</p>
-</div>
-<p><br></p>
-<table>
-<caption><span id="tab:wthrPCimport">Table 8: </span>Importance of weather principal components.</caption>
-<thead>
-<tr class="header">
-<th align="left"></th>
-<th align="right">PC1</th>
-<th align="right">PC2</th>
-<th align="right">PC3</th>
-<th align="right">PC4</th>
-<th align="right">PC5</th>
-<th align="right">PC6</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">Eigenvalue</td>
-<td align="right">2.99</td>
-<td align="right">1.40</td>
-<td align="right">0.89</td>
-<td align="right">0.60</td>
-<td align="right">0.11</td>
-<td align="right">0.01</td>
-</tr>
-<tr class="even">
-<td align="left">Proportion Explained</td>
-<td align="right">0.50</td>
-<td align="right">0.23</td>
-<td align="right">0.15</td>
-<td align="right">0.10</td>
-<td align="right">0.02</td>
-<td align="right">0.00</td>
-</tr>
-<tr class="odd">
-<td align="left">Cumulative Proportion</td>
-<td align="right">0.50</td>
-<td align="right">0.73</td>
-<td align="right">0.88</td>
-<td align="right">0.98</td>
-<td align="right">1.00</td>
-<td align="right">1.00</td>
-</tr>
-</tbody>
-</table>
-<div class="figure"><span style="display:block;" id="fig:climPCA"></span>
-<img src="neon-peromyscus_files/figure-html/climPCA-1.png" alt="Principal component ordination of 7-year climate at a NEON site." width="80%" />
-<p class="caption">
-Figure 5: Principal component ordination of 7-year climate at a NEON site.
-</p>
-</div>
-<p><br></p>
-<table>
-<caption><span id="tab:climPCimport">Table 9: </span>Importance of climate principal components.</caption>
-<thead>
-<tr class="header">
-<th align="left"></th>
-<th align="right">PC1</th>
-<th align="right">PC2</th>
-<th align="right">PC3</th>
-<th align="right">PC4</th>
-<th align="right">PC5</th>
-<th align="right">PC6</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">Eigenvalue</td>
-<td align="right">3.19</td>
-<td align="right">2.47</td>
-<td align="right">0.15</td>
-<td align="right">0.13</td>
-<td align="right">0.05</td>
-<td align="right">0.01</td>
-</tr>
-<tr class="even">
-<td align="left">Proportion Explained</td>
-<td align="right">0.53</td>
-<td align="right">0.41</td>
-<td align="right">0.03</td>
-<td align="right">0.02</td>
-<td align="right">0.01</td>
-<td align="right">0.00</td>
-</tr>
-<tr class="odd">
-<td align="left">Cumulative Proportion</td>
-<td align="right">0.53</td>
-<td align="right">0.94</td>
-<td align="right">0.97</td>
-<td align="right">0.99</td>
-<td align="right">1.00</td>
-<td align="right">1.00</td>
-</tr>
-</tbody>
-</table>
+<div id="simplified-sems" class="section level1 hasAnchor">
+<h1>Simplified SEMs<a href="simplified-sems.html#simplified-sems" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-ae25a09697cd7ed8c777" style="width:80%;height:480px;"></div>
+<script type="application/json" data-for="htmlwidget-ae25a09697cd7ed8c777">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"Tolerance\nexpression\", group = \"expression\", shape = \"rectangle\", fillcolor = \"#FFF2AE\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"2\" [label = \"Infection\nstatus\", group = \"infection\", shape = \"rectangle\", fillcolor = \"#F1E2CC\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"3\" [label = \"Resistance\nexpression\", group = \"expression\", shape = \"rectangle\", fillcolor = \"#FFF2AE\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"4\" [label = \"Parasitized\n(ticks)\", group = \"parasitism\", shape = \"rectangle\", fillcolor = \"#E6F5C9\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"5\" [label = \"Capture\ntime shift\", group = \"behavior\", shape = \"rectangle\", fillcolor = \"#F4CAE4\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"6\" [label = \"Capture\ntime\", group = \"behavior\", shape = \"rectangle\", fillcolor = \"#F4CAE4\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"7\" [label = \"Weight\", group = \"trait\", shape = \"rectangle\", fillcolor = \"#CBD5E8\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"8\" [label = \"Reproductive\nmaturity\", group = \"trait\", shape = \"rectangle\", fillcolor = \"#CBD5E8\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"9\" [label = \"Sex\", group = \"trait\", shape = \"rectangle\", fillcolor = \"#CBD5E8\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"10\" [label = \"Weather\nPC\", group = \"environment\", shape = \"rectangle\", fillcolor = \"#B3E2CD\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"11\" [label = \"Climate\nPC\", group = \"environment\", shape = \"rectangle\", fillcolor = \"#B3E2CD\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n\"8\"->\"1\" [color = \"cornflowerblue\", penwidth = \"2.48766022575091\", style = \"solid\"] \n\"2\"->\"1\" [color = \"cornflowerblue\", penwidth = \"2.64224220394108\", style = \"solid\"] \n\"4\"->\"1\" [color = \"cornflowerblue\", penwidth = \"1.58465659077865\", style = \"dashed\"] \n\"9\"->\"2\" [color = \"cornflowerblue\", penwidth = \"1.87239334226134\", style = \"dashed\"] \n\"8\"->\"2\" [color = \"cornflowerblue\", penwidth = \"4.37784580065047\", style = \"solid\"] \n\"7\"->\"2\" [color = \"cornflowerblue\", penwidth = \"3.07078630189401\", style = \"dashed\"] \n\"4\"->\"2\" [color = \"cornflowerblue\", penwidth = \"3.28964989477712\", style = \"solid\"] \n\"5\"->\"2\" [color = \"cornflowerblue\", penwidth = \"4.908934379185\", style = \"dashed\"] \n\"3\"->\"2\" [color = \"orange\", penwidth = \"1.37191505643773\", style = \"dashed\"] \n\"10\"->\"2\" [color = \"cornflowerblue\", penwidth = \"3.66615649512148\", style = \"solid\"] \n\"9\"->\"3\" [color = \"cornflowerblue\", penwidth = \"2.19686244499713\", style = \"solid\"] \n\"8\"->\"3\" [color = \"orange\", penwidth = \"1.38722020279319\", style = \"dashed\"] \n\"7\"->\"3\" [color = \"cornflowerblue\", penwidth = \"3.94624067342644\", style = \"solid\"] \n\"4\"->\"3\" [color = \"orange\", penwidth = \"2.15400803520184\", style = \"solid\"] \n\"10\"->\"3\" [color = \"cornflowerblue\", penwidth = \"2.70958484790511\", style = \"solid\"] \n\"9\"->\"4\" [color = \"cornflowerblue\", penwidth = \"2.46011096231108\", style = \"solid\"] \n\"8\"->\"4\" [color = \"cornflowerblue\", penwidth = \"1.44537975894394\", style = \"dashed\"] \n\"7\"->\"4\" [color = \"orange\", penwidth = \"1.11631911230151\", style = \"dashed\"] \n\"5\"->\"4\" [color = \"orange\", penwidth = \"1.58465659077865\", style = \"solid\"] \n\"6\"->\"4\" [color = \"cornflowerblue\", penwidth = \"1\", style = \"dashed\"] \n\"10\"->\"4\" [color = \"cornflowerblue\", penwidth = \"3.49014731203367\", style = \"solid\"] \n\"11\"->\"4\" [color = \"orange\", penwidth = \"4.51253108857853\", style = \"solid\"] \n\"9\"->\"5\" [color = \"orange\", penwidth = \"1.02295771953319\", style = \"dashed\"] \n\"8\"->\"5\" [color = \"orange\", penwidth = \"1.22804668069638\", style = \"dashed\"] \n\"7\"->\"5\" [color = \"cornflowerblue\", penwidth = \"1.06275110005739\", style = \"dashed\"] \n\"6\"->\"5\" [color = \"cornflowerblue\", penwidth = \"9\", style = \"solid\"] \n\"9\"->\"6\" [color = \"cornflowerblue\", penwidth = \"2.1065620814999\", style = \"solid\"] \n\"8\"->\"6\" [color = \"orange\", penwidth = \"1.44537975894394\", style = \"solid\"] \n\"7\"->\"6\" [color = \"cornflowerblue\", penwidth = \"3.02334034819208\", style = \"solid\"] \n\"10\"->\"6\" [color = \"orange\", penwidth = \"1.62751100057394\", style = \"solid\"] \n\"9\"->\"7\" [color = \"orange\", penwidth = \"1.35354888081117\", style = \"solid\"] \n\"8\"->\"7\" [color = \"cornflowerblue\", penwidth = \"7.97149416491295\", style = \"solid\"] \n\"10\"->\"7\" [color = \"orange\", penwidth = \"2.05605509852688\", style = \"solid\"] \n\"9\"->\"8\" [color = \"cornflowerblue\", penwidth = \"1.70403673235125\", style = \"solid\"] \n\"10\"->\"8\" [color = \"cornflowerblue\", penwidth = \"1.86321025444806\", style = \"solid\"] \n\"11\"->\"8\" [color = \"orange\", penwidth = \"2.6101013965946\", style = \"solid\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             </section>
 
           </div>
         </div>
       </div>
-<a href="immunity.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="behavior.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="structural-equation-models.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

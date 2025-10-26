@@ -4,15 +4,12 @@ output: html_document
 date: "2025-10-22"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 ```{r}
 library(tidyverse)
 library(DiagrammeR)
 ```
 
+# Simplified SEMs
 
 ```{r}
 simple_model_objects <- readRDS(
@@ -47,7 +44,7 @@ var_table <- tibble(
     "sex_male", "wthr_PC1", "clim_PC1"
   ),
   label = c(
-    "Tolerance\nexpression", "Infection\nstatus", "Resistance\nexpression", "Tick\nparasitism", "Capture\ntime shift", 
+    "Tolerance\nexpression", "Infection\nstatus", "Resistance\nexpression", "Parasitized\n(ticks)", "Capture\ntime shift", 
     "Capture\ntime", "Weight", "Reproductive\nmaturity", 
     "Sex", "Weather\nPC", "Climate\nPC"
   ),
@@ -66,7 +63,7 @@ var_table <- tibble(
 ```
 
 
-```{r}
+```{r, include = FALSE}
 scales::pal_area(range = c(0, 1))
 
 pos_col = "cornflowerblue"
@@ -91,22 +88,11 @@ paths <- simple_out$coefficients %>%
     Predictor = factor(
       Predictor, levels = var_table$var, labels = var_table$label
     ),
-    # color = case_when(
-    #   Std.Estimate >= 0 & P.Value <= 0.5 ~ pos_col,
-    #   Std.Estimate >= 0 & P.Value <= 0.1 ~
-    #     colorspace::lighten(pos_col, 0.4),
-    #   Std.Estimate >= 0 & P.Value > 0.1 ~ 
-    #     colorspace::lighten(pos_col, 0.6),
-    #   Std.Estimate < 0 & P.Value <= 0.5 ~ neg_col,
-    #   Std.Estimate < 0 & P.Value <= 0.1 ~ 
-    #     colorspace::lighten(neg_col, 0.4),
-    #   Std.Estimate < 0 & P.Value > 0.1 ~ 
-    #     colorspace::lighten(neg_col, 0.6),
-    #   .default = "grey50"
-    # ),
     color = if_else(Std.Estimate >= 0, pos_col, neg_col),
-    penwidth = scales::rescale(x = abs(Std.Estimate) ,to = c(0.5, 9)),
+    penwidth = scales::rescale(x = abs(Std.Estimate) ,to = c(1, 9)),
     style = if_else(P.Value <= 0.1, "solid", "dashed")
+    # headlabel = round(Std.Estimate, 2),
+    # labelfontsize = 14
   )
 
 nodes <- tibble(
@@ -142,8 +128,7 @@ sem_graph <- create_graph(attr_theme = "bt") %>%
 sem_graph %>% render_graph() 
 ```
 
-
-```{r selBurdCompSem, out.width="100%", fig.asp = 1, fig.cap=caption}
+```{r, out.width="100%", fig.asp = 1, fig.cap=caption, include = FALSE}
 # selBurdComp <- readRDS(
 #   "infection-modeling/data/model-objects/selected-burden-SEM_complete-cases.rds"
 # )
