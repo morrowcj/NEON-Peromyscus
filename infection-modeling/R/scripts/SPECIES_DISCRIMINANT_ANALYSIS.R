@@ -137,7 +137,20 @@ new_Peros %>%
 
 
 new_Peros %>% ungroup() %>%
-  filter(!is.na(PELE_prob)) %>%
+  filter(!is.na(PELE_prob), !is.na(Gel_Taxon)) %>%
   mutate(x = row_number()) %>%
-  ggplot(aes(x = x, y = PELE_prob)) +
-  geom_point()
+  ggplot(aes(x = x, y = PELE_prob, col = DFA_agreement)) +
+  geom_hline(yintercept = 0.5, linetype = "dashed") +
+  # facet_wrap(~siteID) +
+  geom_point() +
+  theme_bw() +
+  theme(axis.text.x = element_blank()) +
+  labs(color = "Correct estimate", y = "Estimated P(PELE)", x = NULL)
+
+
+## Process:
+# 1. Use DFA with ear length and hindfoot length
+# 2. Use DFA with just ear length
+# 3. Use DFA with weight, adding in site
+# 5. Use site-specific info (i.e., no maniculatus at Harvard)
+# 4. Use new_TaxonID
