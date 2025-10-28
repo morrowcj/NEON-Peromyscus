@@ -124,9 +124,14 @@ sem_graph <- create_graph(attr_theme = "bt") %>%
   set_node_attrs(fontcolor, "black") %>% 
   set_node_attrs(color, "black")
   
-
 sem_graph %>% render_graph() 
 ```
+
+TODO: 
+
+1. Quantify (add up) the effects of phenotype, weather, and behavior on 
+infection. 
+2. Try to fit smaller species-specific models (remove behavior?)
 
 ```{r, out.width="100%", fig.asp = 1, fig.cap=caption, include = FALSE}
 # selBurdComp <- readRDS(

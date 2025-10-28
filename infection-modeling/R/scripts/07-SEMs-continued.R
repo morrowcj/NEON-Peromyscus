@@ -15,8 +15,12 @@ mod_output_dir <- file.path(
 # Load in the model data
 Peros <- readRDS("infection-modeling/data/peromyscus-model-data.rds") %>%
   mutate(
-    new_taxonID = if_else(new_taxonID == "PESP", "PELEPEMA", new_taxonID)
-  )
+    # species = new_taxonID,
+    species = updated_taxa
+  ) %>% filter(!is.na(species))
+  # mutate(
+  #   species = if_else(species == "PESP", "PELEPEMA", species)
+  # )
 
 
 ## ---- Discriminant ----
@@ -25,26 +29,26 @@ Peros <- readRDS("infection-modeling/data/peromyscus-model-data.rds") %>%
 # da_mod <- lmer(
 #   formula = is_PELE ~ lifeStage + weight + sex_male + sex_mature +
 #     year + (1|siteID),
-#   data = Peros %>% filter(new_taxonID %in% c("PELE", "PEMA")) %>%
-#     mutate(is_PELE = as.numeric(new_taxonID == "PELE"))
+#   data = Peros %>% filter(species %in% c("PELE", "PEMA")) %>%
+#     mutate(is_PELE = as.numeric(species == "PELE"))
 # )
 #
 # MuMIn::r.squaredGLMM(da_mod) # bad
 #
-# predict(da_mod, newdata = Peros %>% filter(new_taxonID %in% c("PELEPEMA")))
+# predict(da_mod, newdata = Peros %>% filter(species %in% c("PELEPEMA")))
 #
 # da_lm <- glm(
 #   formula = is_PELE ~ lifeStage + weight + sex_male + sex_mature + year +
 #     tailLength + earLength,
-#   data = Peros %>% filter(new_taxonID %in% c("PELE", "PEMA")) %>%
-#     mutate(is_PELE = as.numeric(new_taxonID == "PELE")),
+#   data = Peros %>% filter(species %in% c("PELE", "PEMA")) %>%
+#     mutate(is_PELE = as.numeric(species == "PELE")),
 #   family = "binomial"
 # )
 #
 # summary(da_lm) # also bad
 #
 # predict(
-#   da_lm, newdata = Peros %>% filter(new_taxonID %in% c("PELEPEMA")),
+#   da_lm, newdata = Peros %>% filter(species %in% c("PELEPEMA")),
 #   type = "response"
 # )
 
@@ -52,13 +56,13 @@ Peros <- readRDS("infection-modeling/data/peromyscus-model-data.rds") %>%
 
 # get only the complete cases for variables to use
 mod_dat <- Peros %>%
-  # filter(!new_taxonID %in% c("PESP", "PELEPEMA")) %>%  # exclude uncertain species
+  # filter(!species %in% c("PESP", "PELEPEMA")) %>%  # exclude uncertain species
   mutate(
-    across(c(siteID, plotID, year, iid, new_taxonID), ~as.factor(.x)) # factor vars
+    across(c(siteID, plotID, year, iid, species), ~as.factor(.x)) # factor vars
   )
   # select(
   #   uid,
-  #   siteID, plotID, year, iid, new_taxonID,# ID cols
+  #   siteID, plotID, year, iid, species,# ID cols
   #   Bb_infected, log_burden, log_burden, # Borrelia
   #   sex_male, sex_mature, weight, # mouse traits
   #   ticks_attached, nymphalTicksAttached, larvalTicksAttached, # ticks
@@ -83,9 +87,6 @@ scaled_dat <- mod_dat %>%
     )
   )
 
-
-
-
 # most_common <- function(x){
 #   names(which.max(table(x)))
 # }
@@ -105,146 +106,153 @@ scaled_dat <- mod_dat %>%
 simple_weight <- lmer(
   weight ~ sex_male + sex_mature +
     wthr_PC1 +
-    (1|year) + (1|plotID) + (1|new_taxonID),
+    (1|year) + (1|plotID) + (1|species),
   data = scaled_dat
 )
 # pele_simple_wt <- update(
-#   simple_weight, . ~ . - (1|new_taxonID),
-#   data = scaled_dat %>% filter(new_taxonID == "PELE")
+#   simple_weight, . ~ . - (1|species),
+#   data = scaled_dat %>% filter(species == "PELE")
 # )
 # pema_simple_wt <- update(
-#   simple_weight,  . ~ . - (1|new_taxonID),
-#   data = scaled_dat %>% filter(new_taxonID == "PEMA")
+#   simple_weight,  . ~ . - (1|species),
+#   data = scaled_dat %>% filter(species == "PEMA")
 # )
 
 ## Maturity
 simple_mature <- glmer(
   sex_mature ~ sex_male +
     wthr_PC1 + clim_PC1 +
-    (1|year) + (1|plotID) + (1|new_taxonID),
+    (1|year) + (1|plotID) + (1|species),
   data = scaled_dat, family = "binomial"
 )
 # pele_simple_mature <- update(
-#   simple_mature, . ~ . - (1|new_taxonID),
-#   data = scaled_dat %>% filter(new_taxonID == "PELE")
+#   simple_mature, . ~ . - (1|species),
+#   data = scaled_dat %>% filter(species == "PELE")
 # )
 # pema_simple_mature <- update(
-#   simple_mature, . ~ . - (1|new_taxonID),
-#   data = scaled_dat %>% filter(new_taxonID == "PEMA")
+#   simple_mature, . ~ . - (1|species),
+#   data = scaled_dat %>% filter(species == "PEMA")
 # )
 
 ## Capture time
 simple_captime <- lmer(
   cap_prop_night ~ sex_male + sex_mature + weight +
     wthr_PC1 +
-    (1|siteID) + (1|new_taxonID),
+    (1|siteID) + (1|species),
   data = scaled_dat
 )
 # pele_simple_captime <- update(
-#   simple_captime, . ~ . - (1|new_taxonID),
-#   data = scaled_dat %>% filter(new_taxonID == "PELE")
+#   simple_captime, . ~ . - (1|species),
+#   data = scaled_dat %>% filter(species == "PELE")
 # )
 # pema_simple_captime <- update(
-#   simple_captime, . ~ . - (1|new_taxonID),
-#   data = scaled_dat %>% filter(new_taxonID == "PEMA")
+#   simple_captime, . ~ . - (1|species),
+#   data = scaled_dat %>% filter(species == "PEMA")
 # )
 
 ## Capture time shift
 simple_shift <- lmer(
   capprop_shift ~ sex_male + sex_mature + weight + cap_prop_night +
-    (1|siteID) + (1|year) + (1|new_taxonID),
+    (1|siteID) + (1|year) + (1|species),
   data = scaled_dat
 )
 # pele_simple_shift <- update(
-#   simple_shift, . ~ . - (1|new_taxonID),
-#   data = scaled_dat %>% filter(new_taxonID == "PELE")
+#   simple_shift, . ~ . - (1|species),
+#   data = scaled_dat %>% filter(species == "PELE")
 # )
 # pema_simple_shift <- update(
-#   simple_shift, . ~ . - (1|new_taxonID),
-#   data = scaled_dat %>% filter(new_taxonID == "PEMA")
+#   simple_shift, . ~ . - (1|species),
+#   data = scaled_dat %>% filter(species == "PEMA")
 # )
 
 ## Tolerance
 simple_tol <- lmer(
   expr_PC2 ~ sex_mature + Bb_infected + ticks_attached +
     # capprop_shift + ## not significant
-    (1|siteID) + (1|year) + (1|new_taxonID),
+    (1|siteID) + (1|year) + (1|species),
   # expr_PC2 ~ sex_male*sex_mature*weight + Bb_infected + (1 | siteID),
   data = scaled_dat
 )
 # pele_simple_tol <- update(
-#   simple_tol, . ~ . - (1|new_taxonID),
-#   data = scaled_dat %>% filter(new_taxonID == "PELE")
+#   simple_tol, . ~ . - (1|species),
+#   data = scaled_dat %>% filter(species == "PELE")
 # )
 # pema_simple_tol <- update(
-#   simple_tol, . ~ . - (1|new_taxonID),
-#   data = scaled_dat %>% filter(new_taxonID == "PEMA")
+#   simple_tol, . ~ . - (1|species),
+#   data = scaled_dat %>% filter(species == "PEMA")
 # )
 
 ## Burden
 simple_burden <- lmer(
-  log_burden ~ sex_male + weight + expr_PC1 + Bb_infected + wthr_PC1 +
-    (1|siteID) + (1|year) + (1|new_taxonID),
+  log_burden ~ sex_male + sex_mature + weight +
+    # Bb_infected +
+    ticks_attached +
+    capprop_shift +
+    expr_PC1 +
+    wthr_PC1 +
+    (1|siteID) + (1|year) + (1|species),
   data = scaled_dat
 )
 # pele_simple_burd <- update(
-#   simple_burden, . ~ . - (1|new_taxonID),
-#   data = scaled_dat %>% filter(new_taxonID == "PELE")
+#   simple_burden, . ~ . - (1|species),
+#   data = scaled_dat %>% filter(species == "PELE")
 # )
 # pema_simple_burd <- update(
-#   simple_burden, . ~ . - (1|new_taxonID),
-#   data = scaled_dat %>% filter(new_taxonID == "PEMA")
+#   simple_burden, . ~ . - (1|species),
+#   data = scaled_dat %>% filter(species == "PEMA")
 # )
 
 ## Infection
 simple_inf <- glmer(
   Bb_infected ~ sex_male + sex_mature + weight + ticks_attached +
-    capprop_shift +
+    # weighted_trapability + weighted_trap_diversity +
+    capprop_shift + # cap_prop_night +
     expr_PC1 +
     wthr_PC1 + # clim_PC1 +
-    (1|siteID) + (1|year) + (1|new_taxonID),
+    (1|species) +
+    (1|siteID) + (1|year) ,
   data = scaled_dat, family = "binomial"
 )
 # pema_simple_inf <- update(
-#   simple_inf, . ~ . - capprop_shift - (1|new_taxonID),
-#   data = scaled_dat %>% filter(new_taxonID == "PEMA")
+#   simple_inf, . ~ . - capprop_shift - (1|species),
+#   data = scaled_dat %>% filter(species == "PEMA")
 # ) ## RANK DEFICIENT
 # pele_simple_inf <- update(
-#   simple_inf, . ~ . - capprop_shift - (1|new_taxonID),
-#   data = scaled_dat %>% filter(new_taxonID == "PELE")
+#   simple_inf, . ~ . - capprop_shift - (1|species),
+#   data = scaled_dat %>% filter(species == "PELE")
 # )
 
 ## Resistance
 simple_res <- lmer(
   expr_PC1 ~ sex_male + sex_mature + weight + ticks_attached + wthr_PC1 +
     # capprop_shift +
-    (1|year) + (1|siteID) + (1|new_taxonID),
+    (1|year) + (1|siteID) + (1|species),
   data = scaled_dat
 )
 # pema_simple_res <- update(
-#   simple_res, . ~ . - (1|new_taxonID),
-#   data = scaled_dat %>% filter(new_taxonID == "PEMA")
+#   simple_res, . ~ . - (1|species),
+#   data = scaled_dat %>% filter(species == "PEMA")
 # )
 # pele_simple_res <- update(
-#   simple_res, . ~ . - (1|new_taxonID),
-#   data = scaled_dat %>% filter(new_taxonID == "PELE")
+#   simple_res, . ~ . - (1|species),
+#   data = scaled_dat %>% filter(species == "PELE")
 # )
 
 ## Ticks
 simple_tick <- glmer(
   ticks_attached ~ sex_male + sex_mature + weight +
-    capprop_shift + cap_prop_night +
+    capprop_shift + # cap_prop_night +
     wthr_PC1 + clim_PC1 +
-    (1|siteID) + (1|year) + (1|new_taxonID),
+    (1|siteID) + (1|year) + (1|species),
   data = scaled_dat, family = "binomial"
 )
 # pema_simple_tick <- update(
-#   simple_tick, . ~ . - (1|new_taxonID),
-#   data = scaled_dat %>% filter(new_taxonID == "PEMA")
+#   simple_tick, . ~ . - (1|species),
+#   data = scaled_dat %>% filter(species == "PEMA")
 # )
 # pele_simple_tick <- update(
-#   simple_tick, . ~ . - (1|new_taxonID),
-#   data = scaled_dat %>% filter(new_taxonID == "PELE")
+#   simple_tick, . ~ . - (1|species),
+#   data = scaled_dat %>% filter(species == "PELE")
 # )
 
 # ---- Combine into SEMs ----
@@ -286,6 +294,37 @@ simple_out$coefficients <- simple_out$coefficients %>%
 ## Add terms from dsep tests
 simple_out$dTable %>% filter(P.Value <= 0.5)
 
+## ---- Alternate out ----
+
+# PELE_sem <- psem(
+#   simple_tol %>% update(. ~ . - (1|species), data = scaled_dat %>% filter(species == "PELE")),
+#   simple_inf %>% update(. ~ . - (1|species), data = scaled_dat %>% filter(species == "PELE")),
+#   simple_res %>% update(. ~ . + clim_PC1 - (1|species), data = scaled_dat %>% filter(species == "PELE")),
+#   simple_tick %>% update(. ~ . - (1|species), data = scaled_dat %>% filter(species == "PELE")),
+#   simple_shift %>% update(. ~ . - (1|species), data = scaled_dat %>% filter(species == "PELE")),
+#   simple_captime %>% update(. ~ . - (1|species), data = scaled_dat %>% filter(species == "PELE")),
+#   simple_weight %>% update(. ~ . + clim_PC1 - (1|species), data = scaled_dat %>% filter(species == "PELE")),
+#   simple_mature %>% update(. ~ . - (1|species), data = scaled_dat %>% filter(species == "PELE")),
+#   data = scaled_dat %>% filter(species == "PELE")
+# )
+# PELE_out <- summary(PELE_sem)
+#
+# PEMA_sem <- psem(
+#   simple_tol %>% update(. ~ . - (1|species), data = scaled_dat %>% filter(species == "PEMA")),
+#   simple_inf %>% update(. ~ . - (1|species), data = scaled_dat %>% filter(species == "PEMA")),
+#   simple_res %>% update(. ~ . + clim_PC1 - (1|species), data = scaled_dat %>% filter(species == "PEMA")),
+#   simple_tick %>% update(. ~ . - (1|species), data = scaled_dat %>% filter(species == "PEMA")),
+#   simple_shift %>% update(. ~ . - (1|species), data = scaled_dat %>% filter(species == "PEMA")),
+#   simple_captime %>% update(. ~ . - (1|species), data = scaled_dat %>% filter(species == "PEMA")),
+#   simple_weight %>% update(. ~ . + clim_PC1 - (1|species), data = scaled_dat %>% filter(species == "PEMA")),
+#   simple_mature %>% update(. ~ . - (1|species), data = scaled_dat %>% filter(species == "PEMA")),
+#   data = scaled_dat %>% filter(species == "PEMA")
+# )
+# PEMA_out <- summary(PEMA_sem)
+
+
+# species_analysis <- multigroup(alternate_sem, "(1|species)")
+
 # ## leucopus model
 # pele_simple_sem <- psem(
 #   pele_simple_tol,
@@ -323,9 +362,9 @@ simple_out$dTable %>% filter(P.Value <= 0.5)
 ## Example RE plot ----
 
 # mod <- simple_inf
-# taxonRE <- ranef(mod)$new_taxonID
+# taxonRE <- ranef(mod)$species
 # vc = data.frame(VarCorr(mod))
-# sd <- vc[which(vc$grp == "new_taxonID"), "sdcor"]
+# sd <- vc[which(vc$grp == "species"), "sdcor"]
 #
 # tibble(
 #   var = row.names(taxonRE),
