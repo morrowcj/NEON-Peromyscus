@@ -112,15 +112,15 @@ nodes <- tibble(
 
 ```{r}
 sem_graph <- create_graph(attr_theme = "bt") %>% 
-  add_global_graph_attrs("layout", "dot", "graph") %>%
+  # add_global_graph_attrs("layout", "dot", "graph") %>%
   # add_global_graph_attrs("rankdir", "LR", "graph") %>%
   add_nodes_from_table(nodes, label_col = var) %>% 
   add_edges_from_table(
     paths, from_col = Predictor, to_col = Response, from_to_map = label
   ) %>% 
-  set_node_attrs(width, 1.4) %>% 
-  set_node_attrs(height, .7) %>% 
-  set_node_attrs(fontsize, 16) %>% 
+  set_node_attrs(width, 1.4) %>%
+  set_node_attrs(height, .7) %>%
+  set_node_attrs(fontsize, 16) %>%
   set_node_attrs(fontcolor, "black") %>% 
   set_node_attrs(color, "black")
   
@@ -131,6 +131,56 @@ TODO:
 
 1. Quantify (add up) the effects of phenotype, weather, and behavior on 
 infection. 
+
+```{r, eval = FALSE}
+# ## Possible to use `diagrammeR::get_paths(from = "sex_male", to = "infected")`?
+# frm = "male"
+# frm_id = path_nodes$id[match(frm, path_nodes$var)]
+# to = "infected"
+# to_id = path_nodes$id[match(to, path_nodes$var)]
+
+from_id = nodes %>% filter(var == "Sex") %>% pull(id)
+to_id = nodes %>% filter(var == "Infection\nstatus") %>% pull(id)
+
+
+# get a list of all paths from sex to infected...
+through_paths <- get_paths(sem_graph, from = from_id, to = to_id) %>% unique()
+# logical varaible indicating direct path
+is_direct = lapply(through_paths, function(x)length(x) == 2) %>% unlist()
+dir_path = through_paths[is_direct] %>% unlist()
+indir_paths = through_paths[!is_direct]
+
+
+# convert numeric ids to names
+name_paths <- lapply(
+  through_paths, function(x)nodes$var[match(x, nodes$id)]
+)
+
+# go through a path
+this <- rev(through_paths)[[1]] # longest path
+
+path_effects <- vector("numeric")
+
+for(i in seq_len(length(this) - 1)) {
+  x = this[i]
+  y = this[i + 1]
+  
+  var_x = nodes %>% filter(id == x) %>% pull(var)
+  var_y = nodes %>% filter(id == y) %>% pull(var)
+  
+  eff <- paths %>% 
+    filter(Predictor == var_x, Response == var_y) %>% 
+    pull(Std.Estimate)
+  
+  path_effects <- append(effects, eff)
+}
+
+cum_path_efffect <- prod(path_effects)
+
+
+```
+
+
 2. Try to fit smaller species-specific models (remove behavior?)
 
 ```{r, out.width="100%", fig.asp = 1, fig.cap=caption, include = FALSE}

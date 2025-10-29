@@ -294,6 +294,31 @@ simple_out$coefficients <- simple_out$coefficients %>%
 ## Add terms from dsep tests
 simple_out$dTable %>% filter(P.Value <= 0.5)
 
+## ---- Cumulative effects ----
+
+# get only relevant columns
+df <- simple_out$coefficients %>%
+  select(Response, Predictor, Std.Estimate)
+
+# number of models each predictor is used in:
+df$Predictor %>% table() %>% sort(decreasing = T)
+
+effects_tab <- df %>%
+
+  pivot_wider(names_from = Predictor, values_from = Std.Estimate)
+
+for(resp in unique(df$Response)) {
+  df %>% filter(Response == resp)
+2}
+
+# Table of effects of each variable on each other
+matrix(
+  data = NA,
+  nrow = length(unique(df$Response)), ncol = length(unique(df$Predictor)),
+  dimnames = list(unique(df$Response), unique(df$Predictor))
+)
+
+
 ## ---- Alternate out ----
 
 # PELE_sem <- psem(
