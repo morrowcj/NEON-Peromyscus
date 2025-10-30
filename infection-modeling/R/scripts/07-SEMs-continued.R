@@ -318,6 +318,181 @@ matrix(
   dimnames = list(unique(df$Response), unique(df$Predictor))
 )
 
+## Calculate cumulative effects
+
+source("infection-modeling/R/functions/diagram_psem.R")
+
+frame_list <- frameplot_psem(simple_out$coefficients)
+base_plot <- build_psem_plot(frame_list)
+
+# build the table to fill
+cumulative_tab <- expand_grid(
+  Response = unique(frame_list$edges$Response),
+  Predictor = unique(frame_list$edges$Predictor)
+) %>% 
+  filter(Response != Predictor) %>% 
+  mutate(
+    respID = frame_list$nodes$id[match(Response, frame_list$nodes$name)],
+    predID = frame_list$nodes$id[match(Predictor, frame_list$nodes$name)]
+  ) %>% 
+  left_join(
+    select(frame_list$edges, Response, Predictor, Std.Estimate),
+    by = c("Response", "Predictor")
+  ) %>% 
+  rename(direct = Std.Estimate) 
+
+# add a list of all the paths from the responses to the predictors
+cumulative_tab <- cumulative_tab %>% 
+  rowwise() %>% # setup to loop through each row
+  mutate(
+    all_paths = list(unique(get_paths(base_plot, from = predID, to = respID))),
+  )
+
+#' Get a vector of the coefficients along a path
+#'
+#' @param p a vector of integers defining the path 
+#' @param edges an edges table
+#' @param nodes a nodes table
+#'
+#' @returns a vector of effects. 
+get_coefs_along_path <- function(
+    p = c(8, 7, 6, 5, 4, 3, 2, 1),
+    edges = frame_list$edges,
+    nodes = frame_list$nodes
+){
+  # early return for a missing path
+  if (length(p) == 1 | all(is.na(p))){
+    return(NA)
+  }
+  
+  # convert the path numbers into names  
+  v <- nodes$name[p]
+
+  ## direct effect
+  if (length(p) == 2) {
+    # return the direct effect 
+    edges %>% 
+      filter(Predictor == v[1], Response == v[2]) %>% 
+      pull(Std.Estimate) %>% return()
+  }
+  
+  ## indirect effects
+  
+  # join into a lag table
+  tab <- cbind(from = head(v, -1), to = tail(v, -1))
+  
+  # go through all the rows of the table and find the matching coefficient
+  apply(
+    tab, 1, function(x) {
+      pull(filter(edges, Predictor == x[1], Response == x[2]), Std.Estimate)
+    }
+  ) %>% return()
+}
+
+# calculate direct and indirect effects
+cumulative_tab <- cumulative_tab %>% 
+  mutate(
+    all_coefs = list(lapply(all_paths, get_coefs_along_path)),
+    coef_prods = list(lapply(all_coefs, prod)),
+    is_direct_all = list(lapply(all_coefs, length) == 1),
+    total = sum(unlist(coef_prods), na.rm = TRUE),
+    direct_ind = list(lapply(is_direct_all, which) %>% unlist()),
+    direct_ind = if_else(length(direct_ind[1]) == 0, NA, direct_ind[1]),
+    new_direct = if_else(is.na(direct_ind), 0, all_coefs[[1]][direct_ind])
+  )
+
+cum_eff_tab <- cumulative_tab %>% 
+  unnest(new_direct) %>% 
+  ungroup() %>% 
+  mutate(
+    new_direct = replace_na(new_direct, 0),
+    indirect = total - new_direct
+  ) %>% 
+  select(Response, Predictor, direct, new_direct, indirect, total)
+
+library(lemon)
+
+cum_eff_tab %>% 
+  filter(Response %in% c("ticks_attached", "Bb_infected")) %>% 
+  pivot_longer(cols = c(new_direct, total)) %>% 
+  ggplot(aes(x = Predictor, y = value, fill = name)) + 
+  facet_rep_wrap(~Response, scales = "free_y") + 
+  geom_hline(yintercept = 0, col = "grey50") + 
+  geom_col(width = 0.5, position = "identity") + 
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
+  )
+
+filtab <- cum_eff_tab %>% 
+  filter(
+    Response %in% c("ticks_attached", "Bb_infected", "expr_PC2"),
+    total > 0
+  ) %>% 
+  mutate(
+    Response = factor(
+      Response, 
+      levels = c("ticks_attached", "Bb_infected", "expr_PC2"),
+      labels = c("Ticks", "Infection", "Tolerance")
+    ),
+    Predictor = factor(
+      Predictor, 
+      levels = c(
+        "clim_PC1", "wthr_PC1", "sex_male", "sex_mature", "weight", 
+        "cap_prop_night", "capprop_shift", "ticks_attached", "Bb_infected"
+      ),
+      labels = c(
+        "climate", "weather", "sex", "maturity", "weight", 
+        "captime", "capshift", "ticks", "infection"
+      )
+    )
+  )
+
+
+# table of effects for Infection, Resistance, and ticks
+filtab %>% 
+  ggplot(aes(y = Predictor, x = total)) + 
+  facet_wrap(~Response) + 
+  geom_vline(xintercept = 0, col = "grey50", linetype = "dashed") + 
+  geom_col(
+    aes(fill = "total"), 
+    width = 0.9, linewidth = 0.5, col = "black"
+  ) + 
+  geom_col(
+    aes(x = indirect, fill = "indirect"), 
+    position = position_nudge(y = 0.15),
+    width = 0.3, linewidth = 0.25, col = "black"
+  ) +
+  geom_col(
+    aes(x = new_direct, fill = "direct"), 
+    position = position_nudge(y = -0.15),
+    width = 0.3, linewidth = 0.25, col = "black"
+  ) +
+  theme_bw() + 
+  theme(
+    strip.background = element_blank(),
+    legend.position = "inside", legend.position.inside = c(0.2, 0.9),
+    legend.justification = c(0.5, 1),
+    legend.background = element_rect(color = "black", linewidth = 0.3)
+  ) +
+  labs(x = "Standardized effect", fill = NULL) +
+  scale_fill_manual(values = c("cornflowerblue", "orange", "grey50"))
+
+ggsave(
+  "infection-modeling/graphics/cumulative-effect-fig.png", 
+  width = 6, height = 5, dpi = 300
+)
+
+# ct <- cumulative_tab %>% ungroup() %>% 
+#   mutate(skip = is.na(all_paths))
+# 
+# for (resp in unique(simple_out$coefficients$Response)) {
+#   # look for effects along each path
+#   
+#   
+#     
+#   # add to the table
+#   cumulative_tab <- bind_rows(resp_tab)
+# }
 
 ## ---- Alternate out ----
 
