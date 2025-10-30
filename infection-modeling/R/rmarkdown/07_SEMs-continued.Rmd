@@ -73,7 +73,7 @@ effect_cols <- c(
   pos_col, colorspace::lighten(pos_col, 0.4), colorspace::lighten(pos_col, 0.8),
   neg_col, colorspace::lighten(neg_col, 0.4), colorspace::lighten(neg_col, 0.8)
 )
-  
+
 # scales::show_col(effect_cols)
 ```
 
@@ -123,65 +123,125 @@ sem_graph <- create_graph(attr_theme = "bt") %>%
   set_node_attrs(fontsize, 16) %>%
   set_node_attrs(fontcolor, "black") %>% 
   set_node_attrs(color, "black")
-  
+
 sem_graph %>% render_graph() 
 ```
 
 TODO: 
 
-1. Quantify (add up) the effects of phenotype, weather, and behavior on 
+* [x] Quantify (add up) the effects of phenotype, weather, and behavior on 
 infection. 
 
-```{r, eval = FALSE}
-# ## Possible to use `diagrammeR::get_paths(from = "sex_male", to = "infected")`?
-# frm = "male"
-# frm_id = path_nodes$id[match(frm, path_nodes$var)]
-# to = "infected"
-# to_id = path_nodes$id[match(to, path_nodes$var)]
-
-from_id = nodes %>% filter(var == "Sex") %>% pull(id)
-to_id = nodes %>% filter(var == "Infection\nstatus") %>% pull(id)
-
-
-# get a list of all paths from sex to infected...
-through_paths <- get_paths(sem_graph, from = from_id, to = to_id) %>% unique()
-# logical varaible indicating direct path
-is_direct = lapply(through_paths, function(x)length(x) == 2) %>% unlist()
-dir_path = through_paths[is_direct] %>% unlist()
-indir_paths = through_paths[!is_direct]
-
-
-# convert numeric ids to names
-name_paths <- lapply(
-  through_paths, function(x)nodes$var[match(x, nodes$id)]
+```{r}
+cumu_tab <- readRDS(
+  file.path(
+    "infection-modeling/data/model-objects",
+    "cumulative-effects-table_simplified-SEM.rds"
+  )
 )
 
-# go through a path
-this <- rev(through_paths)[[1]] # longest path
-
-path_effects <- vector("numeric")
-
-for(i in seq_len(length(this) - 1)) {
-  x = this[i]
-  y = this[i + 1]
-  
-  var_x = nodes %>% filter(id == x) %>% pull(var)
-  var_y = nodes %>% filter(id == y) %>% pull(var)
-  
-  eff <- paths %>% 
-    filter(Predictor == var_x, Response == var_y) %>% 
-    pull(Std.Estimate)
-  
-  path_effects <- append(effects, eff)
-}
-
-cum_path_efffect <- prod(path_effects)
-
-
+filtab <- cumu_tab %>%
+  filter(
+    Response %in% c("ticks_attached", "expr_PC1", "Bb_infected", "expr_PC2"),
+    !is.na(total), !is.na(Predictor)
+  ) %>%
+  mutate(
+    Response = factor(
+      Response,
+      levels = c("ticks_attached", "expr_PC1", "Bb_infected", "expr_PC2"),
+      labels = c("Ticks", "Resistance", "Infection", "Tolerance")
+    ),
+    Predictor = factor(
+      Predictor,
+      levels = c(
+        "clim_PC1", "wthr_PC1", "sex_male", "sex_mature", "weight",
+        "cap_prop_night", "capprop_shift", "ticks_attached",
+        "expr_PC1", "Bb_infected"
+      ),
+      labels = c(
+        "climate", "weather", "sex", "reproductive", "weight",
+        "captime", "capshift", "ticks",
+        "resistance", "infection"
+      )
+    )
+  )
 ```
 
+```{r, fig.width=6, fig.height=6}
+# table of effects for Infection, Resistance, and ticks
+filtab %>%
+  ggplot(aes(y = Predictor, x = total)) +
+  facet_wrap(~Response, scales = "free_x") +
+  # geom_vline(xintercept = 0, col = "grey50", linetype = "solid") +
+  geom_col(
+    aes(fill = "total"),
+    width = 0.9, linewidth = 0.5, col = "black"
+  ) +
+  geom_col(
+    aes(x = indirect, fill = "indirect"),
+    position = position_nudge(y = 0.15),
+    width = 0.3, linewidth = 0.25, col = "black"
+  ) +
+  geom_col(
+    aes(x = new_direct, fill = "direct", linetype = P.Value <= 0.1),
+    position = position_nudge(y = -0.15),
+    width = 0.3, linewidth = 0.25, col = "black"
+  ) +
+  theme_bw() +
+  theme(
+    strip.background = element_blank(),
+    legend.position = "inside", legend.position.inside = c(0.01, 0.99),
+    legend.justification = c(0, 1),
+    legend.background = element_rect(color = "black", linewidth = 0.3),
+    panel.spacing.x = unit(0, "lines")
+  ) +
+  labs(x = "Standardized effect", fill = NULL) +
+  scale_fill_manual(values = c("cornflowerblue", "orange", "grey50")) +
+  scale_linetype_manual(values = c("dashed", "solid")) +
+  guides(linetype = "none")
 
-2. Try to fit smaller species-specific models (remove behavior?)
+ggsave(
+  "infection-modeling/graphics/cumulative-effect-fig.png",
+  width = 6, height = 6, dpi = 300
+)
+```
+
+```{r, fig.width = 6, fig.asp = 1}
+# look at all the effects
+cumu_tab %>%
+  ggplot(aes(y = Predictor, x = total)) +
+  facet_wrap(~Response, scales = "free_x") +
+  geom_vline(xintercept = 0, col = "grey50", linetype = "dotted") +
+  geom_col(
+    aes(fill = "total"),
+    width = 0.9, linewidth = 0.5, col = "black"
+  ) + geom_col(
+    aes(x = indirect, fill = "indirect"),
+    position = position_nudge(y = 0.15),
+    width = 0.3, linewidth = 0.25, col = "black"
+  ) +
+  geom_col(
+    aes(x = new_direct, fill = "direct", linetype = P.Value <= 0.1),
+    position = position_nudge(y = -0.15),
+    width = 0.3, linewidth = 0.25, col = "black"
+  ) + 
+  theme_bw() +
+  theme(
+    strip.background = element_blank(),
+    legend.position = "inside", legend.position.inside = c(0.95, 0.05),
+    legend.justification = c(1, 0),
+    # legend.background = element_rect(color = "black", linewidth = 0.3),
+    panel.spacing.x = unit(0, "lines")
+  ) +
+  labs(x = "Standardized effect", fill = NULL) +
+  scale_fill_manual(values = c("cornflowerblue", "orange", "grey50")) +
+  scale_linetype_manual(values = c("dashed", "solid")) +
+  guides(linetype = "none")
+```
+
+* [ ] Include random effects...
+
+* [ ] Try to fit smaller species-specific models (remove behavior?)
 
 ```{r, out.width="100%", fig.asp = 1, fig.cap=caption, include = FALSE}
 # selBurdComp <- readRDS(
@@ -249,3 +309,5 @@ cum_path_efffect <- prod(path_effects)
 #   "The width of a vector is proportional to the magnitude of its effect."
 # )
 ```
+
+* [ ] clean up this document for the website
