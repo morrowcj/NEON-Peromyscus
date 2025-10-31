@@ -369,4 +369,54 @@ spec_coefs <- spec_coefs %>% arrange(Response, Predictor, species) %>%
 ## Count the coefficients that do and do not differ
 spec_coefs %>% group_by(CI_overlap) %>% tally() %>% mutate(n = n/2)
 
+## Plot the coefficients by species (solid lines and bold colors are
+## significantly different)
+spec_coefs %>%
+  mutate(
+    Response = factor(
+      Response,
+      levels = c("sex_mature", "weight", "ticks_attached", "Bb_infected"),
+      labels = c("Sex", "Weight", "Ticks", "Infection")
+    ),
+    Predictor = factor(
+      Predictor,
+      levels = c(
+        "wthr_PC1", "clim_PC1", "sex_male", "sex_mature",
+        "weight", "ticks_attached"
+      ),
+      labels = c("Weather", "Climate", "Sex", "Reproductive", "Weight", "Ticks")
+    )
+  ) %>%
+  ggplot(
+    aes(
+      x = Std.Estimate, y = Predictor, fill = species, linetype = CI_overlap,
+      alpha = CI_overlap
+    )
+  ) +
+  geom_vline(xintercept = 0, col = "grey50") +
+  facet_grid(~Response) +
+  geom_col(position = "dodge", color = "black", width = 0.66) +
+  theme_bw() +
+  theme(
+    legend.position = "inside", legend.position.inside = c(.25, 0.8),
+    legend.justification = c(0.5, 0.5),
+    legend.background = element_rect(color = "black", linewidth = 0.2),
+    panel.spacing.x = unit(0, "lines"),
+    strip.background = element_blank()
+  ) +
+  labs(fill = NULL, x = "Standardized effect") +
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_alpha_manual(values = c(1, 0.5)) +
+  guides(linetype = FALSE, alpha = FALSE)
+
 ## ---- Species cumulative effects ----
+
+## PELE Graph
+pele_fp <- frameplot_psem(pele_out$coefficients)
+pele_baseplot <- build_psem_plot(pele_fp)
+render_graph(pele_baseplot)
+
+## PEMA graph
+pema_fp <- frameplot_psem(pema_out$coefficients)
+pema_baseplot <- build_psem_plot(pema_fp)
+render_graph(pema_baseplot)
