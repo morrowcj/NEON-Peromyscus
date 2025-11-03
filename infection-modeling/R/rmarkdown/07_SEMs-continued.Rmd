@@ -11,6 +11,95 @@ library(DiagrammeR)
 
 # Simplified SEMs
 
+This chapter will build on the insight gained from the previous chapter to 
+build the final SEMs for our manuscript. In total, there will be three SEMs.
+The first SEM is a "full" model that explores all components of our proposed 
+model (mouse traits and behaviors, mouse interactions with disease vectors, 
+mouse gene expression, environment, and infection status). To ensure maximum 
+power, this full model utilizes data for both *P leucopus* (PELE) and 
+*P maniculatus* (PEMA). The two remaining SEMs will explore the specific 
+differences in disease dynamics between PELE and PEMA. These models will have
+identical structure and will only differ by the species with which they are 
+fitted. In order to make comparisons between two identically-structured SEMs, 
+some  variables from the full SEM are excluded from these species-specific 
+models. This simplification is necessitated by low representation of PEMA for 
+some combinations of variables. 
+By structuring the analysis in this way, with one overarching model and smaller
+species-specific models, we are able to holistically explore the factors
+of disease dynamics in this system while also acknowledging and quantifying
+differences among species where possible.
+
+## Species identification
+
+Because we are interested in species-specific effects and because 
+field assignments are known to be error-prone, we re-assessed
+species identification prior to this chapter. Specifically, we used the 
+following algorithm to assign species:
+
+1. First, any individuals for which genetic information are available were
+assigned to the species indicated by genetic markers.
+
+2. For individuals not covered by step 1, 
+discriminant analysis (trained on individuals with genetic assignments) was 
+used to assign *observations* for which ear length, hind foot length, and weight
+were available. These 3 variables had the highest assignment accuracy for both
+species (90% for PELE, 86% for PEMA). Individuals were assigned by 
+averaging the predicted species across observations.
+
+3. For individuals not covered by steps 1-2, 
+discriminant analysis was used to assign *observations* for which ear length
+and weight were available. These two variables also had a high assignment
+accuracy for both species (90% for PELE, 84% for PEMA). Individuals were
+assigned by averaging the predicted species across observations.
+
+4. Individuals not covered by steps 1-3 that were captured at BLAN, HARV, SERC,
+or ORNL were assigned PELE. This was done because genetic assessment identified
+no PEMA at any of these sites. **Note**: HARV specifically had extremely poor
+field identification, with the vast majority of individuals being labeled as
+*Peromyscus spp.* and about half of the individuals identified to species were
+(incorrectly) labeled as PEMA.
+
+5. Any remaining individuals were given the field assignment that occurred most 
+commonly across their full capture record. 
+
+## Full SEM
+
+The full SEM exploring relationships between mice characteristics and behaviors,
+environmental variation, gene expression, and *Borrelia* infection 
+was fitted to all available data and is visualized by 
+Figure \@ref(fig:simpSemGraph). The model hypothesizes that 1) individual 
+traits covary and influence individual behavior, contact with disease vectors 
+(tick parasitism), expression of immunity genes, and infection status; 2) 
+behaviors covary and influence contact with vectors and 
+infection status; 3) tick parasitism influences immunity expression and 
+infection status; 4) expression of immunity-associated genes are associated with 
+infection status (influenced by resistance and influencing tolerance); and 5)
+environmental factors influence all other factors.
+
+Our results show that these hypothesis are largely met:
+
+1.  Mouse phenotype is significantly and directly associated with behavior 
+(sex, weight), parasitism rates (sex), resistance expression (sex, weight), 
+tolerance expression (reproductive maturity), and infection rates 
+(weight, reproductive maturity).
+
+2. Mouse behavior is significantly and directly associated with parasitism 
+rates (shift in capture time), but is only indirectly associated with
+infection rates (through its influence on tick parasitism).
+
+3. Tick parasitism is significantly and directly associated with resistance
+expression and infection status, but is only indirectly associated with 
+tolerance expression (through its effect on infection status).
+
+4. Tolerance expression is significantly and directly associated with with
+infection status, but resistance expression is not.
+
+5. Weather is significantly and directly associated with mouse phenotype (
+reproductive maturity), behavior (capture timing), parasitism rates, immunity
+expression (resistance), and infection status. Longer-term climate also has
+significant impacts on parasitism rates, likely through its influence on tick
+populations.
+
 ```{r}
 simple_model_objects <- readRDS(
   "infection-modeling/data/model-objects/simplified-SEM-objects.rds"
@@ -44,7 +133,8 @@ var_table <- tibble(
     "sex_male", "wthr_PC1", "clim_PC1"
   ),
   label = c(
-    "Tolerance\nexpression", "Infection\nstatus", "Resistance\nexpression", "Parasitized\n(ticks)", "Capture\ntime shift", 
+    "Tolerance\nexpression", "Infection\nstatus", "Resistance\nexpression", 
+    "Parasitism\n rate (ticks)", "Capture\ntime shift", 
     "Capture\ntime", "Weight", "Reproductive\nmaturity", 
     "Sex", "Weather\nPC", "Climate\nPC"
   ),
@@ -90,7 +180,8 @@ paths <- simple_out$coefficients %>%
     ),
     color = if_else(Std.Estimate >= 0, pos_col, neg_col),
     penwidth = scales::rescale(x = abs(Std.Estimate) ,to = c(1, 9)),
-    style = if_else(P.Value <= 0.1, "solid", "dashed")
+    style = if_else(P.Value <= 0.1, "solid", "dashed"),
+    tooltip = round(Std.Estimate, 2)
     # headlabel = round(Std.Estimate, 2),
     # labelfontsize = 14
   )
@@ -110,7 +201,7 @@ nodes <- tibble(
   )
 ```
 
-```{r}
+```{r simpSemGraph, out.width="100%", fig.asp = 1, fig.cap=caption, warning=FALSE}
 sem_graph <- create_graph(attr_theme = "bt") %>% 
   # add_global_graph_attrs("layout", "dot", "graph") %>%
   # add_global_graph_attrs("rankdir", "LR", "graph") %>%
@@ -125,12 +216,29 @@ sem_graph <- create_graph(attr_theme = "bt") %>%
   set_node_attrs(color, "black")
 
 sem_graph %>% render_graph() 
+
+caption = paste(
+  "PATH diagram for the full SEM of *Peromyscus*-*Borrelia* dynamics.",
+  "Orange vectors represent negative effects, blue vectors represent positive",
+  "effects, solid lines are statistically significant (P \U2264 0.1), and",
+  "dashed lines are not. Line widths are proportional to the magnitude of",
+  "the standardized coefficient estimates. Boxes are colored according to",
+  "variable groupings (blue: phenotype; turquoise: envrionment;",
+  "pink: behavior; green: parasitism; yellow: gene expression;",
+  "brown: infection.",
+  "Each component model used to build the SEM included species, site, and year",
+  "as random effects to accout for covariation of observations within and",
+  "among these groups.",
+  "Table \\@ref(tab:SemR2N) contains more information about the individual",
+  "component models."
+)
 ```
 
-TODO: 
 
-* [x] Quantify (add up) the effects of phenotype, weather, and behavior on 
-infection. 
+In addition to the direct effects outlined above, it is also possible to
+quantify cumulative (direct and indirect) effects from the SEM. The cumulative
+effects on parasitism rates, immunity expression, and infection status are
+given in Figure \@ref(fig:fullCumuFig).
 
 ```{r}
 cumu_tab <- readRDS(
@@ -167,7 +275,7 @@ filtab <- cumu_tab %>%
   )
 ```
 
-```{r, fig.width=6, fig.height=6}
+```{r fullCumuFig, fig.width=6, fig.height=6, fig.cap=caption}
 # table of effects for Infection, Resistance, and ticks
 filtab %>%
   ggplot(aes(y = Predictor, x = total)) +
@@ -204,9 +312,45 @@ ggsave(
   "infection-modeling/graphics/cumulative-effect-fig.png",
   width = 6, height = 6, dpi = 300
 )
+
+caption = paste(
+  "Cumulative effects on parasitism (Ticks), immunity expression",
+  "(Resistance, Tolerance), and *Borrelia* infection.",
+  "These effects are derived from the full SEM (Figure \\@ref(fig:simpSemGraph)).",
+  "Dashed borders around blue bars indicate non-significant direct effects."
+)
 ```
 
-```{r, fig.width = 6, fig.asp = 1}
+```{r SemR2N}
+mod_list <- simple_model_objects$component_mods
+
+sample_sizes <- lapply(mod_list, function(x)nrow(model.frame(x))) %>% unlist()
+
+bind_cols(
+  simple_out$R2 %>% 
+    mutate(
+      Response = factor(
+        Response, levels = var_table$var, 
+        labels = var_table$label %>% gsub("\n", " ", .)
+      )
+    ) %>% 
+    select(-method), 
+  n = sample_sizes
+) %>% knitr::kable(
+  col.names = c("Response", "Family", "Link", "Marg. R-sqr", "Cond. R-sqr", "N"),
+  digits = 2,
+  caption = paste(
+    "Full SEM component model information. Columns represent response,",
+    "distribution family, distribution link function, marginal R-squared",
+    "(fixed effects only), conditional R-squared (fixed and random effects),",
+    "and the total number of observations used for each component model.",
+    "For binomial models, R-squared values are theoretical."
+  )
+)
+```
+
+
+```{r allCumuRough, fig.width = 6, fig.asp = 1, include = FALSE}
 # look at all the effects
 cumu_tab %>%
   ggplot(aes(y = Predictor, x = total)) +
@@ -239,75 +383,8 @@ cumu_tab %>%
   guides(linetype = "none")
 ```
 
-* [ ] Include random effects...
+## Species comparison
 
 * [ ] Try to fit smaller species-specific models (remove behavior?)
-
-```{r, out.width="100%", fig.asp = 1, fig.cap=caption, include = FALSE}
-# selBurdComp <- readRDS(
-#   "infection-modeling/data/model-objects/selected-burden-SEM_complete-cases.rds"
-# )
-# 
-# pbreaks = c(0, 0.05, 0.1, 1)#, 
-# pcols = c("black", "grey70", "grey70")#, 
-# linetypes = c("solid", "solid", "dotted")#, 
-# penwidth_range = c(1, 8)
-# 
-# # coefficients
-# coef_tab <- selBurdComp$coefficients %>% 
-#   data.frame() %>% 
-#   rename(sig.star = "Var.9") %>% 
-#   mutate(
-#     pval_group = cut(
-#       P.Value, breaks = pbreaks, include.lowest = TRUE,
-#       labels(seq_len(length(pbreaks) - 1))
-#     ),
-#     pval_col = pcols[pval_group],
-#     pval_linetype = linetypes[pval_group],
-#     pval_penwidth = scales::rescale(Std.Estimate, to = penwidth_range),
-#     color = case_when(
-#       P.Value > 0.1 ~ "grey50",
-#       Std.Estimate < 0 ~ "cornflowerblue", 
-#       Std.Estimate >= 0 ~ "orange"
-#     )
-#   ) %>% 
-#   mutate(
-#     Predictor = key_val_recode(Predictor),
-#     Response = key_val_recode(Response)
-#   )
-# 
-# # all variables
-# the_vars <- unique(c(coef_tab$Response, coef_tab$Predictor))
-# 
-# path_nodes <- data.frame(var = the_vars, id = seq_len(length(the_vars)))
-# 
-# create_graph(attr_theme = "bt") %>% 
-#   add_global_graph_attrs("layout", "dot", "graph") %>%
-#   # add_global_graph_attrs("rankdir", "LR", "graph") %>%
-#   add_nodes_from_table(path_nodes, label_col = var) %>% 
-#   add_edges_from_table(
-#     coef_tab, from_col = "Predictor", to_col = "Response", 
-#     from_to_map = "label"
-#   ) %>% 
-#   set_node_attrs(width, 2) %>% 
-#   set_node_attrs(fontsize, 20) %>% 
-#   set_node_attrs(shape, "rectangle") %>% 
-#   # set_edge_attrs(color, coef_tab$pval_col) %>% 
-#   set_edge_attrs(arrowsize, 1) %>% 
-#   set_edge_attrs(color, coef_tab$color) %>% 
-#   set_edge_attrs(style, coef_tab$pval_linetype) %>% 
-#   set_edge_attrs(penwidth, coef_tab$pval_penwidth) %>% 
-#   render_graph()
-# 
-# caption = paste(
-#   "Directed acyclycal graph of selected burden SEM model, fit with complete cases.",
-#   "The goodness-of-fit P-value is", paste0(round(selBurdComp$Cstat$P.Value, 2), ","),
-#   "which indicates that this model is *not* statistically different from an",
-#   "'ideal' model of these data.", 
-#   "Orange vectors represent positive effects, blue represent negative effects",
-#   "and grey represents non-significant (P > 0.1) effects.",
-#   "The width of a vector is proportional to the magnitude of its effect."
-# )
-```
 
 * [ ] clean up this document for the website

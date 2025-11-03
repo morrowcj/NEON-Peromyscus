@@ -50,7 +50,7 @@ key_val_recode <- function(x, old = recode_tab$old, new = recode_tab$new){
 ```
 
 
-# Structural equation models
+# Exploration of structural equation models (SEM)
 
 Structural equation models are a special case of path analysis, which describe
 the directed dependence among sets of variables, often viewed as directed 
@@ -973,27 +973,10 @@ caption = paste(
 )
 ```
 
-## No interactions
-
-Because of the interaction effect of sex:male:mature on infection
-status in model \@ref(fig:selBothMaxSem), it is not possible to
-calculate the full scope of the direct and indirect effects of
-sex (for example) on infection.
-
-**TODO**: Fit a SEM without interactions - main effects only.
-
-## *P. leucopus* vs. *P. maniculatus*
-
-**TODO**
-
 ## Next steps
 
-* Prediction: how can the expression module (smaller data) inform the larger 
-things
-
-  - can we map expression to something else? Proxy variables for expression.
-  
-  - use 200 mice to fine tune estimation
-  
-* Maybe look at proposal for machine learning for more general disease 
-(all kinds) prediction?
+The models presented in this chapter were largely exploratory. The next chapter
+will create a simplified full model (i.e., without interaction terms, 
+eliminate superfluous behavior variables) to describe the main 
+host-vector-pathogen dynamics. That chapter will also explore the 
+species-specific differences between *P. leucopus* and *P. maniculatus*.

@@ -234,6 +234,16 @@ tmp <- Peros %>%
   )
 
 tmp %>%
+  summarize(
+    earfoot_n = sum(!is.na(earfoot_correct)),
+    ear_n =  sum(!is.na(ear_correct)),
+    mass_n = sum(!is.na(mass_correct)),
+    earfoot_obs = sum(earfoot_correct, na.rm = TRUE) / earfoot_n,
+    ear_obs = sum(ear_correct, na.rm = TRUE) / ear_n,
+    mass_obs = sum(mass_correct, na.rm = TRUE) / mass_n
+  )
+
+tmp %>%
   group_by(siteID, Gel_Taxon) %>%
   summarize(
     earfoot_n = sum(!is.na(earfoot_correct)),

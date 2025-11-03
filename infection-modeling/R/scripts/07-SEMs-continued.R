@@ -206,6 +206,7 @@ cumulative_tab <- cumulative_tab %>%
     new_direct = if_else(is.na(direct_ind), 0, all_coefs[[1]][direct_ind])
   )
 
+# clean up
 cum_eff_tab <- cumulative_tab %>%
   unnest(new_direct) %>%
   ungroup() %>%
@@ -369,54 +370,198 @@ spec_coefs <- spec_coefs %>% arrange(Response, Predictor, species) %>%
 ## Count the coefficients that do and do not differ
 spec_coefs %>% group_by(CI_overlap) %>% tally() %>% mutate(n = n/2)
 
-## Plot the coefficients by species (solid lines and bold colors are
-## significantly different)
-spec_coefs %>%
-  mutate(
-    Response = factor(
-      Response,
-      levels = c("sex_mature", "weight", "ticks_attached", "Bb_infected"),
-      labels = c("Sex", "Weight", "Ticks", "Infection")
-    ),
-    Predictor = factor(
-      Predictor,
-      levels = c(
-        "wthr_PC1", "clim_PC1", "sex_male", "sex_mature",
-        "weight", "ticks_attached"
-      ),
-      labels = c("Weather", "Climate", "Sex", "Reproductive", "Weight", "Ticks")
-    )
-  ) %>%
-  ggplot(
-    aes(
-      x = Std.Estimate, y = Predictor, fill = species, linetype = CI_overlap,
-      alpha = CI_overlap
-    )
-  ) +
-  geom_vline(xintercept = 0, col = "grey50") +
-  facet_grid(~Response) +
-  geom_col(position = "dodge", color = "black", width = 0.66) +
-  theme_bw() +
-  theme(
-    legend.position = "inside", legend.position.inside = c(.25, 0.8),
-    legend.justification = c(0.5, 0.5),
-    legend.background = element_rect(color = "black", linewidth = 0.2),
-    panel.spacing.x = unit(0, "lines"),
-    strip.background = element_blank()
-  ) +
-  labs(fill = NULL, x = "Standardized effect") +
-  scale_linetype_manual(values = c("solid", "dashed")) +
-  scale_alpha_manual(values = c(1, 0.5)) +
-  guides(linetype = FALSE, alpha = FALSE)
+# TODO: move to .Rmd
+# ## Plot the coefficients by species (solid lines and bold colors are
+# ## significantly different)
+# spec_coefs %>%
+#   mutate(
+#     Response = factor(
+#       Response,
+#       levels = c("sex_mature", "weight", "ticks_attached", "Bb_infected"),
+#       labels = c("Reproductive", "Weight", "Ticks", "Infection")
+#     ),
+#     Predictor = factor(
+#       Predictor,
+#       levels = c(
+#         "wthr_PC1", "clim_PC1", "sex_male", "sex_mature",
+#         "weight", "ticks_attached"
+#       ),
+#       labels = c("Weather", "Climate", "Sex", "Reproductive", "Weight", "Ticks")
+#     )
+#   ) %>%
+#   ggplot(
+#     aes(
+#       x = Std.Estimate, y = Predictor, fill = species, linetype = CI_overlap,
+#       alpha = P.Value <= 0.1
+#     )
+#   ) +
+#   geom_vline(xintercept = 0, col = "grey50") +
+#   facet_grid(~Response) +
+#   geom_col(position = "dodge", color = "black", width = 0.66) +
+#   theme_bw() +
+#   theme(
+#     legend.position = "inside", legend.position.inside = c(.22, 0.75),
+#     legend.justification = c(0.5, 0.5),
+#     legend.background = element_rect(color = "black", linewidth = 0.2),
+#     panel.spacing.x = unit(0, "lines"),
+#     strip.background = element_blank()
+#   ) +
+#   labs(fill = NULL, x = "Standardized effect") +
+#   scale_linetype_manual(values = c("solid", "dashed")) +
+#   scale_alpha_manual(values = c(0.1, 1)) +
+#   guides(linetype = FALSE, alpha = FALSE)
 
 ## ---- Species cumulative effects ----
 
 ## PELE Graph
 pele_fp <- frameplot_psem(pele_out$coefficients)
 pele_baseplot <- build_psem_plot(pele_fp)
-render_graph(pele_baseplot)
+# render_graph(pele_baseplot)
 
 ## PEMA graph
 pema_fp <- frameplot_psem(pema_out$coefficients)
 pema_baseplot <- build_psem_plot(pema_fp)
-render_graph(pema_baseplot)
+# render_graph(pema_baseplot)
+
+## PELE
+# build the table to fill
+pele_cumtab <- expand_grid(
+  Response = unique(pele_fp$edges$Response),
+  Predictor = unique(pele_fp$edges$Predictor)
+) %>%
+  filter(Response != Predictor) %>%
+  mutate(
+    respID = pele_fp$nodes$id[match(Response, pele_fp$nodes$name)],
+    predID = pele_fp$nodes$id[match(Predictor, pele_fp$nodes$name)]
+  ) %>%
+  left_join(
+    select(pele_fp$edges, Response, Predictor, Std.Estimate, P.Value),
+    by = c("Response", "Predictor")
+  ) %>%
+  rename(direct = Std.Estimate)
+
+# add a list of all the paths from the responses to the predictors
+pele_cumtab <- pele_cumtab %>%
+  rowwise() %>% # setup to loop through each row
+  mutate(
+    all_paths = list(unique(get_paths(pele_baseplot, from = predID, to = respID))),
+  )
+
+# calculate direct and indirect effects
+pele_cumtab <- pele_cumtab %>%
+  mutate(
+    all_coefs = list(lapply(
+      all_paths,
+      function(x){
+        get_coefs_along_path(
+          p = x, edges = pele_fp$edges, nodes = pele_fp$nodes
+        )
+      }
+    )),
+    coef_prods = list(lapply(all_coefs, prod)),
+    is_direct_all = list(lapply(all_coefs, length) == 1),
+    total = sum(unlist(coef_prods), na.rm = TRUE),
+    direct_ind = list(lapply(is_direct_all, which) %>% unlist()),
+    direct_ind = if_else(length(direct_ind[1]) == 0, NA, direct_ind[1]),
+    new_direct = if_else(is.na(direct_ind), 0, all_coefs[[1]][direct_ind])
+  )
+
+# clean up
+pele_cumeffs <- pele_cumtab %>%
+  unnest(new_direct) %>%
+  ungroup() %>%
+  mutate(
+    new_direct = replace_na(new_direct, 0),
+    indirect = total - new_direct
+  ) %>%
+  select(
+    Response, Predictor, P.Value,  direct, new_direct, indirect, total
+  ) %>%
+  mutate(Species = "PELE")
+
+## PEMA
+# build the table to fill
+pema_cumtab <- expand_grid(
+  Response = unique(pema_fp$edges$Response),
+  Predictor = unique(pema_fp$edges$Predictor)
+) %>%
+  filter(Response != Predictor) %>%
+  mutate(
+    respID = pema_fp$nodes$id[match(Response, pema_fp$nodes$name)],
+    predID = pema_fp$nodes$id[match(Predictor, pema_fp$nodes$name)]
+  ) %>%
+  left_join(
+    select(pema_fp$edges, Response, Predictor, Std.Estimate, P.Value),
+    by = c("Response", "Predictor")
+  ) %>%
+  rename(direct = Std.Estimate)
+
+# add a list of all the paths from the responses to the predictors
+pema_cumtab <- pema_cumtab %>%
+  rowwise() %>% # setup to loop through each row
+  mutate(
+    all_paths = list(unique(get_paths(pema_baseplot, from = predID, to = respID))),
+  )
+
+# calculate direct and indirect effects
+pema_cumtab <- pema_cumtab %>%
+  mutate(
+    all_coefs = list(lapply(
+      all_paths,
+      function(x){
+        get_coefs_along_path(
+          p = x, edges = pema_fp$edges, nodes = pema_fp$nodes
+        )
+      }
+    )),
+    coef_prods = list(lapply(all_coefs, prod)),
+    is_direct_all = list(lapply(all_coefs, length) == 1),
+    total = sum(unlist(coef_prods), na.rm = TRUE),
+    direct_ind = list(lapply(is_direct_all, which) %>% unlist()),
+    direct_ind = if_else(length(direct_ind[1]) == 0, NA, direct_ind[1]),
+    new_direct = if_else(is.na(direct_ind), 0, all_coefs[[1]][direct_ind])
+  )
+
+# clean up
+pema_cumeffs <- pema_cumtab %>%
+  unnest(new_direct) %>%
+  ungroup() %>%
+  mutate(
+    new_direct = replace_na(new_direct, 0),
+    indirect = total - new_direct
+  ) %>%
+  select(
+    Response, Predictor, P.Value,  direct, new_direct, indirect, total
+  ) %>%
+  mutate(Species = "PEMA")
+
+## Combine them
+sp_cumeffs <- bind_rows(pele_cumeffs, pema_cumeffs)
+
+# save it
+saveRDS(
+  sp_cumeffs,
+  file = file.path(
+    "infection-modeling/data/model-objects",
+    "species_cumulative-effects-table_simplified-SEM.rds"
+  )
+)
+
+# TODO: move to .Rmd
+# ## visualize
+# sp_cumeffs %>%
+#   filter(Response == "Bb_infected") %>%
+#   ggplot(aes(y = Predictor)) +
+#   geom_vline(xintercept = 0, linetype = "solid", color = "grey50") +
+#   facet_wrap(~Species) +
+#   geom_col(aes(x = total, fill = "total"), col = "black") +
+#   geom_col(
+#     aes(x = direct, fill = "direct"), width = 0.4, col = "black",
+#     position = position_nudge(y = 0.2)
+#     ) +
+#   geom_col(
+#     aes(x = indirect, fill = "indirect"), width = 0.4, col = "black",
+#     position = position_nudge(y = -0.2)
+#   ) +
+#   theme_bw() +
+#   labs(x = "Effect on infection status (standardized)")
