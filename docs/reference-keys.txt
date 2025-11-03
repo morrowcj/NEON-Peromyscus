@@ -39,3 +39,6 @@ tab:selBothMaxSemR2
 fig:altBothMaxSem
 fig:behaviorPCA
 fig:BehaveBothMaxMod
+fig:simpSemGraph
+fig:fullCumuFig
+tab:SemR2N
