@@ -229,9 +229,18 @@ caption = paste(
   "Each component model used to build the SEM included species, site, and year",
   "as random effects to accout for covariation of observations within and",
   "among these groups.",
+  "Table \\@ref(tab:fullSEMcoefTab) shows full model parameters and",
   "Table \\@ref(tab:SemR2N) contains more information about the individual",
   "component models."
 )
+```
+
+```{r fullSEMcoefTab}
+simple_out$coefficients %>% 
+  knitr::kable(
+    digits = 2,
+    caption = "Omnibus SEM statistics."
+  )
 ```
 
 
@@ -385,6 +394,212 @@ cumu_tab %>%
 
 ## Species comparison
 
-* [ ] Try to fit smaller species-specific models (remove behavior?)
 
-* [ ] clean up this document for the website
+
+
+```{r}
+pele_model_objects <- readRDS(
+  "infection-modeling/data/model-objects/PELE-SEM-objects.rds"
+)
+pele_sem <- pele_model_objects$sem_mod$fit
+pema_model_objects <- readRDS(
+  "infection-modeling/data/model-objects/PEMA-SEM-objects.rds"
+)
+pema_sem <- pema_model_objects$sem_mod$fit
+
+spec_coefs <- readRDS(
+  "infection-modeling/data/model-objects/joint-species-coefficients_SEM.rds"
+)
+
+sp_cumeffs <- readRDS(
+  file.path(
+    "infection-modeling/data/model-objects",
+    "species_cumulative-effects-table_simplified-SEM.rds"
+  )
+)
+```
+
+```{r PelePemaSem, out.width="100%", fig.asp = 1, fig.cap=caption, warning=FALSE}
+pele_fp <- frameplot_psem(pele_sem$coefficients)
+pema_fp <- frameplot_psem(pema_sem$coefficients)
+
+format_edge_lab <- function(x, y){
+  x.small = round(x, 2)
+  y.small = round(y, 2)
+  paste0(x.small, " (", y.small, ")")
+}
+
+spec_unif_coefs <- spec_coefs %>%
+  select(Response, Predictor, species, CI_overlap, Std.Estimate, P.Value) %>% 
+  pivot_wider(names_from = species, values_from = c(Std.Estimate, P.Value)) %>% 
+  mutate(
+    opposite_signs = if_else(
+      Std.Estimate_PEMA * Std.Estimate_PELE < 0, TRUE, FALSE
+    ), 
+    label = format_edge_lab(Std.Estimate_PELE, Std.Estimate_PEMA),
+    tooltip = label,
+    style = if_else(P.Value_PELE <= 0.1, "solid", "dashed"),
+    color = case_when(
+      CI_overlap & Std.Estimate_PELE >= 0 ~ "cornflowerblue",
+      CI_overlap & Std.Estimate_PELE < 0 ~ "orange",
+      !CI_overlap & !opposite_signs & Std.Estimate_PELE >= 0 ~ "cornflowerblue",
+      !CI_overlap & !opposite_signs & Std.Estimate_PELE < 0 ~ "orange",
+      !CI_overlap & opposite_signs ~ "purple"
+    ),
+    fontcolor = color,
+  ) %>% ungroup()
+
+pele_fp$edges <- spec_unif_coefs %>% 
+  mutate(
+    Response = factor(
+      Response, levels = var_table$var, labels = var_table$label
+    ),
+    Predictor = factor(
+      Predictor, levels = var_table$var, labels = var_table$label
+    ),
+  )
+
+pele_fp$nodes <- pele_fp$nodes %>% 
+  mutate(
+    name = factor(name, levels = var_table$var, labels = var_table$label)
+  )
+
+
+build_psem_plot(pele_fp) %>% 
+  set_node_attrs("shape", "rectangle") %>% 
+  set_node_attrs("width", 1.1) %>% 
+  set_node_attrs("height", 0.5) %>% 
+  render_graph()
+
+caption = paste(
+  "Path diagram comparing a simplified SEM between *P. leucopus* and",
+  "*P. maniculatus*. Blue vectors indicate positive effects, orange indicate",
+  "negative effects, purple indicate conflicting effect directions between",
+  "the two species, solid lines are statistically significant (for *leucopus*)",
+  "and dotted lines are not.",
+  "Path labels represent standardized effect sizes for both species, with",
+  "*P. maniculatus* in parentheses.",
+  "See Table \\@ref(tab:spCoefTab) for more model differences and",
+  "Figure \\@ref(fig:spCumInf) for the cumulative effects on infection for each",
+  "species."
+)
+```
+
+Because relatively few *P. maniculatus* were observed with a combination of
+genetic, behavioral, and infection information, to compare PELE and PEMA with
+identical models required simplification. Specificially, we removed behavior 
+and immunity expression for the comparative SEM.
+
+With this comparison, we found that the model differed significantly between
+PELE and PEMA (Figure \@ref(fig:PelePemaSem)) and our general assumptions were 
+only met for PELE and not PEMA due to no strong link between parasitism and 
+infection among PEMA.
+
+Specific hypotheses:
+
+1. Mouse phenotype is significantly associated with parasitism via sex among
+PELE but not PEMA and via weight and reproductive maturity among PEMA but not 
+PELE. Phenotype is also linked to infection status via reproductive maturity
+and weight in both species (though, PEMA's weight effects are opposite PELE's)
+and via Sex among PEMA only.
+
+2. NA - behavior not assessed
+
+3. Tick parasitism is directly associated with infection status 
+**only among PELE**
+
+4. NA - immunity not assessed
+
+5. Weather significantly impacted phenotype, parasistism, and infection whereas
+long-term climate only impacted parasitism rates directly, as in the full model.
+
+This means that, while both species exhibit intraspecific variation in
+disease competence, interaction with ticks is less important for PEMA than for
+PELE. This could indicate that PEMA is more resistant to infection than PELE. 
+
+
+```{r spCoefTab}
+spec_coefs %>% 
+  select(-c(upper_low, lower_high, CI_overlap)) %>% 
+  arrange(Response, Predictor, species) %>% 
+  relocate(species, .after = Predictor) %>% 
+  mutate(DF = as.integer(DF)) %>% 
+  knitr::kable(
+    caption = "Species-specific SEM",
+    digits = 2
+  )
+```
+
+
+
+```{r spCumInf, fig.cap=caption}
+# TODO: move to .Rmd
+## visualize
+sp_cumeffs %>%
+  filter(Response == "Bb_infected") %>%
+  ggplot(aes(y = Predictor)) +
+  geom_vline(xintercept = 0, linetype = "solid", color = "grey50") +
+  facet_wrap(~Species) +
+  geom_col(aes(x = total, fill = "total"), col = "black") +
+  geom_col(
+    aes(x = direct, fill = "direct"), width = 0.4, col = "black",
+    position = position_nudge(y = 0.2)
+    ) +
+  geom_col(
+    aes(x = indirect, fill = "indirect"), width = 0.4, col = "black",
+    position = position_nudge(y = -0.2)
+  ) +
+  theme_bw() +
+  labs(x = "Effect on infection status (standardized)")
+
+caption = paste(
+  "Cumulative standardized effects on infection status for *P. leucopus* PELE",
+  "and *P. maniculatus* (PEMA)."
+)
+```
+
+
+
+```{r}
+# TODO: move to .Rmd
+# ## Plot the coefficients by species (solid lines and bold colors are
+# ## significantly different)
+# spec_coefs %>%
+#   mutate(
+#     Response = factor(
+#       Response,
+#       levels = c("sex_mature", "weight", "ticks_attached", "Bb_infected"),
+#       labels = c("Reproductive", "Weight", "Ticks", "Infection")
+#     ),
+#     Predictor = factor(
+#       Predictor,
+#       levels = c(
+#         "wthr_PC1", "clim_PC1", "sex_male", "sex_mature",
+#         "weight", "ticks_attached"
+#       ),
+#       labels = c("Weather", "Climate", "Sex", "Reproductive", "Weight", "Ticks")
+#     )
+#   ) %>%
+#   ggplot(
+#     aes(
+#       x = Std.Estimate, y = Predictor, fill = species, linetype = CI_overlap,
+#       alpha = P.Value <= 0.1
+#     )
+#   ) +
+#   geom_vline(xintercept = 0, col = "grey50") +
+#   facet_grid(~Response) +
+#   geom_col(position = "dodge", color = "black", width = 0.66) +
+#   theme_bw() +
+#   theme(
+#     legend.position = "inside", legend.position.inside = c(.22, 0.75),
+#     legend.justification = c(0.5, 0.5),
+#     legend.background = element_rect(color = "black", linewidth = 0.2),
+#     panel.spacing.x = unit(0, "lines"),
+#     strip.background = element_blank()
+#   ) +
+#   labs(fill = NULL, x = "Standardized effect") +
+#   scale_linetype_manual(values = c("solid", "dashed")) +
+#   scale_alpha_manual(values = c(0.1, 1)) +
+#   guides(linetype = FALSE, alpha = FALSE)
+
+```

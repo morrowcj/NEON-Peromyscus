@@ -336,6 +336,42 @@ pele_sem <- psem(
 )
 pele_out <- summary(pele_sem)
 
+## Save the output
+pele_model_objects <- list(
+  component_mods = list(
+    infection = pele_simple_inf,
+    ticks = pele_simple_tick,
+    weight = pele_simple_weight,
+    maturity = pele_simple_mature
+  ),
+  sem_mod = list(
+    spec = pele_sem,
+    fit = pele_out
+  )
+)
+
+saveRDS(
+  pele_model_objects,
+  "infection-modeling/data/model-objects/PELE-SEM-objects.rds"
+)
+
+pema_model_objects <- list(
+  component_mods = list(
+    infection = pema_simple_inf,
+    ticks = pema_simple_tick,
+    weight = pema_simple_weight,
+    maturity = pema_simple_mature
+  ),
+  sem_mod = list(
+    spec = pema_sem,
+    fit = pema_out
+  )
+)
+
+saveRDS(
+  pema_model_objects,
+  "infection-modeling/data/model-objects/PEMA-SEM-objects.rds"
+)
 ## ---- Sp. model comparison ----
 
 ## likelihood ratio test (flawed due to convergence)
@@ -366,6 +402,11 @@ spec_coefs <- spec_coefs %>% arrange(Response, Predictor, species) %>%
   select(
     -larger, -smaller
   )
+
+saveRDS(
+  spec_coefs,
+  "infection-modeling/data/model-objects/joint-species-coefficients_SEM.rds"
+)
 
 ## Count the coefficients that do and do not differ
 spec_coefs %>% group_by(CI_overlap) %>% tally() %>% mutate(n = n/2)
@@ -479,6 +520,14 @@ pele_cumeffs <- pele_cumtab %>%
   ) %>%
   mutate(Species = "PELE")
 
+saveRDS(
+  pele_cumeffs,
+  file = file.path(
+    "infection-modeling/data/model-objects",
+    "PELE_cumulative-effects-table_SEM.rds"
+  )
+)
+
 ## PEMA
 # build the table to fill
 pema_cumtab <- expand_grid(
@@ -535,6 +584,14 @@ pema_cumeffs <- pema_cumtab %>%
   ) %>%
   mutate(Species = "PEMA")
 
+saveRDS(
+  pema_cumeffs,
+  file = file.path(
+    "infection-modeling/data/model-objects",
+    "PEMA_cumulative-effects-table_SEM.rds"
+  )
+)
+
 ## Combine them
 sp_cumeffs <- bind_rows(pele_cumeffs, pema_cumeffs)
 
@@ -547,21 +604,4 @@ saveRDS(
   )
 )
 
-# TODO: move to .Rmd
-# ## visualize
-# sp_cumeffs %>%
-#   filter(Response == "Bb_infected") %>%
-#   ggplot(aes(y = Predictor)) +
-#   geom_vline(xintercept = 0, linetype = "solid", color = "grey50") +
-#   facet_wrap(~Species) +
-#   geom_col(aes(x = total, fill = "total"), col = "black") +
-#   geom_col(
-#     aes(x = direct, fill = "direct"), width = 0.4, col = "black",
-#     position = position_nudge(y = 0.2)
-#     ) +
-#   geom_col(
-#     aes(x = indirect, fill = "indirect"), width = 0.4, col = "black",
-#     position = position_nudge(y = -0.2)
-#   ) +
-#   theme_bw() +
-#   labs(x = "Effect on infection status (standardized)")
+

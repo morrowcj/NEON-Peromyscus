@@ -40,5 +40,9 @@ fig:altBothMaxSem
 fig:behaviorPCA
 fig:BehaveBothMaxMod
 fig:simpSemGraph
+tab:fullSEMcoefTab
 fig:fullCumuFig
 tab:SemR2N
+fig:PelePemaSem
+tab:spCoefTab
+fig:spCumInf
