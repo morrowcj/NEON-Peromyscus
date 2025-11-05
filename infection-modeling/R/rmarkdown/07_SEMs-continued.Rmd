@@ -392,6 +392,45 @@ cumu_tab %>%
   guides(linetype = "none")
 ```
 
+### Cumulative path diagram
+
+In attempts to reduce the noise of the PATH diagram depicting our full 
+SEM (Figure \@ref(fig:simpSemGraph)), I will attempt to reconstruct the path
+diagram using cumulative effects. Since this will eliminate the indirect
+pathways, it should reduce the visual clutter.
+
+```{r fig.asp = 1}
+new_cumu_tab <- cumu_tab %>% 
+  filter(Predictor %in% c("cap_prop_night", "capprop_shift")) %>% 
+  group_by(Response) %>% 
+  summarize(
+    Predictor = "activity_timing", P.Value = NA, across(direct:total, ~sum(.x))
+  ) %>% 
+  bind_rows(cumu_tab) %>% 
+  arrange(Response, Predictor)
+
+## check how the activity timing bar compares to others (OK)
+new_cumu_tab %>% 
+  filter(!total == 0) %>% 
+  ggplot(aes(x = total, y = Predictor, fill = Response)) + 
+  geom_vline(xintercept = 0, col = "black", linetype = "dotted") + 
+  facet_wrap(~Response, scales = "free_x") + 
+  geom_col(position = "dodge", show.legend = FALSE, col = "black", width = 1) + 
+  theme_bw() + 
+  theme(
+    panel.spacing = unit(0, "lines"),
+    strip.background = element_blank()
+  )
+
+new_cumu_tab %>% 
+  
+
+# new_cumu_tab %>% 
+#   mutate(Std.Estimate = total) %>% 
+#   relocate(c(Response, Predictor, Std.Estimate, P.Value), .before = 0) 
+```
+
+
 ## Species comparison
 
 
@@ -420,8 +459,8 @@ sp_cumeffs <- readRDS(
 ```
 
 ```{r PelePemaSem, out.width="100%", fig.asp = 1, fig.cap=caption, warning=FALSE}
-pele_fp <- frameplot_psem(pele_sem$coefficients)
-pema_fp <- frameplot_psem(pema_sem$coefficients)
+pele_fp <- build_nodes_edges(pele_sem$coefficients)
+pema_fp <- build_nodes_edges(pema_sem$coefficients)
 
 format_edge_lab <- function(x, y){
   x.small = round(x, 2)

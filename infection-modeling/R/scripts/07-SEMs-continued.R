@@ -161,7 +161,7 @@ simple_out$dTable %>% filter(P.Value <= 0.5)
 
 source("infection-modeling/R/functions/diagram_psem.R")
 
-frame_list <- frameplot_psem(simple_out$coefficients)
+frame_list <- build_nodes_edges(simple_out$coefficients)
 base_plot <- build_psem_plot(frame_list)
 
 # build the table to fill
@@ -411,56 +411,16 @@ saveRDS(
 ## Count the coefficients that do and do not differ
 spec_coefs %>% group_by(CI_overlap) %>% tally() %>% mutate(n = n/2)
 
-# TODO: move to .Rmd
-# ## Plot the coefficients by species (solid lines and bold colors are
-# ## significantly different)
-# spec_coefs %>%
-#   mutate(
-#     Response = factor(
-#       Response,
-#       levels = c("sex_mature", "weight", "ticks_attached", "Bb_infected"),
-#       labels = c("Reproductive", "Weight", "Ticks", "Infection")
-#     ),
-#     Predictor = factor(
-#       Predictor,
-#       levels = c(
-#         "wthr_PC1", "clim_PC1", "sex_male", "sex_mature",
-#         "weight", "ticks_attached"
-#       ),
-#       labels = c("Weather", "Climate", "Sex", "Reproductive", "Weight", "Ticks")
-#     )
-#   ) %>%
-#   ggplot(
-#     aes(
-#       x = Std.Estimate, y = Predictor, fill = species, linetype = CI_overlap,
-#       alpha = P.Value <= 0.1
-#     )
-#   ) +
-#   geom_vline(xintercept = 0, col = "grey50") +
-#   facet_grid(~Response) +
-#   geom_col(position = "dodge", color = "black", width = 0.66) +
-#   theme_bw() +
-#   theme(
-#     legend.position = "inside", legend.position.inside = c(.22, 0.75),
-#     legend.justification = c(0.5, 0.5),
-#     legend.background = element_rect(color = "black", linewidth = 0.2),
-#     panel.spacing.x = unit(0, "lines"),
-#     strip.background = element_blank()
-#   ) +
-#   labs(fill = NULL, x = "Standardized effect") +
-#   scale_linetype_manual(values = c("solid", "dashed")) +
-#   scale_alpha_manual(values = c(0.1, 1)) +
-#   guides(linetype = FALSE, alpha = FALSE)
 
 ## ---- Species cumulative effects ----
 
 ## PELE Graph
-pele_fp <- frameplot_psem(pele_out$coefficients)
+pele_fp <- build_nodes_edges(pele_out$coefficients)
 pele_baseplot <- build_psem_plot(pele_fp)
 # render_graph(pele_baseplot)
 
 ## PEMA graph
-pema_fp <- frameplot_psem(pema_out$coefficients)
+pema_fp <- build_nodes_edges(pema_out$coefficients)
 pema_baseplot <- build_psem_plot(pema_fp)
 # render_graph(pema_baseplot)
 
