@@ -399,7 +399,7 @@ SEM (Figure \@ref(fig:simpSemGraph)), I will attempt to reconstruct the path
 diagram using cumulative effects. Since this will eliminate the indirect
 pathways, it should reduce the visual clutter.
 
-```{r fig.asp = 1}
+```{r fig.asp = 1, include = FALSE}
 new_cumu_tab <- cumu_tab %>% 
   filter(Predictor %in% c("cap_prop_night", "capprop_shift")) %>% 
   group_by(Response) %>% 
@@ -422,7 +422,9 @@ new_cumu_tab %>%
     strip.background = element_blank()
   )
 
-new_cumu_tab %>% 
+## Let's first see what it looks like without this new var
+new_cumu_tab %>%
+  filter(Predictor != "activity_timing")
   
 
 # new_cumu_tab %>% 
@@ -459,6 +461,8 @@ sp_cumeffs <- readRDS(
 ```
 
 ```{r PelePemaSem, out.width="100%", fig.asp = 1, fig.cap=caption, warning=FALSE}
+source("infection-modeling/R/functions/diagram_psem.R")
+
 pele_fp <- build_nodes_edges(pele_sem$coefficients)
 pema_fp <- build_nodes_edges(pema_sem$coefficients)
 
@@ -490,10 +494,10 @@ spec_unif_coefs <- spec_coefs %>%
 
 pele_fp$edges <- spec_unif_coefs %>% 
   mutate(
-    Response = factor(
+    To = factor(
       Response, levels = var_table$var, labels = var_table$label
     ),
-    Predictor = factor(
+    From = factor(
       Predictor, levels = var_table$var, labels = var_table$label
     ),
   )
