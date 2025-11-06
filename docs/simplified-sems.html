@@ -132,7 +132,7 @@
 <li class="chapter" data-level="" data-path="simplified-sems.html"><a href="simplified-sems.html#species-identification"><i class="fa fa-check"></i>Species identification</a></li>
 <li class="chapter" data-level="" data-path="simplified-sems.html"><a href="simplified-sems.html#full-sem"><i class="fa fa-check"></i>Full SEM</a>
 <ul>
-<li class="chapter" data-level="" data-path="simplified-sems.html"><a href="simplified-sems.html#cumulative-path-diagram"><i class="fa fa-check"></i>Cumulative path diagram</a></li>
+<li class="chapter" data-level="" data-path="simplified-sems.html"><a href="simplified-sems.html#conceptual-model-path-diagram"><i class="fa fa-check"></i>Conceptual model path diagram</a></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="simplified-sems.html"><a href="simplified-sems.html#species-comparison"><i class="fa fa-check"></i>Species comparison</a></li>
 </ul></li>
@@ -236,36 +236,32 @@ significant impacts on parasitism rates, likely through its influence on tick
 populations.</p></li>
 </ol>
 <div class="figure"><span style="display:block;" id="fig:simpSemGraph"></span>
-<div class="grViz html-widget html-fill-item" id="htmlwidget-9f6421edbe1c29ab31b9" style="width:100%;height:672px;"></div>
-<script type="application/json" data-for="htmlwidget-9f6421edbe1c29ab31b9">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"Tolerance\nexpression\", group = \"expression\", shape = \"rectangle\", fillcolor = \"#FFF2AE\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"2\" [label = \"Infection\nstatus\", group = \"infection\", shape = \"rectangle\", fillcolor = \"#F1E2CC\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"3\" [label = \"Resistance\nexpression\", group = \"expression\", shape = \"rectangle\", fillcolor = \"#FFF2AE\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"4\" [label = \"Parasitism\n rate (ticks)\", group = \"parasitism\", shape = \"rectangle\", fillcolor = \"#E6F5C9\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"5\" [label = \"Capture\ntime shift\", group = \"behavior\", shape = \"rectangle\", fillcolor = \"#F4CAE4\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"6\" [label = \"Capture\ntime\", group = \"behavior\", shape = \"rectangle\", fillcolor = \"#F4CAE4\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"7\" [label = \"Weight\", group = \"trait\", shape = \"rectangle\", fillcolor = \"#CBD5E8\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"8\" [label = \"Reproductive\nmaturity\", group = \"trait\", shape = \"rectangle\", fillcolor = \"#CBD5E8\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"9\" [label = \"Sex\", group = \"trait\", shape = \"rectangle\", fillcolor = \"#CBD5E8\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"10\" [label = \"Weather\nPC\", group = \"environment\", shape = \"rectangle\", fillcolor = \"#B3E2CD\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"11\" [label = \"Climate\nPC\", group = \"environment\", shape = \"rectangle\", fillcolor = \"#B3E2CD\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n\"8\"->\"1\" [color = \"cornflowerblue\", penwidth = \"2.56167483968314\", style = \"solid\", tooltip = \"0.1\"] \n\"2\"->\"1\" [color = \"cornflowerblue\", penwidth = \"2.71256129762354\", style = \"solid\", tooltip = \"0.11\"] \n\"4\"->\"1\" [color = \"cornflowerblue\", penwidth = \"1.66993587325538\", style = \"dashed\", tooltip = \"0.04\"] \n\"9\"->\"2\" [color = \"cornflowerblue\", penwidth = \"1.78913617502829\", style = \"dashed\", tooltip = \"0.05\"] \n\"8\"->\"2\" [color = \"cornflowerblue\", penwidth = \"3.89249339871747\", style = \"solid\", tooltip = \"0.19\"] \n\"7\"->\"2\" [color = \"cornflowerblue\", penwidth = \"3.61938890984534\", style = \"solid\", tooltip = \"0.17\"] \n\"4\"->\"2\" [color = \"cornflowerblue\", penwidth = \"3.55752546208978\", style = \"solid\", tooltip = \"0.17\"] \n\"5\"->\"2\" [color = \"cornflowerblue\", penwidth = \"4.61825726141079\", style = \"dashed\", tooltip = \"0.24\"] \n\"3\"->\"2\" [color = \"cornflowerblue\", penwidth = \"1\", style = \"dashed\", tooltip = \"0\"] \n\"10\"->\"2\" [color = \"cornflowerblue\", penwidth = \"3.60580912863071\", style = \"solid\", tooltip = \"0.17\"] \n\"9\"->\"3\" [color = \"cornflowerblue\", penwidth = \"2.23274236137307\", style = \"solid\", tooltip = \"0.08\"] \n\"8\"->\"3\" [color = \"orange\", penwidth = \"1.45718596755941\", style = \"dashed\", tooltip = \"-0.03\"] \n\"7\"->\"3\" [color = \"cornflowerblue\", penwidth = \"4.02678234628442\", style = \"solid\", tooltip = \"0.2\"] \n\"4\"->\"3\" [color = \"orange\", penwidth = \"2.22821576763485\", style = \"solid\", tooltip = \"-0.08\"] \n\"10\"->\"3\" [color = \"cornflowerblue\", penwidth = \"2.80611090154659\", style = \"solid\", tooltip = \"0.12\"] \n\"9\"->\"4\" [color = \"cornflowerblue\", penwidth = \"2.54960392304791\", style = \"solid\", tooltip = \"0.1\"] \n\"8\"->\"4\" [color = \"cornflowerblue\", penwidth = \"1.51301395699736\", style = \"dashed\", tooltip = \"0.03\"] \n\"7\"->\"4\" [color = \"orange\", penwidth = \"1.19917012448133\", style = \"dashed\", tooltip = \"-0.01\"] \n\"5\"->\"4\" [color = \"orange\", penwidth = \"1.60807242549981\", style = \"solid\", tooltip = \"-0.04\"] \n\"10\"->\"4\" [color = \"cornflowerblue\", penwidth = \"3.54243681629574\", style = \"solid\", tooltip = \"0.17\"] \n\"11\"->\"4\" [color = \"orange\", penwidth = \"4.68917389664278\", style = \"solid\", tooltip = \"-0.24\"] \n\"9\"->\"5\" [color = \"orange\", penwidth = \"1.10260279139947\", style = \"dashed\", tooltip = \"-0.01\"] \n\"8\"->\"5\" [color = \"orange\", penwidth = \"1.34552998868352\", style = \"dashed\", tooltip = \"-0.02\"] \n\"7\"->\"5\" [color = \"cornflowerblue\", penwidth = \"1.07242549981139\", style = \"dashed\", tooltip = \"0\"] \n\"6\"->\"5\" [color = \"cornflowerblue\", penwidth = \"9\", style = \"solid\", tooltip = \"0.53\"] \n\"9\"->\"6\" [color = \"cornflowerblue\", penwidth = \"2.17842323651452\", style = \"solid\", tooltip = \"0.08\"] \n\"8\"->\"6\" [color = \"orange\", penwidth = \"1.50848736325915\", style = \"dashed\", tooltip = \"-0.03\"] \n\"7\"->\"6\" [color = \"cornflowerblue\", penwidth = \"3.1516408902301\", style = \"solid\", tooltip = \"0.14\"] \n\"10\"->\"6\" [color = \"orange\", penwidth = \"1.66540927951716\", style = \"solid\", tooltip = \"-0.04\"] \n\"9\"->\"7\" [color = \"orange\", penwidth = \"1.4134288947567\", style = \"solid\", tooltip = \"-0.03\"] \n\"8\"->\"7\" [color = \"cornflowerblue\", penwidth = \"7.78083741984157\", style = \"solid\", tooltip = \"0.45\"] \n\"10\"->\"7\" [color = \"orange\", penwidth = \"2.19200301772916\", style = \"solid\", tooltip = \"-0.08\"] \n\"9\"->\"8\" [color = \"cornflowerblue\", penwidth = \"1.80271595624293\", style = \"solid\", tooltip = \"0.05\"] \n\"10\"->\"8\" [color = \"cornflowerblue\", penwidth = \"1.89626556016598\", style = \"solid\", tooltip = \"0.06\"] \n\"11\"->\"8\" [color = \"orange\", penwidth = \"1.903809883063\", style = \"dashed\", tooltip = \"-0.06\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-61b506eb15aec3a96176" style="width:100%;height:672px;"></div>
+<script type="application/json" data-for="htmlwidget-61b506eb15aec3a96176">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"Tolerance\nexpression\", group = \"expression\", shape = \"rectangle\", fillcolor = \"#FFF2AE\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"2\" [label = \"Infection\nstatus\", group = \"infection\", shape = \"rectangle\", fillcolor = \"#F1E2CC\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"3\" [label = \"Resistance\nexpression\", group = \"expression\", shape = \"rectangle\", fillcolor = \"#FFF2AE\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"4\" [label = \"Parasitism\n rate (ticks)\", group = \"parasitism\", shape = \"rectangle\", fillcolor = \"#E6F5C9\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"5\" [label = \"Capture\ntime shift\", group = \"behavior\", shape = \"rectangle\", fillcolor = \"#F4CAE4\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"6\" [label = \"Capture\ntime\", group = \"behavior\", shape = \"rectangle\", fillcolor = \"#F4CAE4\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"7\" [label = \"Weight\", group = \"trait\", shape = \"rectangle\", fillcolor = \"#CBD5E8\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"8\" [label = \"Reproductive\nmaturity\", group = \"trait\", shape = \"rectangle\", fillcolor = \"#CBD5E8\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"9\" [label = \"Sex\", group = \"trait\", shape = \"rectangle\", fillcolor = \"#CBD5E8\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"10\" [label = \"Weather\nPC\", group = \"environment\", shape = \"rectangle\", fillcolor = \"#B3E2CD\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n  \"11\" [label = \"Climate\nPC\", group = \"environment\", shape = \"rectangle\", fillcolor = \"#B3E2CD\", width = \"1.4\", height = \"0.7\", fontsize = \"16\", fontcolor = \"black\", color = \"black\"] \n\"8\"->\"1\" [color = \"cornflowerblue\", penwidth = \"2.56167483968314\", style = \"solid\", tooltip = \"0.1\"] \n\"2\"->\"1\" [color = \"cornflowerblue\", penwidth = \"2.71256129762354\", style = \"solid\", tooltip = \"0.11\"] \n\"4\"->\"1\" [color = \"cornflowerblue\", penwidth = \"1.66993587325538\", style = \"dashed\", tooltip = \"0.04\"] \n\"9\"->\"2\" [color = \"cornflowerblue\", penwidth = \"1.78913617502829\", style = \"dashed\", tooltip = \"0.05\"] \n\"8\"->\"2\" [color = \"cornflowerblue\", penwidth = \"3.89249339871747\", style = \"solid\", tooltip = \"0.19\"] \n\"7\"->\"2\" [color = \"cornflowerblue\", penwidth = \"3.61938890984534\", style = \"solid\", tooltip = \"0.17\"] \n\"4\"->\"2\" [color = \"cornflowerblue\", penwidth = \"3.55752546208978\", style = \"solid\", tooltip = \"0.17\"] \n\"5\"->\"2\" [color = \"cornflowerblue\", penwidth = \"4.61825726141079\", style = \"dashed\", tooltip = \"0.24\"] \n\"3\"->\"2\" [color = \"cornflowerblue\", penwidth = \"1\", style = \"dashed\", tooltip = \"0\"] \n\"10\"->\"2\" [color = \"cornflowerblue\", penwidth = \"3.60580912863071\", style = \"solid\", tooltip = \"0.17\"] \n\"9\"->\"3\" [color = \"cornflowerblue\", penwidth = \"2.23274236137307\", style = \"solid\", tooltip = \"0.08\"] \n\"8\"->\"3\" [color = \"orange\", penwidth = \"1.45718596755941\", style = \"dashed\", tooltip = \"-0.03\"] \n\"7\"->\"3\" [color = \"cornflowerblue\", penwidth = \"4.02678234628442\", style = \"solid\", tooltip = \"0.2\"] \n\"4\"->\"3\" [color = \"orange\", penwidth = \"2.22821576763485\", style = \"solid\", tooltip = \"-0.08\"] \n\"10\"->\"3\" [color = \"cornflowerblue\", penwidth = \"2.80611090154659\", style = \"solid\", tooltip = \"0.12\"] \n\"9\"->\"4\" [color = \"cornflowerblue\", penwidth = \"2.54960392304791\", style = \"solid\", tooltip = \"0.1\"] \n\"8\"->\"4\" [color = \"cornflowerblue\", penwidth = \"1.51301395699736\", style = \"dashed\", tooltip = \"0.03\"] \n\"7\"->\"4\" [color = \"orange\", penwidth = \"1.19917012448133\", style = \"dashed\", tooltip = \"-0.01\"] \n\"5\"->\"4\" [color = \"orange\", penwidth = \"1.60807242549981\", style = \"solid\", tooltip = \"-0.04\"] \n\"10\"->\"4\" [color = \"cornflowerblue\", penwidth = \"3.54243681629574\", style = \"solid\", tooltip = \"0.17\"] \n\"11\"->\"4\" [color = \"orange\", penwidth = \"4.68917389664278\", style = \"solid\", tooltip = \"-0.24\"] \n\"9\"->\"5\" [color = \"orange\", penwidth = \"1.10260279139947\", style = \"dashed\", tooltip = \"-0.01\"] \n\"8\"->\"5\" [color = \"orange\", penwidth = \"1.34552998868352\", style = \"dashed\", tooltip = \"-0.02\"] \n\"7\"->\"5\" [color = \"cornflowerblue\", penwidth = \"1.07242549981139\", style = \"dashed\", tooltip = \"0\"] \n\"6\"->\"5\" [color = \"cornflowerblue\", penwidth = \"9\", style = \"solid\", tooltip = \"0.53\"] \n\"9\"->\"6\" [color = \"cornflowerblue\", penwidth = \"2.17842323651452\", style = \"solid\", tooltip = \"0.08\"] \n\"8\"->\"6\" [color = \"orange\", penwidth = \"1.50848736325915\", style = \"dashed\", tooltip = \"-0.03\"] \n\"7\"->\"6\" [color = \"cornflowerblue\", penwidth = \"3.1516408902301\", style = \"solid\", tooltip = \"0.14\"] \n\"10\"->\"6\" [color = \"orange\", penwidth = \"1.66540927951716\", style = \"solid\", tooltip = \"-0.04\"] \n\"9\"->\"7\" [color = \"orange\", penwidth = \"1.4134288947567\", style = \"solid\", tooltip = \"-0.03\"] \n\"8\"->\"7\" [color = \"cornflowerblue\", penwidth = \"7.78083741984157\", style = \"solid\", tooltip = \"0.45\"] \n\"10\"->\"7\" [color = \"orange\", penwidth = \"2.19200301772916\", style = \"solid\", tooltip = \"-0.08\"] \n\"9\"->\"8\" [color = \"cornflowerblue\", penwidth = \"1.80271595624293\", style = \"solid\", tooltip = \"0.05\"] \n\"10\"->\"8\" [color = \"cornflowerblue\", penwidth = \"1.89626556016598\", style = \"solid\", tooltip = \"0.06\"] \n\"11\"->\"8\" [color = \"orange\", penwidth = \"1.903809883063\", style = \"dashed\", tooltip = \"-0.06\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 <p class="caption">
 Figure 27: PATH diagram for the full SEM of <em>Peromyscus</em>-<em>Borrelia</em> dynamics. Orange vectors represent negative effects, blue vectors represent positive effects, solid lines are statistically significant (P ≤ 0.1), and dashed lines are not. Line widths are proportional to the magnitude of the standardized coefficient estimates. Boxes are colored according to variable groupings (blue: phenotype; turquoise: envrionment; pink: behavior; green: parasitism; yellow: gene expression; brown: infection. Each component model used to build the SEM included species, site, and year as random effects to accout for covariation of observations within and among these groups. Table <a href="simplified-sems.html#tab:fullSEMcoefTab">16</a> shows full model parameters and Table <a href="simplified-sems.html#tab:SemR2N">17</a> contains more information about the individual component models.
 </p>
 </div>
 <table>
-<caption><span id="tab:fullSEMcoefTab">Table 16: </span>Omnibus SEM statistics.</caption>
+<caption><span id="tab:fullSEMcoefTab">Table 16: </span>Omnibus SEM statistics. This table needs to be cleaned up for publication, including renaming columns, adding group labels to predictors and responses [e.g., immune expression (tolerance), phenotype (sex), phenotype (reproductive), etc.]</caption>
 <colgroup>
-<col width="15%" />
-<col width="15%" />
-<col width="9%" />
-<col width="10%" />
-<col width="9%" />
-<col width="11%" />
+<col width="21%" />
+<col width="21%" />
+<col width="17%" />
+<col width="7%" />
 <col width="8%" />
-<col width="13%" />
-<col width="4%" />
+<col width="7%" />
+<col width="17%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th align="left">Response</th>
 <th align="left">Predictor</th>
-<th align="right">Estimate</th>
-<th align="right">Std.Error</th>
+<th align="right">Coefficient</th>
+<th align="right">SE</th>
 <th align="right">DF</th>
-<th align="right">Crit.Value</th>
-<th align="right">P.Value</th>
-<th align="right">Std.Estimate</th>
-<th align="left">sig</th>
+<th align="right">P</th>
+<th align="right">Effect size</th>
 </tr>
 </thead>
 <tbody>
@@ -274,385 +270,315 @@ Figure 27: PATH diagram for the full SEM of <em>Peromyscus</em>-<em>Borrelia</em
 <td align="left">sex_mature</td>
 <td align="right">0.06</td>
 <td align="right">0.04</td>
-<td align="right">253.07</td>
-<td align="right">1.81</td>
+<td align="right">253</td>
 <td align="right">0.07</td>
 <td align="right">0.10</td>
-<td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left">expr_PC2</td>
 <td align="left">Bb_infected</td>
 <td align="right">0.07</td>
 <td align="right">0.04</td>
-<td align="right">248.78</td>
-<td align="right">1.65</td>
+<td align="right">249</td>
 <td align="right">0.10</td>
 <td align="right">0.11</td>
-<td align="left"></td>
 </tr>
 <tr class="odd">
 <td align="left">expr_PC2</td>
 <td align="left">ticks_attached</td>
 <td align="right">0.03</td>
 <td align="right">0.04</td>
-<td align="right">255.64</td>
-<td align="right">0.79</td>
+<td align="right">256</td>
 <td align="right">0.43</td>
 <td align="right">0.04</td>
-<td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left">Bb_infected</td>
 <td align="left">sex_male</td>
 <td align="right">0.25</td>
 <td align="right">0.36</td>
-<td align="right">234.00</td>
-<td align="right">0.71</td>
+<td align="right">234</td>
 <td align="right">0.48</td>
 <td align="right">0.05</td>
-<td align="left"></td>
 </tr>
 <tr class="odd">
 <td align="left">Bb_infected</td>
 <td align="left">sex_mature</td>
 <td align="right">0.93</td>
 <td align="right">0.41</td>
-<td align="right">234.00</td>
-<td align="right">2.29</td>
+<td align="right">234</td>
 <td align="right">0.02</td>
 <td align="right">0.19</td>
-<td align="left">*</td>
 </tr>
 <tr class="even">
 <td align="left">Bb_infected</td>
 <td align="left">weight</td>
 <td align="right">0.42</td>
 <td align="right">0.24</td>
-<td align="right">234.00</td>
-<td align="right">1.73</td>
+<td align="right">234</td>
 <td align="right">0.08</td>
 <td align="right">0.17</td>
-<td align="left"></td>
 </tr>
 <tr class="odd">
 <td align="left">Bb_infected</td>
 <td align="left">ticks_attached</td>
 <td align="right">0.85</td>
 <td align="right">0.37</td>
-<td align="right">234.00</td>
-<td align="right">2.30</td>
+<td align="right">234</td>
 <td align="right">0.02</td>
 <td align="right">0.17</td>
-<td align="left">*</td>
 </tr>
 <tr class="even">
 <td align="left">Bb_infected</td>
 <td align="left">capprop_shift</td>
 <td align="right">2.24</td>
 <td align="right">1.79</td>
-<td align="right">234.00</td>
-<td align="right">1.25</td>
+<td align="right">234</td>
 <td align="right">0.21</td>
 <td align="right">0.24</td>
-<td align="left"></td>
 </tr>
 <tr class="odd">
 <td align="left">Bb_infected</td>
 <td align="left">expr_PC1</td>
 <td align="right">0.00</td>
 <td align="right">0.60</td>
-<td align="right">234.00</td>
-<td align="right">0.00</td>
+<td align="right">234</td>
 <td align="right">1.00</td>
 <td align="right">0.00</td>
-<td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left">Bb_infected</td>
 <td align="left">wthr_PC1</td>
 <td align="right">1.89</td>
 <td align="right">0.88</td>
-<td align="right">234.00</td>
-<td align="right">2.15</td>
+<td align="right">234</td>
 <td align="right">0.03</td>
 <td align="right">0.17</td>
-<td align="left">*</td>
 </tr>
 <tr class="odd">
 <td align="left">expr_PC1</td>
 <td align="left">sex_male</td>
 <td align="right">0.05</td>
 <td align="right">0.03</td>
-<td align="right">430.68</td>
-<td align="right">1.84</td>
+<td align="right">431</td>
 <td align="right">0.07</td>
 <td align="right">0.08</td>
-<td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left">expr_PC1</td>
 <td align="left">sex_mature</td>
 <td align="right">-0.02</td>
 <td align="right">0.03</td>
-<td align="right">431.22</td>
-<td align="right">-0.59</td>
+<td align="right">431</td>
 <td align="right">0.55</td>
 <td align="right">-0.03</td>
-<td align="left"></td>
 </tr>
 <tr class="odd">
 <td align="left">expr_PC1</td>
 <td align="left">weight</td>
 <td align="right">0.06</td>
 <td align="right">0.02</td>
-<td align="right">421.92</td>
-<td align="right">3.65</td>
+<td align="right">422</td>
 <td align="right">0.00</td>
 <td align="right">0.20</td>
-<td align="left">***</td>
 </tr>
 <tr class="even">
 <td align="left">expr_PC1</td>
 <td align="left">ticks_attached</td>
 <td align="right">-0.05</td>
 <td align="right">0.03</td>
-<td align="right">436.22</td>
-<td align="right">-1.73</td>
+<td align="right">436</td>
 <td align="right">0.08</td>
 <td align="right">-0.08</td>
-<td align="left"></td>
 </tr>
 <tr class="odd">
 <td align="left">expr_PC1</td>
 <td align="left">wthr_PC1</td>
 <td align="right">0.17</td>
 <td align="right">0.07</td>
-<td align="right">436.45</td>
-<td align="right">2.55</td>
+<td align="right">436</td>
 <td align="right">0.01</td>
 <td align="right">0.12</td>
-<td align="left">*</td>
 </tr>
 <tr class="even">
 <td align="left">ticks_attached</td>
 <td align="left">sex_male</td>
 <td align="right">0.46</td>
 <td align="right">0.10</td>
-<td align="right">2140.00</td>
-<td align="right">4.46</td>
+<td align="right">2140</td>
 <td align="right">0.00</td>
 <td align="right">0.10</td>
-<td align="left">***</td>
 </tr>
 <tr class="odd">
 <td align="left">ticks_attached</td>
 <td align="left">sex_mature</td>
 <td align="right">0.15</td>
 <td align="right">0.12</td>
-<td align="right">2140.00</td>
-<td align="right">1.30</td>
+<td align="right">2140</td>
 <td align="right">0.19</td>
 <td align="right">0.03</td>
-<td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left">ticks_attached</td>
 <td align="left">weight</td>
 <td align="right">-0.03</td>
 <td align="right">0.07</td>
-<td align="right">2140.00</td>
-<td align="right">-0.44</td>
+<td align="right">2140</td>
 <td align="right">0.66</td>
 <td align="right">-0.01</td>
-<td align="left"></td>
 </tr>
 <tr class="odd">
 <td align="left">ticks_attached</td>
 <td align="left">capprop_shift</td>
 <td align="right">-0.34</td>
 <td align="right">0.20</td>
-<td align="right">2140.00</td>
-<td align="right">-1.76</td>
+<td align="right">2140</td>
 <td align="right">0.08</td>
 <td align="right">-0.04</td>
-<td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left">ticks_attached</td>
 <td align="left">wthr_PC1</td>
 <td align="right">1.68</td>
 <td align="right">0.24</td>
-<td align="right">2140.00</td>
-<td align="right">7.07</td>
+<td align="right">2140</td>
 <td align="right">0.00</td>
 <td align="right">0.17</td>
-<td align="left">***</td>
 </tr>
 <tr class="odd">
 <td align="left">ticks_attached</td>
 <td align="left">clim_PC1</td>
 <td align="right">-0.60</td>
 <td align="right">0.31</td>
-<td align="right">2140.00</td>
-<td align="right">-1.91</td>
+<td align="right">2140</td>
 <td align="right">0.06</td>
 <td align="right">-0.24</td>
-<td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left">capprop_shift</td>
 <td align="left">sex_male</td>
 <td align="right">0.00</td>
 <td align="right">0.01</td>
-<td align="right">2758.45</td>
-<td align="right">-0.42</td>
+<td align="right">2758</td>
 <td align="right">0.68</td>
 <td align="right">-0.01</td>
-<td align="left"></td>
 </tr>
 <tr class="odd">
 <td align="left">capprop_shift</td>
 <td align="left">sex_mature</td>
 <td align="right">-0.01</td>
 <td align="right">0.01</td>
-<td align="right">2762.75</td>
-<td align="right">-1.19</td>
+<td align="right">2763</td>
 <td align="right">0.23</td>
 <td align="right">-0.02</td>
-<td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left">capprop_shift</td>
 <td align="left">weight</td>
 <td align="right">0.00</td>
 <td align="right">0.01</td>
-<td align="right">2739.96</td>
-<td align="right">0.24</td>
+<td align="right">2740</td>
 <td align="right">0.81</td>
 <td align="right">0.00</td>
-<td align="left"></td>
 </tr>
 <tr class="odd">
 <td align="left">capprop_shift</td>
 <td align="left">cap_prop_night</td>
 <td align="right">0.14</td>
 <td align="right">0.00</td>
-<td align="right">2753.04</td>
-<td align="right">32.33</td>
+<td align="right">2753</td>
 <td align="right">0.00</td>
 <td align="right">0.53</td>
-<td align="left">***</td>
 </tr>
 <tr class="even">
 <td align="left">cap_prop_night</td>
 <td align="left">sex_male</td>
 <td align="right">0.16</td>
 <td align="right">0.04</td>
-<td align="right">2979.88</td>
-<td align="right">4.31</td>
+<td align="right">2980</td>
 <td align="right">0.00</td>
 <td align="right">0.08</td>
-<td align="left">***</td>
 </tr>
 <tr class="odd">
 <td align="left">cap_prop_night</td>
 <td align="left">sex_mature</td>
 <td align="right">-0.07</td>
 <td align="right">0.04</td>
-<td align="right">2984.46</td>
-<td align="right">-1.59</td>
+<td align="right">2984</td>
 <td align="right">0.11</td>
 <td align="right">-0.03</td>
-<td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left">cap_prop_night</td>
 <td align="left">weight</td>
 <td align="right">0.14</td>
 <td align="right">0.02</td>
-<td align="right">2981.45</td>
-<td align="right">6.42</td>
+<td align="right">2981</td>
 <td align="right">0.00</td>
 <td align="right">0.14</td>
-<td align="left">***</td>
 </tr>
 <tr class="odd">
 <td align="left">cap_prop_night</td>
 <td align="left">wthr_PC1</td>
 <td align="right">-0.20</td>
 <td align="right">0.09</td>
-<td align="right">2948.28</td>
-<td align="right">-2.31</td>
+<td align="right">2948</td>
 <td align="right">0.02</td>
 <td align="right">-0.04</td>
-<td align="left">*</td>
 </tr>
 <tr class="even">
 <td align="left">weight</td>
 <td align="left">sex_male</td>
 <td align="right">-0.06</td>
 <td align="right">0.01</td>
-<td align="right">19175.45</td>
-<td align="right">-4.50</td>
+<td align="right">19175</td>
 <td align="right">0.00</td>
 <td align="right">-0.03</td>
-<td align="left">***</td>
 </tr>
 <tr class="odd">
 <td align="left">weight</td>
 <td align="left">sex_mature</td>
 <td align="right">0.91</td>
 <td align="right">0.01</td>
-<td align="right">19182.48</td>
-<td align="right">70.96</td>
+<td align="right">19182</td>
 <td align="right">0.00</td>
 <td align="right">0.45</td>
-<td align="left">***</td>
 </tr>
 <tr class="even">
 <td align="left">weight</td>
 <td align="left">wthr_PC1</td>
 <td align="right">-0.36</td>
 <td align="right">0.03</td>
-<td align="right">18479.85</td>
-<td align="right">-11.94</td>
+<td align="right">18480</td>
 <td align="right">0.00</td>
 <td align="right">-0.08</td>
-<td align="left">***</td>
 </tr>
 <tr class="odd">
 <td align="left">sex_mature</td>
 <td align="left">sex_male</td>
 <td align="right">0.21</td>
 <td align="right">0.03</td>
-<td align="right">23500.00</td>
-<td align="right">7.41</td>
+<td align="right">23500</td>
 <td align="right">0.00</td>
 <td align="right">0.05</td>
-<td align="left">***</td>
 </tr>
 <tr class="even">
 <td align="left">sex_mature</td>
 <td align="left">wthr_PC1</td>
 <td align="right">0.52</td>
 <td align="right">0.07</td>
-<td align="right">23500.00</td>
-<td align="right">7.48</td>
+<td align="right">23500</td>
 <td align="right">0.00</td>
 <td align="right">0.06</td>
-<td align="left">***</td>
 </tr>
 <tr class="odd">
 <td align="left">sex_mature</td>
 <td align="left">clim_PC1</td>
 <td align="right">-0.13</td>
 <td align="right">0.08</td>
-<td align="right">23500.00</td>
-<td align="right">-1.56</td>
+<td align="right">23500</td>
 <td align="right">0.12</td>
 <td align="right">-0.06</td>
-<td align="left"></td>
 </tr>
 </tbody>
 </table>
@@ -753,19 +679,27 @@ Figure 28: Cumulative effects on parasitism (Ticks), immunity expression (Resist
 </tr>
 </tbody>
 </table>
-<div id="cumulative-path-diagram" class="section level3 hasAnchor">
-<h3>Cumulative path diagram<a href="simplified-sems.html#cumulative-path-diagram" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="conceptual-model-path-diagram" class="section level3 hasAnchor">
+<h3>Conceptual model path diagram<a href="simplified-sems.html#conceptual-model-path-diagram" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>In attempts to reduce the noise of the PATH diagram depicting our full
-SEM (Figure <a href="simplified-sems.html#fig:simpSemGraph">27</a>), I will attempt to reconstruct the path
-diagram using cumulative effects. Since this will eliminate the indirect
-pathways, it should reduce the visual clutter.</p>
+SEM (Figure <a href="simplified-sems.html#fig:simpSemGraph">27</a>), I will attempt to further simplify its
+presentation by combining variables into groups. Sex, reproductive status, and
+weight will be combined into “traits” (perhaps this should be “morphology”?);
+resistance and tolerance expression will
+be combined into “expression”, weather and climate will be combined into
+“environment”, and activity timing and change in activity timing will be
+combined into “behavior”. This should reduce the visual clutter and double as
+our conceptual model, since we can label which paths met our assumptions (blue),
+and which didn’t (grey).</p>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-cc98ee00030377c4baf9" style="width:80%;height:480px;"></div>
+<script type="application/json" data-for="htmlwidget-cc98ee00030377c4baf9">{"x":{"diagram":"digraph {\n\ngraph [layout = \"fdp\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"Behavior\n(timing)\", group = \"bottom\", fillcolor = \"#FFFFFF\", width = \"0.85\", height = \"0.4\", fontcolor = \"black\", color = \"black\", pos = \"-2,0!\"] \n  \"2\" [label = \"Environment\", group = \"bottom\", fillcolor = \"#FFFFFF\", width = \"0.85\", height = \"0.4\", fontcolor = \"black\", color = \"black\", pos = \"2,-1!\"] \n  \"3\" [label = \"Phenotype\", group = \"bottom\", fillcolor = \"#FFFFFF\", width = \"0.85\", height = \"0.4\", fontcolor = \"black\", color = \"black\", pos = \"-1,-2!\"] \n  \"4\" [label = \"Infection\", group = \"top\", fillcolor = \"#FFE1FF\", width = \"0.85\", height = \"0.4\", fontcolor = \"black\", color = \"black\", pos = \"2,1!\"] \n  \"5\" [label = \"Parasitism\n(ticks)\", group = \"bottom\", fillcolor = \"#FFFFFF\", width = \"0.85\", height = \"0.4\", fontcolor = \"black\", color = \"black\", pos = \"0,0.1!\"] \n  \"6\" [label = \"Immune\nexpression\", group = \"top\", fillcolor = \"#FFFFFF\", width = \"0.85\", height = \"0.4\", fontcolor = \"black\", color = \"black\", pos = \"-1,2!\"] \n\"2\"->\"1\" [color = \"cornflowerblue\", penwidth = \"2.02912621359223\", style = \"solid\", decorate = \"TRUE\"] \n\"3\"->\"1\" [color = \"cornflowerblue\", penwidth = \"1.94033171521036\", style = \"solid\", decorate = \"TRUE\"] \n\"2\"->\"6\" [color = \"cornflowerblue\", penwidth = \"2.94660194174757\", style = \"solid\", decorate = \"TRUE\"] \n\"4\"->\"6\" [color = \"cornflowerblue\", penwidth = \"2.87135922330097\", style = \"solid\", decorate = \"TRUE\"] \n\"5\"->\"6\" [color = \"cornflowerblue\", penwidth = \"1\", style = \"solid\", decorate = \"TRUE\"] \n\"3\"->\"6\" [color = \"cornflowerblue\", penwidth = \"2.69296116504854\", style = \"solid\", decorate = \"TRUE\"] \n\"2\"->\"4\" [color = \"cornflowerblue\", penwidth = \"3.58980582524272\", style = \"solid\", decorate = \"TRUE\"] \n\"5\"->\"4\" [color = \"cornflowerblue\", penwidth = \"3.55097087378641\", style = \"solid\", decorate = \"TRUE\"] \n\"3\"->\"4\" [color = \"cornflowerblue\", penwidth = \"2.97168284789644\", style = \"solid\", decorate = \"TRUE\"] \n\"1\"->\"5\" [color = \"cornflowerblue\", penwidth = \"1.00485436893204\", style = \"solid\", decorate = \"TRUE\"] \n\"2\"->\"5\" [color = \"cornflowerblue\", penwidth = \"4\", style = \"solid\", decorate = \"TRUE\"] \n\"3\"->\"5\" [color = \"cornflowerblue\", penwidth = \"1.90938511326861\", style = \"solid\", decorate = \"TRUE\"] \n\"2\"->\"3\" [color = \"cornflowerblue\", penwidth = \"2.15351941747573\", style = \"solid\", decorate = \"TRUE\"] \n\"6\"->\"4\" [color = \"grey80\", penwidth = \"1.49514563106796\", style = \"dashed\", decorate = \"TRUE\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <div id="species-comparison" class="section level2 hasAnchor">
 <h2>Species comparison<a href="simplified-sems.html#species-comparison" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <div class="figure"><span style="display:block;" id="fig:PelePemaSem"></span>
-<div class="grViz html-widget html-fill-item" id="htmlwidget-8efdf526c560daaf2436" style="width:100%;height:672px;"></div>
-<script type="application/json" data-for="htmlwidget-8efdf526c560daaf2436">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"Sex\", shape = \"rectangle\", width = \"1.1\", height = \"0.5\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"2\" [label = \"Reproductive\nmaturity\", shape = \"rectangle\", width = \"1.1\", height = \"0.5\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"3\" [label = \"Weight\", shape = \"rectangle\", width = \"1.1\", height = \"0.5\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"4\" [label = \"Parasitism\n rate (ticks)\", shape = \"rectangle\", width = \"1.1\", height = \"0.5\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"5\" [label = \"Weather\nPC\", shape = \"rectangle\", width = \"1.1\", height = \"0.5\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"6\" [label = \"Climate\nPC\", shape = \"rectangle\", width = \"1.1\", height = \"0.5\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"7\" [label = \"Infection\nstatus\", shape = \"rectangle\", width = \"1.1\", height = \"0.5\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n\"1\"->\"7\" [label = \"0.02 (0.18)\", tooltip = \"0.02 (0.18)\", style = \"dashed\", color = \"cornflowerblue\", fontcolor = \"cornflowerblue\"] \n\"2\"->\"7\" [label = \"0.11 (0.36)\", tooltip = \"0.11 (0.36)\", style = \"solid\", color = \"cornflowerblue\", fontcolor = \"cornflowerblue\"] \n\"4\"->\"7\" [label = \"0.18 (-0.01)\", tooltip = \"0.18 (-0.01)\", style = \"solid\", color = \"cornflowerblue\", fontcolor = \"cornflowerblue\"] \n\"3\"->\"7\" [label = \"0.2 (-0.29)\", tooltip = \"0.2 (-0.29)\", style = \"solid\", color = \"purple\", fontcolor = \"purple\"] \n\"5\"->\"7\" [label = \"0.14 (0.28)\", tooltip = \"0.14 (0.28)\", style = \"solid\", color = \"cornflowerblue\", fontcolor = \"cornflowerblue\"] \n\"1\"->\"2\" [label = \"0.07 (-0.03)\", tooltip = \"0.07 (-0.03)\", style = \"solid\", color = \"purple\", fontcolor = \"purple\"] \n\"5\"->\"2\" [label = \"0.06 (0.06)\", tooltip = \"0.06 (0.06)\", style = \"solid\", color = \"cornflowerblue\", fontcolor = \"cornflowerblue\"] \n\"6\"->\"4\" [label = \"-0.33 (-0.42)\", tooltip = \"-0.33 (-0.42)\", style = \"solid\", color = \"orange\", fontcolor = \"orange\"] \n\"1\"->\"4\" [label = \"0.08 (0)\", tooltip = \"0.08 (0)\", style = \"solid\", color = \"purple\", fontcolor = \"purple\"] \n\"2\"->\"4\" [label = \"0.01 (0.1)\", tooltip = \"0.01 (0.1)\", style = \"dashed\", color = \"cornflowerblue\", fontcolor = \"cornflowerblue\"] \n\"3\"->\"4\" [label = \"0.01 (0.12)\", tooltip = \"0.01 (0.12)\", style = \"dashed\", color = \"cornflowerblue\", fontcolor = \"cornflowerblue\"] \n\"5\"->\"4\" [label = \"0.1 (0.07)\", tooltip = \"0.1 (0.07)\", style = \"solid\", color = \"cornflowerblue\", fontcolor = \"cornflowerblue\"] \n\"1\"->\"3\" [label = \"-0.02 (-0.08)\", tooltip = \"-0.02 (-0.08)\", style = \"solid\", color = \"orange\", fontcolor = \"orange\"] \n\"2\"->\"3\" [label = \"0.47 (0.39)\", tooltip = \"0.47 (0.39)\", style = \"solid\", color = \"cornflowerblue\", fontcolor = \"cornflowerblue\"] \n\"5\"->\"3\" [label = \"-0.08 (-0.08)\", tooltip = \"-0.08 (-0.08)\", style = \"solid\", color = \"orange\", fontcolor = \"orange\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-ebc34086d99c6c814b8c" style="width:100%;height:672px;"></div>
+<script type="application/json" data-for="htmlwidget-ebc34086d99c6c814b8c">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"Sex\", shape = \"rectangle\", width = \"1.1\", height = \"0.5\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"2\" [label = \"Reproductive\nmaturity\", shape = \"rectangle\", width = \"1.1\", height = \"0.5\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"3\" [label = \"Weight\", shape = \"rectangle\", width = \"1.1\", height = \"0.5\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"4\" [label = \"Parasitism\n rate (ticks)\", shape = \"rectangle\", width = \"1.1\", height = \"0.5\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"5\" [label = \"Weather\nPC\", shape = \"rectangle\", width = \"1.1\", height = \"0.5\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"6\" [label = \"Climate\nPC\", shape = \"rectangle\", width = \"1.1\", height = \"0.5\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n  \"7\" [label = \"Infection\nstatus\", shape = \"rectangle\", width = \"1.1\", height = \"0.5\", fillcolor = \"#F0F8FF\", fontcolor = \"#000000\"] \n\"1\"->\"7\" [label = \"0.02 (0.18)\", tooltip = \"0.02 (0.18)\", style = \"dashed\", color = \"cornflowerblue\", fontcolor = \"cornflowerblue\"] \n\"2\"->\"7\" [label = \"0.11 (0.36)\", tooltip = \"0.11 (0.36)\", style = \"solid\", color = \"cornflowerblue\", fontcolor = \"cornflowerblue\"] \n\"4\"->\"7\" [label = \"0.18 (-0.01)\", tooltip = \"0.18 (-0.01)\", style = \"solid\", color = \"cornflowerblue\", fontcolor = \"cornflowerblue\"] \n\"3\"->\"7\" [label = \"0.2 (-0.29)\", tooltip = \"0.2 (-0.29)\", style = \"solid\", color = \"purple\", fontcolor = \"purple\"] \n\"5\"->\"7\" [label = \"0.14 (0.28)\", tooltip = \"0.14 (0.28)\", style = \"solid\", color = \"cornflowerblue\", fontcolor = \"cornflowerblue\"] \n\"1\"->\"2\" [label = \"0.07 (-0.03)\", tooltip = \"0.07 (-0.03)\", style = \"solid\", color = \"purple\", fontcolor = \"purple\"] \n\"5\"->\"2\" [label = \"0.06 (0.06)\", tooltip = \"0.06 (0.06)\", style = \"solid\", color = \"cornflowerblue\", fontcolor = \"cornflowerblue\"] \n\"6\"->\"4\" [label = \"-0.33 (-0.42)\", tooltip = \"-0.33 (-0.42)\", style = \"solid\", color = \"orange\", fontcolor = \"orange\"] \n\"1\"->\"4\" [label = \"0.08 (0)\", tooltip = \"0.08 (0)\", style = \"solid\", color = \"purple\", fontcolor = \"purple\"] \n\"2\"->\"4\" [label = \"0.01 (0.1)\", tooltip = \"0.01 (0.1)\", style = \"dashed\", color = \"cornflowerblue\", fontcolor = \"cornflowerblue\"] \n\"3\"->\"4\" [label = \"0.01 (0.12)\", tooltip = \"0.01 (0.12)\", style = \"dashed\", color = \"cornflowerblue\", fontcolor = \"cornflowerblue\"] \n\"5\"->\"4\" [label = \"0.1 (0.07)\", tooltip = \"0.1 (0.07)\", style = \"solid\", color = \"cornflowerblue\", fontcolor = \"cornflowerblue\"] \n\"1\"->\"3\" [label = \"-0.02 (-0.08)\", tooltip = \"-0.02 (-0.08)\", style = \"solid\", color = \"orange\", fontcolor = \"orange\"] \n\"2\"->\"3\" [label = \"0.47 (0.39)\", tooltip = \"0.47 (0.39)\", style = \"solid\", color = \"cornflowerblue\", fontcolor = \"cornflowerblue\"] \n\"5\"->\"3\" [label = \"-0.08 (-0.08)\", tooltip = \"-0.08 (-0.08)\", style = \"solid\", color = \"orange\", fontcolor = \"orange\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 <p class="caption">
 Figure 29: Path diagram comparing a simplified SEM between <em>P. leucopus</em> and <em>P. maniculatus</em>. Blue vectors indicate positive effects, orange indicate negative effects, purple indicate conflicting effect directions between the two species, solid lines are statistically significant (for <em>leucopus</em>) and dotted lines are not. Path labels represent standardized effect sizes for both species, with <em>P. maniculatus</em> in parentheses. See Table <a href="simplified-sems.html#tab:spCoefTab">18</a> for more model differences and Figure <a href="simplified-sems.html#fig:spCumInf">30</a> for the cumulative effects on infection for each species.
 </p>
@@ -795,32 +729,28 @@ long-term climate only impacted parasitism rates directly, as in the full model.
 <p>This means that, while both species exhibit intraspecific variation in
 disease competence, interaction with ticks is less important for PEMA than for
 PELE. This could indicate that PEMA is more resistant to infection than PELE.</p>
-<table style="width:100%;">
+<table>
 <caption><span id="tab:spCoefTab">Table 18: </span>Species-specific SEM</caption>
 <colgroup>
+<col width="18%" />
+<col width="18%" />
+<col width="15%" />
 <col width="14%" />
+<col width="6%" />
+<col width="7%" />
+<col width="6%" />
 <col width="14%" />
-<col width="7%" />
-<col width="8%" />
-<col width="9%" />
-<col width="5%" />
-<col width="10%" />
-<col width="7%" />
-<col width="12%" />
-<col width="5%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th align="left">Response</th>
 <th align="left">Predictor</th>
-<th align="left">species</th>
-<th align="right">Estimate</th>
-<th align="right">Std.Error</th>
+<th align="left">Species code</th>
+<th align="right">Coefficient</th>
+<th align="right">SE</th>
 <th align="right">DF</th>
-<th align="right">Crit.Value</th>
-<th align="right">P.Value</th>
-<th align="right">Std.Estimate</th>
-<th align="left">Var.9</th>
+<th align="right">P</th>
+<th align="right">Effect size</th>
 </tr>
 </thead>
 <tbody>
@@ -831,10 +761,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">0.11</td>
 <td align="right">0.27</td>
 <td align="right">360</td>
-<td align="right">0.42</td>
 <td align="right">0.67</td>
 <td align="right">0.02</td>
-<td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left">Bb_infected</td>
@@ -843,10 +771,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">0.87</td>
 <td align="right">0.72</td>
 <td align="right">52</td>
-<td align="right">1.22</td>
 <td align="right">0.22</td>
 <td align="right">0.18</td>
-<td align="left"></td>
 </tr>
 <tr class="odd">
 <td align="left">Bb_infected</td>
@@ -855,10 +781,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">0.52</td>
 <td align="right">0.30</td>
 <td align="right">360</td>
-<td align="right">1.70</td>
 <td align="right">0.09</td>
 <td align="right">0.11</td>
-<td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left">Bb_infected</td>
@@ -867,10 +791,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">1.98</td>
 <td align="right">0.87</td>
 <td align="right">52</td>
-<td align="right">2.27</td>
 <td align="right">0.02</td>
 <td align="right">0.36</td>
-<td align="left">*</td>
 </tr>
 <tr class="odd">
 <td align="left">Bb_infected</td>
@@ -879,10 +801,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">0.85</td>
 <td align="right">0.29</td>
 <td align="right">360</td>
-<td align="right">2.94</td>
 <td align="right">0.00</td>
 <td align="right">0.18</td>
-<td align="left">**</td>
 </tr>
 <tr class="even">
 <td align="left">Bb_infected</td>
@@ -891,10 +811,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">-0.10</td>
 <td align="right">1.39</td>
 <td align="right">52</td>
-<td align="right">-0.07</td>
 <td align="right">0.94</td>
 <td align="right">-0.01</td>
-<td align="left"></td>
 </tr>
 <tr class="odd">
 <td align="left">Bb_infected</td>
@@ -903,10 +821,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">0.45</td>
 <td align="right">0.17</td>
 <td align="right">360</td>
-<td align="right">2.66</td>
 <td align="right">0.01</td>
 <td align="right">0.20</td>
-<td align="left">**</td>
 </tr>
 <tr class="even">
 <td align="left">Bb_infected</td>
@@ -915,10 +831,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">-0.81</td>
 <td align="right">0.51</td>
 <td align="right">52</td>
-<td align="right">-1.60</td>
 <td align="right">0.11</td>
 <td align="right">-0.29</td>
-<td align="left"></td>
 </tr>
 <tr class="odd">
 <td align="left">Bb_infected</td>
@@ -927,10 +841,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">1.45</td>
 <td align="right">0.67</td>
 <td align="right">360</td>
-<td align="right">2.17</td>
 <td align="right">0.03</td>
 <td align="right">0.14</td>
-<td align="left">*</td>
 </tr>
 <tr class="even">
 <td align="left">Bb_infected</td>
@@ -939,10 +851,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">3.39</td>
 <td align="right">1.67</td>
 <td align="right">52</td>
-<td align="right">2.03</td>
 <td align="right">0.04</td>
 <td align="right">0.28</td>
-<td align="left">*</td>
 </tr>
 <tr class="odd">
 <td align="left">sex_mature</td>
@@ -951,10 +861,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">0.28</td>
 <td align="right">0.03</td>
 <td align="right">18706</td>
-<td align="right">9.05</td>
 <td align="right">0.00</td>
 <td align="right">0.07</td>
-<td align="left">***</td>
 </tr>
 <tr class="even">
 <td align="left">sex_mature</td>
@@ -963,10 +871,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">-0.11</td>
 <td align="right">0.07</td>
 <td align="right">4794</td>
-<td align="right">-1.63</td>
 <td align="right">0.10</td>
 <td align="right">-0.03</td>
-<td align="left"></td>
 </tr>
 <tr class="odd">
 <td align="left">sex_mature</td>
@@ -975,10 +881,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">0.55</td>
 <td align="right">0.07</td>
 <td align="right">18706</td>
-<td align="right">7.40</td>
 <td align="right">0.00</td>
 <td align="right">0.06</td>
-<td align="left">***</td>
 </tr>
 <tr class="even">
 <td align="left">sex_mature</td>
@@ -987,10 +891,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">0.66</td>
 <td align="right">0.19</td>
 <td align="right">4794</td>
-<td align="right">3.48</td>
 <td align="right">0.00</td>
 <td align="right">0.06</td>
-<td align="left">***</td>
 </tr>
 <tr class="odd">
 <td align="left">ticks_attached</td>
@@ -999,10 +901,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">-0.94</td>
 <td align="right">0.31</td>
 <td align="right">13334</td>
-<td align="right">-3.03</td>
 <td align="right">0.00</td>
 <td align="right">-0.33</td>
-<td align="left">**</td>
 </tr>
 <tr class="even">
 <td align="left">ticks_attached</td>
@@ -1011,10 +911,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">-1.11</td>
 <td align="right">0.47</td>
 <td align="right">3559</td>
-<td align="right">-2.37</td>
 <td align="right">0.02</td>
 <td align="right">-0.42</td>
-<td align="left">*</td>
 </tr>
 <tr class="odd">
 <td align="left">ticks_attached</td>
@@ -1023,10 +921,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">0.33</td>
 <td align="right">0.04</td>
 <td align="right">13334</td>
-<td align="right">8.64</td>
 <td align="right">0.00</td>
 <td align="right">0.08</td>
-<td align="left">***</td>
 </tr>
 <tr class="even">
 <td align="left">ticks_attached</td>
@@ -1035,10 +931,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">-0.02</td>
 <td align="right">0.13</td>
 <td align="right">3559</td>
-<td align="right">-0.13</td>
 <td align="right">0.90</td>
 <td align="right">0.00</td>
-<td align="left"></td>
 </tr>
 <tr class="odd">
 <td align="left">ticks_attached</td>
@@ -1047,10 +941,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">0.05</td>
 <td align="right">0.04</td>
 <td align="right">13334</td>
-<td align="right">1.13</td>
 <td align="right">0.26</td>
 <td align="right">0.01</td>
-<td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left">ticks_attached</td>
@@ -1059,10 +951,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">0.49</td>
 <td align="right">0.14</td>
 <td align="right">3559</td>
-<td align="right">3.45</td>
 <td align="right">0.00</td>
 <td align="right">0.10</td>
-<td align="left">***</td>
 </tr>
 <tr class="odd">
 <td align="left">ticks_attached</td>
@@ -1071,10 +961,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">0.02</td>
 <td align="right">0.02</td>
 <td align="right">13334</td>
-<td align="right">0.91</td>
 <td align="right">0.36</td>
 <td align="right">0.01</td>
-<td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left">ticks_attached</td>
@@ -1083,10 +971,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">0.29</td>
 <td align="right">0.07</td>
 <td align="right">3559</td>
-<td align="right">4.15</td>
 <td align="right">0.00</td>
 <td align="right">0.12</td>
-<td align="left">***</td>
 </tr>
 <tr class="odd">
 <td align="left">ticks_attached</td>
@@ -1095,10 +981,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">0.90</td>
 <td align="right">0.09</td>
 <td align="right">13334</td>
-<td align="right">10.02</td>
 <td align="right">0.00</td>
 <td align="right">0.10</td>
-<td align="left">***</td>
 </tr>
 <tr class="even">
 <td align="left">ticks_attached</td>
@@ -1107,10 +991,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">0.74</td>
 <td align="right">0.33</td>
 <td align="right">3559</td>
-<td align="right">2.22</td>
 <td align="right">0.03</td>
 <td align="right">0.07</td>
-<td align="left">*</td>
 </tr>
 <tr class="odd">
 <td align="left">weight</td>
@@ -1119,10 +1001,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">-0.04</td>
 <td align="right">0.01</td>
 <td align="right">15259</td>
-<td align="right">-2.66</td>
 <td align="right">0.01</td>
 <td align="right">-0.02</td>
-<td align="left">**</td>
 </tr>
 <tr class="even">
 <td align="left">weight</td>
@@ -1131,10 +1011,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">-0.13</td>
 <td align="right">0.02</td>
 <td align="right">3930</td>
-<td align="right">-5.32</td>
 <td align="right">0.00</td>
 <td align="right">-0.08</td>
-<td align="left">***</td>
 </tr>
 <tr class="odd">
 <td align="left">weight</td>
@@ -1143,10 +1021,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">0.94</td>
 <td align="right">0.01</td>
 <td align="right">15199</td>
-<td align="right">65.15</td>
 <td align="right">0.00</td>
 <td align="right">0.47</td>
-<td align="left">***</td>
 </tr>
 <tr class="even">
 <td align="left">weight</td>
@@ -1155,10 +1031,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">0.77</td>
 <td align="right">0.03</td>
 <td align="right">3886</td>
-<td align="right">27.24</td>
 <td align="right">0.00</td>
 <td align="right">0.39</td>
-<td align="left">***</td>
 </tr>
 <tr class="odd">
 <td align="left">weight</td>
@@ -1167,10 +1041,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">-0.36</td>
 <td align="right">0.03</td>
 <td align="right">13990</td>
-<td align="right">-10.84</td>
 <td align="right">0.00</td>
 <td align="right">-0.08</td>
-<td align="left">***</td>
 </tr>
 <tr class="even">
 <td align="left">weight</td>
@@ -1179,10 +1051,8 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.</p
 <td align="right">-0.35</td>
 <td align="right">0.07</td>
 <td align="right">3930</td>
-<td align="right">-5.27</td>
 <td align="right">0.00</td>
 <td align="right">-0.08</td>
-<td align="left">***</td>
 </tr>
 </tbody>
 </table>

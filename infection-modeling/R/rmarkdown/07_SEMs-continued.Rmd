@@ -7,6 +7,7 @@ date: "2025-10-22"
 ```{r}
 library(tidyverse)
 library(DiagrammeR)
+source("infection-modeling/R/functions/diagram_psem.R")
 ```
 
 # Simplified SEMs
@@ -236,10 +237,21 @@ caption = paste(
 ```
 
 ```{r fullSEMcoefTab}
-simple_out$coefficients %>% 
+simple_out$coefficients %>%
+  mutate(DF = round(DF) %>% as.integer) %>% 
+  select(-c(Crit.Value, sig)) %>% 
   knitr::kable(
+    col.names = c(
+      "Response", "Predictor", "Coefficient", "SE", "DF", "P", "Effect size"
+    ), 
     digits = 2,
-    caption = "Omnibus SEM statistics."
+    caption = paste(
+      "Omnibus SEM statistics.",
+      "This table needs to be cleaned up for publication, including",
+      "renaming columns, adding group labels to predictors and responses",
+      "[e.g., immune expression (tolerance), phenotype (sex),",
+      "phenotype (reproductive), etc.]"
+    )
   )
 ```
 
@@ -392,14 +404,152 @@ cumu_tab %>%
   guides(linetype = "none")
 ```
 
-### Cumulative path diagram
+### Conceptual model path diagram
 
 In attempts to reduce the noise of the PATH diagram depicting our full 
-SEM (Figure \@ref(fig:simpSemGraph)), I will attempt to reconstruct the path
-diagram using cumulative effects. Since this will eliminate the indirect
-pathways, it should reduce the visual clutter.
+SEM (Figure \@ref(fig:simpSemGraph)), I will attempt to further simplify its
+presentation by combining variables into groups. Sex, reproductive status, and
+weight will be combined into "traits" (perhaps this should be "morphology"?); 
+resistance and tolerance expression will 
+be combined into "expression", weather and climate will be combined into 
+"environment", and activity timing and change in activity timing will be 
+combined into "behavior". This should reduce the visual clutter and double as
+our conceptual model, since we can label which paths met our assumptions (blue),
+and which didn't (grey).
 
-```{r fig.asp = 1, include = FALSE}
+```{r fig.asp = 1, include = TRUE}
+# group the variables by type
+group_tab <- tibble(
+  var = with(simple_out$coefficients, unique(c(Response, Predictor))),
+  group = case_when(
+    var %in% c("expr_PC1") ~ "Immune\nexpression", #"resistance",
+    var %in% c("expr_PC2") ~ "Immune\nexpression", #"tolerance",
+    var %in% c("sex_male", "sex_mature", "weight") ~ "Phenotype",
+    var %in% c("wthr_PC1", "clim_PC1") ~ "Environment",
+    var %in% c("capprop_shift", "cap_prop_night") ~ "Behavior\n(timing)",
+    var %in% c("ticks_attached") ~ "Parasitism\n(ticks)",
+    var %in% c("Bb_infected") ~ "Infection",
+    .default = NA
+  )
+)
+# combine with the cumulative coefficients
+new_cumu_tab <- cumu_tab %>% 
+  left_join(
+    group_tab %>% rename(Response = var, Resp_grp = group), by = "Response"
+  ) %>% 
+  left_join(
+    group_tab %>% rename(Predictor = var, Pred_grp = group), by = "Predictor"
+  )
+  
+new_cumu_tab <- new_cumu_tab %>% 
+  mutate(new_direct = if_else(P.Value <= 0.1, new_direct, 0)) %>% 
+  group_by(Response, Resp_grp, Pred_grp) %>% 
+  summarize(
+    total_mag = mean(abs(new_direct), na.rm = TRUE),
+    total = mean(new_direct, na.rm = TRUE),
+    # total_mag = mean(abs(total), na.rm = TRUE),
+    # total = mean(total, na.rm = TRUE),
+    .groups = "drop"
+  ) %>% 
+  group_by(Resp_grp, Pred_grp) %>% 
+  summarize(
+    total_mag = mean(total_mag, na.rm = TRUE),
+    total = mean(total, na.rm = TRUE), 
+    .groups = "drop"
+  ) %>% 
+  mutate(
+    total_pick = if_else(Pred_grp == "Environment", total_mag, total),
+  ) %>% 
+  bind_rows(
+    tibble(Resp_grp = "Infection", Pred_grp = "Immune\nexpression", total_pick = 0.0001)
+  )
+```
+
+```{r conceptSEM}
+cumu_edge_list <- new_cumu_tab %>%
+  filter(total_pick != 0) %>% 
+  build_nodes_edges(
+    from_col = "Pred_grp", to_col = "Resp_grp", val_col = "total_pick"
+  )
+
+cumu_edge_list$edges <- cumu_edge_list$edges %>% 
+  filter(From != To) %>% 
+  mutate(
+    color = case_when(
+      From == "Immune\nexpression" & To == "Infection" ~ "grey80",
+      From == "Behavior\n(timing)" & To == "Immune\nexpression" ~ "orange",
+      # Val >= 0 ~ "cornflowerblue", 
+      # Val < 0 ~ "red",
+      .default = "cornflowerblue"
+    ),
+    penwidth = scales::rescale(Val, to = c(1, 4)),
+    penwidth = if_else(is.na(penwidth), 1, penwidth),
+    style = if_else(
+      From == "Immune\nexpression" & To == "Infection", "dashed", "solid"
+    ),
+    # label = round(Val, 2)
+  ) 
+
+cumu_edge_list$nodes <- cumu_edge_list$nodes %>% 
+  mutate(
+    group = case_when(
+      name %in% c("Immune\nexpression", "Infection") ~ "top",
+      .default = "bottom"
+    ),
+    fillcolor = case_when(
+      name %in% c("Infection") ~ "thistle1",
+      .default = "white"
+    ),
+    coords = case_when(
+      name == "Immune\nexpression" ~ tibble(x = -1, y = 2),
+      name == "Infection" ~ tibble(x = 2, y = 1),
+      name == "Parasitism\n(ticks)" ~ tibble(x = 0, y = 0.1),
+      name == "Phenotype" ~ tibble(x = -1, y = -2),
+      name == "Behavior\n(timing)" ~ tibble(x = -2, y = 0), 
+      name == "Environment" ~ tibble(x = 2, y = -1)
+    )
+  ) %>% 
+  unnest(coords)
+
+build_psem_plot(cumu_edge_list, render = FALSE, attr_theme = "bt") %>% 
+  add_global_graph_attrs("layout", "fdp", "graph") %>%
+  # set_node_attrs("shape", "rectangle") %>% 
+  set_node_attrs("width", 0.85) %>% 
+  set_node_attrs("height", 0.4) %>% 
+  set_node_attrs("fontcolor", "black") %>% 
+  set_node_attrs("color", "black") %>% 
+  set_edge_attrs("decorate", TRUE) %>% 
+  # set_node_attrs("fontsize", 12) %>% 
+  render_graph()
+
+caption = paste(
+  "Factors contributing to infection of *Peromyscus* with *Borrelia*.",
+  "Blue solid vectors represent paths that matched our hypothesis and",
+  "grey dashed vectors represent paths we hypothesized that were not supported,",
+  # "Orange vectors represent paths that we did not hypothesize but were supported.",
+  "Widths of vectors are proportional to average observed direct effect sizes.",
+  "For full model results, please see Table \\@ref(tab:fullSEMcoefTab)"
+)
+```
+
+```{r, include=FALSE, eval=FALSE}
+## Check the 
+new_cumu_tab %>% 
+  filter(total != 0) %>% 
+  ggplot(aes(y = Pred_grp, x = total, fill = Pred_grp)) + 
+  geom_vline(xintercept = 0, linetype = "dotted", color = "black") +
+  facet_wrap(~Resp_grp, scales = "free_x") + 
+  geom_col(aes(x = total_pick, fill = "pick"), fill = "grey50", col = NA) + 
+  geom_col(
+    width = 0.3, position = position_nudge(y = 0.151),
+    aes(col = "total")
+  ) + 
+  geom_col(
+    width = 0.3, position = position_nudge(y = -0.151),
+    aes(x = total_mag, col = "total_mag")
+  ) + 
+  scale_color_manual(values = c("black", "white"))
+
 new_cumu_tab <- cumu_tab %>% 
   filter(Predictor %in% c("cap_prop_night", "capprop_shift")) %>% 
   group_by(Response) %>% 
@@ -421,22 +571,9 @@ new_cumu_tab %>%
     panel.spacing = unit(0, "lines"),
     strip.background = element_blank()
   )
-
-## Let's first see what it looks like without this new var
-new_cumu_tab %>%
-  filter(Predictor != "activity_timing")
-  
-
-# new_cumu_tab %>% 
-#   mutate(Std.Estimate = total) %>% 
-#   relocate(c(Response, Predictor, Std.Estimate, P.Value), .before = 0) 
 ```
 
-
 ## Species comparison
-
-
-
 
 ```{r}
 pele_model_objects <- readRDS(
@@ -461,8 +598,6 @@ sp_cumeffs <- readRDS(
 ```
 
 ```{r PelePemaSem, out.width="100%", fig.asp = 1, fig.cap=caption, warning=FALSE}
-source("infection-modeling/R/functions/diagram_psem.R")
-
 pele_fp <- build_nodes_edges(pele_sem$coefficients)
 pema_fp <- build_nodes_edges(pema_sem$coefficients)
 
@@ -567,7 +702,12 @@ spec_coefs %>%
   arrange(Response, Predictor, species) %>% 
   relocate(species, .after = Predictor) %>% 
   mutate(DF = as.integer(DF)) %>% 
+  select(-c(Crit.Value, Var.9)) %>% 
   knitr::kable(
+    col.names = c(
+      "Response", "Predictor", "Species code", "Coefficient", "SE", 
+      "DF", "P", "Effect size"
+    ), 
     caption = "Species-specific SEM",
     digits = 2
   )
