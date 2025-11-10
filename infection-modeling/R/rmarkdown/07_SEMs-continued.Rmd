@@ -117,55 +117,55 @@ simple_out$coefficients <- simple_out$coefficients %>%
 
 
 ```{r}
-group_tiers <- c(
-  "environment", "trait", "behavior", "parasitism", "expression", "infection"
-)
-
-group_cols <- RColorBrewer::brewer.pal(length(group_tiers) + 1, "Pastel2")[-2]
-
-# group_cols <- c(
-#   "green", "burlywood", "azure", "grey80", "darkorchid1", "hotpink1"
+# group_tiers <- c(
+#   "environment", "trait", "behavior", "parasitism", "expression", "infection"
 # )
-
-var_table <- tibble(
-  var = c(
-    "expr_PC2", "Bb_infected", "expr_PC1", "ticks_attached", "capprop_shift",
-    "cap_prop_night", "weight", "sex_mature", 
-    "sex_male", "wthr_PC1", "clim_PC1"
-  ),
-  label = c(
-    "Tolerance\nexpression", "Infection\nstatus", "Resistance\nexpression", 
-    "Parasitism\n rate (ticks)", "Capture\ntime shift", 
-    "Capture\ntime", "Weight", "Reproductive\nmaturity", 
-    "Sex", "Weather\nPC", "Climate\nPC"
-  ),
-  response = c(
-    TRUE, TRUE, TRUE, TRUE, TRUE, 
-    TRUE, TRUE, TRUE, 
-    FALSE, FALSE, FALSE
-  ),
-  group = c(
-    "expression", "infection", "expression", "parasitism", "behavior",
-    "behavior", "trait", "trait", 
-    "trait", "environment", "environment"
-  ) %>% 
-    factor(levels = group_tiers)
-)
+# 
+# group_cols <- RColorBrewer::brewer.pal(length(group_tiers) + 1, "Pastel2")[-2]
+# 
+# # group_cols <- c(
+# #   "green", "burlywood", "azure", "grey80", "darkorchid1", "hotpink1"
+# # )
+# 
+# var_table <- tibble(
+#   var = c(
+#     "expr_PC2", "Bb_infected", "expr_PC1", "ticks_attached", "capprop_shift",
+#     "cap_prop_night", "weight", "sex_mature", 
+#     "sex_male", "wthr_PC1", "clim_PC1"
+#   ),
+#   label = c(
+#     "Tolerance\nexpression", "Infection\nstatus", "Resistance\nexpression", 
+#     "Parasitism\n rate (ticks)", "Capture\ntime shift", 
+#     "Capture\ntime", "Weight", "Reproductive\nmaturity", 
+#     "Sex", "Weather\nPC", "Climate\nPC"
+#   ),
+#   response = c(
+#     TRUE, TRUE, TRUE, TRUE, TRUE, 
+#     TRUE, TRUE, TRUE, 
+#     FALSE, FALSE, FALSE
+#   ),
+#   group = c(
+#     "expression", "infection", "expression", "parasitism", "behavior",
+#     "behavior", "trait", "trait", 
+#     "trait", "environment", "environment"
+#   ) %>% 
+#     factor(levels = group_tiers)
+# )
 ```
 
 
 ```{r, include = FALSE}
-scales::pal_area(range = c(0, 1))
-
+# scales::pal_area(range = c(0, 1))
+# 
 pos_col = "cornflowerblue"
 neg_col = "orange"
-
-effect_cols <- c(
-  pos_col, colorspace::lighten(pos_col, 0.4), colorspace::lighten(pos_col, 0.8),
-  neg_col, colorspace::lighten(neg_col, 0.4), colorspace::lighten(neg_col, 0.8)
-)
-
-# scales::show_col(effect_cols)
+# 
+# effect_cols <- c(
+#   pos_col, colorspace::lighten(pos_col, 0.4), colorspace::lighten(pos_col, 0.8),
+#   neg_col, colorspace::lighten(neg_col, 0.4), colorspace::lighten(neg_col, 0.8)
+# )
+# 
+# # scales::show_col(effect_cols)
 ```
 
 ```{r}
@@ -237,21 +237,24 @@ caption = paste(
 ```
 
 ```{r fullSEMcoefTab}
-simple_out$coefficients %>%
-  mutate(DF = round(DF) %>% as.integer) %>% 
-  select(-c(Crit.Value, sig)) %>% 
+full_tab <- readRDS("infection-modeling/data/MS-tables/full-SEM-coef-tab.rds")
+
+col_names <- case_when(
+  names(full_tab) == "Coef" ~ "Coef.",
+  names(full_tab) == "StdCoef" ~ "Std. Coef.",
+  .default = names(full_tab)
+)
+
+full_tab %>% 
+  mutate(
+    DF = round(DF), 
+    P = Hmisc::format.pval(round(P, 3), nsmall = 3, eps = 0.001)
+  ) %>% 
   knitr::kable(
-    col.names = c(
-      "Response", "Predictor", "Coefficient", "SE", "DF", "P", "Effect size"
-    ), 
-    digits = 2,
+    col.names = col_names, digits = 2, align = c(rep("l", 2), rep("r", ncol(full_tab) - 2)),
     caption = paste(
-      "Omnibus SEM statistics.",
-      "This table needs to be cleaned up for publication, including",
-      "renaming columns, adding group labels to predictors and responses",
-      "[e.g., immune expression (tolerance), phenotype (sex),",
-      "phenotype (reproductive), etc.]"
-    )
+      "Full SEM parameter estimates."
+    ), 
   )
 ```
 
@@ -262,76 +265,81 @@ effects on parasitism rates, immunity expression, and infection status are
 given in Figure \@ref(fig:fullCumuFig).
 
 ```{r}
-cumu_tab <- readRDS(
-  file.path(
-    "infection-modeling/data/model-objects",
-    "cumulative-effects-table_simplified-SEM.rds"
-  )
-)
-
-filtab <- cumu_tab %>%
-  filter(
-    Response %in% c("ticks_attached", "expr_PC1", "Bb_infected", "expr_PC2"),
-    !is.na(total), !is.na(Predictor)
-  ) %>%
-  mutate(
-    Response = factor(
-      Response,
-      levels = c("ticks_attached", "expr_PC1", "Bb_infected", "expr_PC2"),
-      labels = c("Ticks", "Resistance", "Infection", "Tolerance")
-    ),
-    Predictor = factor(
-      Predictor,
-      levels = c(
-        "clim_PC1", "wthr_PC1", "sex_male", "sex_mature", "weight",
-        "cap_prop_night", "capprop_shift", "ticks_attached",
-        "expr_PC1", "Bb_infected"
-      ),
-      labels = c(
-        "climate", "weather", "sex", "reproductive", "weight",
-        "captime", "capshift", "ticks",
-        "resistance", "infection"
-      )
-    )
-  )
+# cumu_tab <- readRDS(
+#   file.path(
+#     "infection-modeling/data/model-objects",
+#     "cumulative-effects-table_simplified-SEM.rds"
+#   )
+# )
+# 
+# filtab <- cumu_tab %>%
+#   filter(
+#     Response %in% c("ticks_attached", "expr_PC1", "Bb_infected", "expr_PC2"),
+#     !is.na(total), !is.na(Predictor)
+#   ) %>%
+#   mutate(
+#     Response = factor(
+#       Response,
+#       levels = c("ticks_attached", "expr_PC1", "Bb_infected", "expr_PC2"),
+#       labels = c("Ticks", "Resistance", "Infection", "Tolerance")
+#     ),
+#     Predictor = factor(
+#       Predictor,
+#       levels = c(
+#         "clim_PC1", "wthr_PC1", "sex_male", "sex_mature", "weight",
+#         "cap_prop_night", "capprop_shift", "ticks_attached",
+#         "expr_PC1", "Bb_infected"
+#       ),
+#       labels = c(
+#         "climate", "weather", "sex", "reproductive", "weight",
+#         "captime", "capshift", "ticks",
+#         "resistance", "infection"
+#       )
+#     )
+#   )
 ```
 
-```{r fullCumuFig, fig.width=6, fig.height=6, fig.cap=caption}
+```{r fullCumuFig, fig.width=6, fig.height=6, fig.cap=caption, out.width = "60%"}
 # table of effects for Infection, Resistance, and ticks
-filtab %>%
-  ggplot(aes(y = Predictor, x = total)) +
-  facet_wrap(~Response, scales = "free_x") +
-  # geom_vline(xintercept = 0, col = "grey50", linetype = "solid") +
-  geom_col(
-    aes(fill = "total"),
-    width = 0.9, linewidth = 0.5, col = "black"
-  ) +
-  geom_col(
-    aes(x = indirect, fill = "indirect"),
-    position = position_nudge(y = 0.15),
-    width = 0.3, linewidth = 0.25, col = "black"
-  ) +
-  geom_col(
-    aes(x = new_direct, fill = "direct", linetype = P.Value <= 0.1),
-    position = position_nudge(y = -0.15),
-    width = 0.3, linewidth = 0.25, col = "black"
-  ) +
-  theme_bw() +
-  theme(
-    strip.background = element_blank(),
-    legend.position = "inside", legend.position.inside = c(0.01, 0.99),
-    legend.justification = c(0, 1),
-    legend.background = element_rect(color = "black", linewidth = 0.3),
-    panel.spacing.x = unit(0, "lines")
-  ) +
-  labs(x = "Standardized effect", fill = NULL) +
-  scale_fill_manual(values = c("cornflowerblue", "orange", "grey50")) +
-  scale_linetype_manual(values = c("dashed", "solid")) +
-  guides(linetype = "none")
+# filtab %>%
+#   ggplot(aes(y = Predictor, x = total)) +
+#   facet_wrap(~Response, scales = "free_x") +
+#   # geom_vline(xintercept = 0, col = "grey50", linetype = "solid") +
+#   geom_col(
+#     aes(fill = "total"),
+#     width = 0.9, linewidth = 0.5, col = "black"
+#   ) +
+#   geom_col(
+#     aes(x = indirect, fill = "indirect"),
+#     position = position_nudge(y = 0.15),
+#     width = 0.3, linewidth = 0.25, col = "black"
+#   ) +
+#   geom_col(
+#     aes(x = new_direct, fill = "direct", linetype = P.Value <= 0.1),
+#     position = position_nudge(y = -0.15),
+#     width = 0.3, linewidth = 0.25, col = "black"
+#   ) +
+#   theme_bw() +
+#   theme(
+#     strip.background = element_blank(),
+#     legend.position = "inside", legend.position.inside = c(0.01, 0.99),
+#     legend.justification = c(0, 1),
+#     legend.background = element_rect(color = "black", linewidth = 0.3),
+#     panel.spacing.x = unit(0, "lines")
+#   ) +
+#   labs(x = "Standardized effect", fill = NULL) +
+#   scale_fill_manual(values = c("cornflowerblue", "orange", "grey50")) +
+#   scale_linetype_manual(values = c("dashed", "solid")) +
+#   guides(linetype = "none")
+# 
+# ggsave(
+#   "infection-modeling/graphics/cumulative-effect-fig.png",
+#   width = 6, height = 6, dpi = 300
+# )
 
-ggsave(
-  "infection-modeling/graphics/cumulative-effect-fig.png",
-  width = 6, height = 6, dpi = 300
+knitr::include_graphics(
+  "infection-modeling/graphics/cumulative-effect-fig.png", 
+  dpi = 300
 )
 
 caption = paste(
@@ -343,31 +351,26 @@ caption = paste(
 ```
 
 ```{r SemR2N}
-mod_list <- simple_model_objects$component_mods
+full_R2_tab <- readRDS("infection-modeling/data/MS-tables/full-SEM-R2-tab.rds")
 
-sample_sizes <- lapply(mod_list, function(x)nrow(model.frame(x))) %>% unlist()
-
-bind_cols(
-  simple_out$R2 %>% 
-    mutate(
-      Response = factor(
-        Response, levels = var_table$var, 
-        labels = var_table$label %>% gsub("\n", " ", .)
-      )
-    ) %>% 
-    select(-method), 
-  n = sample_sizes
-) %>% knitr::kable(
-  col.names = c("Response", "Family", "Link", "Marg. R-sqr", "Cond. R-sqr", "N"),
-  digits = 2,
-  caption = paste(
-    "Full SEM component model information. Columns represent response,",
-    "distribution family, distribution link function, marginal R-squared",
-    "(fixed effects only), conditional R-squared (fixed and random effects),",
-    "and the total number of observations used for each component model.",
-    "For binomial models, R-squared values are theoretical."
-  )
+col_names <- case_when(
+  names(full_R2_tab) == "Marginal" ~ "Marginal R$^{2}$",
+  names(full_R2_tab) == "Conditional" ~ "Conditional R$^{2}$",
+  names(full_R2_tab) == "Family" ~ "Model family",
+  .default = names(full_R2_tab)
 )
+
+full_R2_tab %>% 
+  knitr::kable(
+    digits = 2,
+    col.names = col_names,
+    caption = paste(
+      "Full SEM component model fit. Columns represent model response,",
+      "distribution family, marginal R$^{2}$",
+      "(fixed effects only), and conditional R$^{2}$.",
+      "For binomial models, R$^{2}$ values are theoretical."
+    )  
+  )
 ```
 
 
