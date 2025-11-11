@@ -39,31 +39,48 @@ full_mod$coefficients <- full_mod$coefficients %>%
 # Create a lookup table for the veriables
 var_lookup <- tribble(
   ~rank, ~var, ~clean_name, ~label,
-    ~group, ~grp_lab,
+  ~group, ~grp_lab,
   1, "expr_PC2", "Tolerance", "Tolerance\nexpression",
-    "Expression", "Immune\nexpression",
+  "Expression", "Immune\nexpression",
   2, "Bb_infected", "Infection", "Infection",
-    "Infection", "Infection",
+  "Infection", "Infection",
   3, "expr_PC1", "Resistance", "Resistance\nexpression",
-    "Expression", "Immune\nexpression",
+  "Expression", "Immune\nexpression",
   4, "ticks_attached", "Parasitism", "Parasitism\n(ticks)",
-    "Parasitism", "Parasitism\n(ticks)",
+  "Parasitism", "Parasitism\n(ticks)",
   5,"capprop_shift", "Cap. Shift", "Capture\ntime \U0394",
-    "Behavior", "Behavior\n(timing)",
+  "Behavior", "Behavior\n(timing)",
   6, "cap_prop_night", "Cap. Time", "Capture\ntime",
-    "Behavior", "Behavior\n(timing)",
+  "Behavior", "Behavior\n(timing)",
   7, "weight", "Weight", "Weight",
-    "Phenotype", "Phenotype\n(morphological)",
+  "Phenotype", "Phenotype\n(morphology)",
   8, "sex_mature", "Reproductive", "Reproductive\nmaturity",
-    "Phenotype", "Phenotype\n(morphological)",
+  "Phenotype", "Phenotype\n(morphology)",
   9, "sex_male", "Sex", "Sex",
-    "Phenotype", "Phenotype\n(morphological)",
+  "Phenotype", "Phenotype\n(morphology)",
   10, "wthr_PC1", "Weather", "Weather\n(PC)",
-    "Environment", "Environment",
+  "Environment", "Environment",
   11, "clim_PC1", "Climate", "Climate\n(PC)",
-    "Environment", "Environment",
+  "Environment", "Environment",
 ) %>%
   mutate(across(-c(rank), ~factor(.x, levels = unique(.x))))
+
+group_lookup <- var_lookup %>% 
+  select(group, grp_lab) %>% distinct() %>% 
+  mutate(
+    coords = case_when(
+      grepl("expression", group, ignore.case = TRUE) ~ tibble(x = -1, y = 2),
+      grepl("Infection", group) ~ tibble(x = 2, y = 1),
+      grepl("Parasitism", group) ~ tibble(x = 0, y = 0.1),
+      grepl("Phenotype", group) ~ tibble(x = -1, y = -2),
+      grepl("Behavior", group) ~ tibble(x = -2, y = 0),
+      grepl("Environment", group) ~ tibble(x = 2, y = -1),
+      .default = tibble(x = NA, y = NA)
+    )
+  ) %>% unnest(coords)
+
+var_lookup <- var_lookup %>% 
+  left_join(group_lookup, by = c("group", "grp_lab"))
 
 # join these alternate variable names into the coefficient table
 full_mod$coefficients <- full_mod$coefficients %>%
@@ -87,8 +104,9 @@ full_brkdwn <- readRDS(
   file.path(
     "infection-modeling/data/model-objects",
     "cumulative-effects-table_simplified-SEM.rds"
-  )
+  ) 
 ) %>%
+  rename(Response = To, Predictor = From) %>% 
   left_join(
     var_lookup %>%
       select(
@@ -143,27 +161,32 @@ group_nodes_edge$edges <- group_nodes_edge$edges %>%
     style = if_else(any_effect, "solid", "dashed"),
   )
 
-group_nodes_edge$nodes %>%
+group_nodes_edge$nodes <- group_nodes_edge$nodes %>%
   mutate(
-    fill_color = if_else(grepl("Infection", name), "thistle1", "white"),
-    # coords = case_when(
-    #   grepl("expression", name) ~ tibble(x = -1, y = 2),
-    #   grepl("Infection", name) ~ tibble(x = 2, y = 1),
-    #   # name == "Parasitism\n(ticks)" ~ tibble(x = 0, y = 0.1),
-    #   # name == "Phenotype" ~ tibble(x = -1, y = -2),
-    #   # name == "Behavior\n(timing)" ~ tibble(x = -2, y = 0),
-    #   # name == "Environment" ~ tibble(x = 2, y = -1),
-    #   .default = tibble(x = NA, y = NA)
-    # )
+    fill_color = if_else(grepl("Infection", name), "thistle1", "white")
+  ) %>% 
+  left_join(
+    group_lookup %>% select(name = grp_lab, group, x, y),
+    by = "name"
   )
 
-## TODO: stopping point 11/10/2025 - need to finish replicating conceptSEM.
+full_psem_plot <- build_psem_plot(
+  group_nodes_edge, render = FALSE, attr_theme = "bt"
+) %>% 
+  add_global_graph_attrs("layout", "fdp", "graph") %>% 
+  set_node_attrs("width", 0.9) %>% 
+  set_node_attrs("fontcolor", "black") %>% 
+  set_node_attrs("color", "black")
 
-build_psem_plot(
-  group_nodes_edge, render = TRUE, attr_theme = "bt"
-)
+render_graph(full_psem_plot)
 
-# ---- Figure 3 (raw parasitism/infection effects) ----
+full_psem_plot %>% 
+  export_graph(
+    "infection-modeling/graphics/conceptual-SEM-full.png", 
+    width = 4.5*300, height = 4.5*300
+  )
+
+## ---- Figure 3 (raw parasitism/infection effects) ----
 # elongate the data for multi-panel plotting
 long_peros <- Peros %>%
   filter(sex_male != 0.5, weight <= 50) %>% # remove ambiguous sex
@@ -262,7 +285,7 @@ ggplot(data = long_bin, aes(x = pred_val, y = resp_val)) +
     ),
     values = c(
       "cornflowerblue", "grey50"#, "black"
-      )
+    )
   ) +
   scale_linetype_manual(
     breaks = c(TRUE, FALSE), values = c("solid", "dashed")
@@ -326,6 +349,87 @@ ggsave(
 )
 
 ## ---- Figure 5 (species SEM effects breakdown comparison) ----
+pele_model_objects <- readRDS(
+  "infection-modeling/data/model-objects/PELE-SEM-objects.rds"
+)
+pele_sem <- pele_model_objects$sem_mod$fit
+pema_model_objects <- readRDS(
+  "infection-modeling/data/model-objects/PEMA-SEM-objects.rds"
+)
+pema_sem <- pema_model_objects$sem_mod$fit
+
+spec_coefs <- readRDS(
+  "infection-modeling/data/model-objects/joint-species-coefficients_SEM.rds"
+) %>% 
+  rename(Species = species)
+
+pele_fp <- build_nodes_edges(pele_sem$coefficients)
+pema_fp <- build_nodes_edges(pema_sem$coefficients)
+
+format_edge_lab <- function(x, y){
+  x.small = round(x, 2)
+  y.small = round(y, 2)
+  paste0(x.small, " (", y.small, ")")
+}
+
+spec_unif_coefs <- spec_coefs %>%
+  select(Response, Predictor, Species, CI_overlap, Std.Estimate, P.Value) %>%
+  pivot_wider(names_from = Species, values_from = c(Std.Estimate, P.Value)) %>%
+  mutate(
+    opposite_signs = if_else(
+      Std.Estimate_PEMA * Std.Estimate_PELE < 0, TRUE, FALSE
+    ),
+    label = format_edge_lab(Std.Estimate_PELE, Std.Estimate_PEMA),
+    tooltip = label,
+    style = if_else(P.Value_PELE <= 0.1, "solid", "dashed"),
+    color = case_when(
+      CI_overlap ~ "black",
+      # CI_overlap & Std.Estimate_PELE >= 0 ~ "cornflowerblue",
+      # CI_overlap & Std.Estimate_PELE < 0 ~ "orange",
+      # !CI_overlap & !opposite_signs & Std.Estimate_PELE >= 0 ~ "cornflowerblue",
+      # !CI_overlap & !opposite_signs & Std.Estimate_PELE < 0 ~ "orange",
+      # !CI_overlap & opposite_signs ~ "purple"
+      !CI_overlap ~ "purple"
+    ),
+    fontcolor = color,
+  ) %>% ungroup()
+
+pele_fp$edges <- spec_unif_coefs %>%
+  left_join(
+    var_lookup %>%
+      select(
+        Response = var, clean_resp = clean_name, resp_lab = label,
+        resp_grp = group, resp_grplab = grp_lab,
+      ), by = "Response"
+  ) %>%
+  left_join(
+    var_lookup %>%
+      select(
+        Predictor = var, clean_pred = clean_name, pred_lab = label,
+        pred_grp = group, pred_grplab = grp_lab
+      ), by = "Predictor"
+  ) %>% 
+  mutate(
+    # x = jitter(.data$x, factor = 0.1), y = jitter(.data$y, factor = 0.1),
+    From = pred_lab, To = resp_lab
+  )
+  
+pele_fp$nodes <- pele_fp$nodes %>%
+  left_join(var_lookup %>% select(name = var, label, x, y)) %>%
+  mutate(
+    fillcolor = if_else(name == "Bb_infected", "thistle1", "white"),
+    name = label,
+    x = jitter(x*2, factor = 0.1),
+    y = jitter(y*2, factor = 0.1),
+  ) %>% select(-label, -x, -y)
+  
+build_psem_plot(pele_fp, attr_theme = "lr") %>%
+  # add_global_graph_attrs("layout", "fdp", "graph") %>%
+  # set_node_attrs("shape", "rectangle") %>%
+  set_node_attrs("width", 0.9) %>%
+  set_node_attrs("height", 0.5) %>%
+  set_edge_attrs("fontsize", 12) %>%
+  render_graph()
 
 ## ---- Table S1 (full SEM coefficients) ----
 
@@ -347,8 +451,14 @@ full_coef_tab <- full_mod$coefficients %>%
     Predictor = gsub("\\n", " ", Predictor)
   )
 
+full_coef_tab
+
 saveRDS(
   full_coef_tab, "infection-modeling/data/MS-tables/full-SEM-coef-tab.rds"
+)
+
+write.csv(
+  full_coef_tab, "infection-modeling/data/MS-tables/full-SEM-coef-tab.csv"
 )
 
 ## ---- Table S2 (full SEM fit stats)----
@@ -365,14 +475,73 @@ full_R2_tab <- full_mod$R2 %>%
   ) %>%
   mutate(Response = gsub("\\n", " ", Response))
 
+full_R2_tab
+
 saveRDS(
   full_R2_tab, "infection-modeling/data/MS-tables/full-SEM-R2-tab.rds"
+)
+
+write.csv(
+  full_R2_tab, "infection-modeling/data/MS-tables/full-SEM-R2-tab.csv"
 )
 
 ## ---- Figure S1 (full SEM diagram) ----
 # TODO: needed??
 
 ## ---- Table S3 (species SEM coefficients) ----
+
+sp_cumeffs <- readRDS(
+  file.path(
+    "infection-modeling/data/model-objects",
+    "species_cumulative-effects-table_simplified-SEM.rds"
+  )
+) %>% 
+  rename(Response = To, Predictor = From)
+
+sp_cumeffs <- full_join(
+  spec_coefs, sp_cumeffs, by = c("Response", "Predictor", "P.Value", "Species")
+)
+
+sp_cumeffs <- sp_cumeffs %>%
+  left_join(
+    var_lookup %>%
+      select(
+        Response = var, clean_resp = clean_name, resp_lab = label,
+        resp_grp = group, resp_grplab = grp_lab
+      ), by = "Response"
+  ) %>%
+  left_join(
+    var_lookup %>%
+      select(
+        Predictor = var, clean_pred = clean_name, pred_lab = label,
+        pred_grp = group, pred_grplab = grp_lab
+      ), by = "Predictor"
+  )
+
+species_coef_tab <- sp_cumeffs %>% 
+  select(
+    Species, Response = resp_lab, Predictor = pred_lab, 
+    Coef = Estimate, SE = Std.Error, DF, P = P.Value,
+    direct, indirect, total
+  ) %>% 
+  mutate(DF = round(DF)) %>% 
+  pivot_wider(
+    names_from = Species, values_from = Coef:total, names_sep = "."
+  ) %>% 
+  relocate(ends_with("PELE"), .after = "Predictor")
+  
+
+species_coef_tab
+
+saveRDS(
+  species_coef_tab, 
+  "infection-modeling/data/MS-tables/species-SEM-coef-tab.rds"
+)
+
+write.csv(
+  species_coef_tab,
+  "infection-modeling/data/MS-tables/species-SEM-coef-tab.csv"
+)
 
 ## ---- Table S4 (species SEM fit status) ----
 # TODO: combine with Table S3?

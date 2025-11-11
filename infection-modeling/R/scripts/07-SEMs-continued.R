@@ -166,19 +166,19 @@ base_plot <- build_psem_plot(frame_list)
 
 # build the table to fill
 cumulative_tab <- expand_grid(
-  Response = unique(frame_list$edges$Response),
-  Predictor = unique(frame_list$edges$Predictor)
+  To = unique(frame_list$edges$To),
+  From = unique(frame_list$edges$From)
 ) %>%
-  filter(Response != Predictor) %>%
+  filter(To != From) %>%
   mutate(
-    respID = frame_list$nodes$id[match(Response, frame_list$nodes$name)],
-    predID = frame_list$nodes$id[match(Predictor, frame_list$nodes$name)]
+    respID = frame_list$nodes$id[match(To, frame_list$nodes$name)],
+    predID = frame_list$nodes$id[match(From, frame_list$nodes$name)]
   ) %>%
   left_join(
-    select(frame_list$edges, Response, Predictor, Std.Estimate, P.Value),
-    by = c("Response", "Predictor")
+    select(frame_list$edges, To, From, Val, P.Value),
+    by = c("To", "From")
   ) %>%
-  rename(direct = Std.Estimate)
+  rename(direct = Val)
 
 # add a list of all the paths from the responses to the predictors
 cumulative_tab <- cumulative_tab %>%
@@ -215,7 +215,7 @@ cum_eff_tab <- cumulative_tab %>%
     indirect = total - new_direct
   ) %>%
   select(
-    Response, Predictor, P.Value,  direct, new_direct, indirect, total
+    To, From, P.Value,  direct, new_direct, indirect, total
   )
 
 saveRDS(
@@ -427,19 +427,19 @@ pema_baseplot <- build_psem_plot(pema_fp)
 ## PELE
 # build the table to fill
 pele_cumtab <- expand_grid(
-  Response = unique(pele_fp$edges$Response),
-  Predictor = unique(pele_fp$edges$Predictor)
+  To = unique(pele_fp$edges$To),
+  From = unique(pele_fp$edges$From)
 ) %>%
-  filter(Response != Predictor) %>%
+  filter(To != From) %>%
   mutate(
-    respID = pele_fp$nodes$id[match(Response, pele_fp$nodes$name)],
-    predID = pele_fp$nodes$id[match(Predictor, pele_fp$nodes$name)]
+    respID = pele_fp$nodes$id[match(To, pele_fp$nodes$name)],
+    predID = pele_fp$nodes$id[match(From, pele_fp$nodes$name)]
   ) %>%
   left_join(
-    select(pele_fp$edges, Response, Predictor, Std.Estimate, P.Value),
-    by = c("Response", "Predictor")
+    select(pele_fp$edges, To, From, Val, P.Value),
+    by = c("To", "From")
   ) %>%
-  rename(direct = Std.Estimate)
+  rename(direct = Val)
 
 # add a list of all the paths from the responses to the predictors
 pele_cumtab <- pele_cumtab %>%
@@ -476,7 +476,7 @@ pele_cumeffs <- pele_cumtab %>%
     indirect = total - new_direct
   ) %>%
   select(
-    Response, Predictor, P.Value,  direct, new_direct, indirect, total
+    To, From, P.Value,  direct, new_direct, indirect, total
   ) %>%
   mutate(Species = "PELE")
 
@@ -491,19 +491,19 @@ saveRDS(
 ## PEMA
 # build the table to fill
 pema_cumtab <- expand_grid(
-  Response = unique(pema_fp$edges$Response),
-  Predictor = unique(pema_fp$edges$Predictor)
+  To = unique(pema_fp$edges$To),
+  From = unique(pema_fp$edges$From)
 ) %>%
-  filter(Response != Predictor) %>%
+  filter(To != From) %>%
   mutate(
-    respID = pema_fp$nodes$id[match(Response, pema_fp$nodes$name)],
-    predID = pema_fp$nodes$id[match(Predictor, pema_fp$nodes$name)]
+    respID = pema_fp$nodes$id[match(To, pema_fp$nodes$name)],
+    predID = pema_fp$nodes$id[match(From, pema_fp$nodes$name)]
   ) %>%
   left_join(
-    select(pema_fp$edges, Response, Predictor, Std.Estimate, P.Value),
-    by = c("Response", "Predictor")
+    select(pema_fp$edges, To, From, Val, P.Value),
+    by = c("To", "From")
   ) %>%
-  rename(direct = Std.Estimate)
+  rename(direct = Val)
 
 # add a list of all the paths from the responses to the predictors
 pema_cumtab <- pema_cumtab %>%
@@ -540,7 +540,7 @@ pema_cumeffs <- pema_cumtab %>%
     indirect = total - new_direct
   ) %>%
   select(
-    Response, Predictor, P.Value,  direct, new_direct, indirect, total
+    To, From, P.Value,  direct, new_direct, indirect, total
   ) %>%
   mutate(Species = "PEMA")
 
@@ -563,5 +563,3 @@ saveRDS(
     "species_cumulative-effects-table_simplified-SEM.rds"
   )
 )
-
-

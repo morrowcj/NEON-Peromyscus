@@ -169,55 +169,55 @@ neg_col = "orange"
 ```
 
 ```{r}
-paths <- simple_out$coefficients %>% 
-  select(Response, Predictor, DF, Std.Estimate, P.Value) %>% 
-  mutate(
-    # pos_effect = Std.Estimate >= 0,
-    Response = factor(
-      Response, levels = var_table$var, labels = var_table$label
-    ),
-    Predictor = factor(
-      Predictor, levels = var_table$var, labels = var_table$label
-    ),
-    color = if_else(Std.Estimate >= 0, pos_col, neg_col),
-    penwidth = scales::rescale(x = abs(Std.Estimate) ,to = c(1, 9)),
-    style = if_else(P.Value <= 0.1, "solid", "dashed"),
-    tooltip = round(Std.Estimate, 2)
-    # headlabel = round(Std.Estimate, 2),
-    # labelfontsize = 14
-  )
-
-nodes <- tibble(
-  var = unique(
-    c(simple_out$coefficients$Response, simple_out$coefficients$Predictor)
-  )
-) %>% 
-  mutate(
-    var = factor(var, levels = var_table$var, labels = var_table$label),
-    id = row_number(),
-    group = var_table$group[match(var, var_table$label)],
-    # y = as.numeric(group),
-    shape = "rectangle",
-    fillcolor = group_cols[match(group, group_tiers)]
-  )
+# paths <- simple_out$coefficients %>% 
+#   select(Response, Predictor, DF, Std.Estimate, P.Value) %>% 
+#   mutate(
+#     # pos_effect = Std.Estimate >= 0,
+#     Response = factor(
+#       Response, levels = var_table$var, labels = var_table$label
+#     ),
+#     Predictor = factor(
+#       Predictor, levels = var_table$var, labels = var_table$label
+#     ),
+#     color = if_else(Std.Estimate >= 0, pos_col, neg_col),
+#     penwidth = scales::rescale(x = abs(Std.Estimate) ,to = c(1, 9)),
+#     style = if_else(P.Value <= 0.1, "solid", "dashed"),
+#     tooltip = round(Std.Estimate, 2)
+#     # headlabel = round(Std.Estimate, 2),
+#     # labelfontsize = 14
+#   )
+# 
+# nodes <- tibble(
+#   var = unique(
+#     c(simple_out$coefficients$Response, simple_out$coefficients$Predictor)
+#   )
+# ) %>% 
+#   mutate(
+#     var = factor(var, levels = var_table$var, labels = var_table$label),
+#     id = row_number(),
+#     group = var_table$group[match(var, var_table$label)],
+#     # y = as.numeric(group),
+#     shape = "rectangle",
+#     fillcolor = group_cols[match(group, group_tiers)]
+#   )
 ```
 
 ```{r simpSemGraph, out.width="100%", fig.asp = 1, fig.cap=caption, warning=FALSE}
-sem_graph <- create_graph(attr_theme = "bt") %>% 
-  # add_global_graph_attrs("layout", "dot", "graph") %>%
-  # add_global_graph_attrs("rankdir", "LR", "graph") %>%
-  add_nodes_from_table(nodes, label_col = var) %>% 
-  add_edges_from_table(
-    paths, from_col = Predictor, to_col = Response, from_to_map = label
-  ) %>% 
-  set_node_attrs(width, 1.4) %>%
-  set_node_attrs(height, .7) %>%
-  set_node_attrs(fontsize, 16) %>%
-  set_node_attrs(fontcolor, "black") %>% 
-  set_node_attrs(color, "black")
-
-sem_graph %>% render_graph() 
-
+# sem_graph <- create_graph(attr_theme = "bt") %>% 
+#   # add_global_graph_attrs("layout", "dot", "graph") %>%
+#   # add_global_graph_attrs("rankdir", "LR", "graph") %>%
+#   add_nodes_from_table(nodes, label_col = var) %>% 
+#   add_edges_from_table(
+#     paths, from_col = Predictor, to_col = Response, from_to_map = label
+#   ) %>% 
+#   set_node_attrs(width, 1.4) %>%
+#   set_node_attrs(height, .7) %>%
+#   set_node_attrs(fontsize, 16) %>%
+#   set_node_attrs(fontcolor, "black") %>% 
+#   set_node_attrs(color, "black")
+# 
+# sem_graph %>% render_graph() 
+# 
 caption = paste(
   "PATH diagram for the full SEM of *Peromyscus*-*Borrelia* dynamics.",
   "Orange vectors represent negative effects, blue vectors represent positive",
@@ -376,35 +376,35 @@ full_R2_tab %>%
 
 ```{r allCumuRough, fig.width = 6, fig.asp = 1, include = FALSE}
 # look at all the effects
-cumu_tab %>%
-  ggplot(aes(y = Predictor, x = total)) +
-  facet_wrap(~Response, scales = "free_x") +
-  geom_vline(xintercept = 0, col = "grey50", linetype = "dotted") +
-  geom_col(
-    aes(fill = "total"),
-    width = 0.9, linewidth = 0.5, col = "black"
-  ) + geom_col(
-    aes(x = indirect, fill = "indirect"),
-    position = position_nudge(y = 0.15),
-    width = 0.3, linewidth = 0.25, col = "black"
-  ) +
-  geom_col(
-    aes(x = new_direct, fill = "direct", linetype = P.Value <= 0.1),
-    position = position_nudge(y = -0.15),
-    width = 0.3, linewidth = 0.25, col = "black"
-  ) + 
-  theme_bw() +
-  theme(
-    strip.background = element_blank(),
-    legend.position = "inside", legend.position.inside = c(0.95, 0.05),
-    legend.justification = c(1, 0),
-    # legend.background = element_rect(color = "black", linewidth = 0.3),
-    panel.spacing.x = unit(0, "lines")
-  ) +
-  labs(x = "Standardized effect", fill = NULL) +
-  scale_fill_manual(values = c("cornflowerblue", "orange", "grey50")) +
-  scale_linetype_manual(values = c("dashed", "solid")) +
-  guides(linetype = "none")
+# cumu_tab %>%
+#   ggplot(aes(y = Predictor, x = total)) +
+#   facet_wrap(~Response, scales = "free_x") +
+#   geom_vline(xintercept = 0, col = "grey50", linetype = "dotted") +
+#   geom_col(
+#     aes(fill = "total"),
+#     width = 0.9, linewidth = 0.5, col = "black"
+#   ) + geom_col(
+#     aes(x = indirect, fill = "indirect"),
+#     position = position_nudge(y = 0.15),
+#     width = 0.3, linewidth = 0.25, col = "black"
+#   ) +
+#   geom_col(
+#     aes(x = new_direct, fill = "direct", linetype = P.Value <= 0.1),
+#     position = position_nudge(y = -0.15),
+#     width = 0.3, linewidth = 0.25, col = "black"
+#   ) + 
+#   theme_bw() +
+#   theme(
+#     strip.background = element_blank(),
+#     legend.position = "inside", legend.position.inside = c(0.95, 0.05),
+#     legend.justification = c(1, 0),
+#     # legend.background = element_rect(color = "black", linewidth = 0.3),
+#     panel.spacing.x = unit(0, "lines")
+#   ) +
+#   labs(x = "Standardized effect", fill = NULL) +
+#   scale_fill_manual(values = c("cornflowerblue", "orange", "grey50")) +
+#   scale_linetype_manual(values = c("dashed", "solid")) +
+#   guides(linetype = "none")
 ```
 
 ### Conceptual model path diagram
@@ -421,237 +421,239 @@ our conceptual model, since we can label which paths met our assumptions (blue),
 and which didn't (grey).
 
 ```{r fig.asp = 1, include = TRUE}
-# group the variables by type
-group_tab <- tibble(
-  var = with(simple_out$coefficients, unique(c(Response, Predictor))),
-  group = case_when(
-    var %in% c("expr_PC1") ~ "Immune\nexpression", #"resistance",
-    var %in% c("expr_PC2") ~ "Immune\nexpression", #"tolerance",
-    var %in% c("sex_male", "sex_mature", "weight") ~ "Phenotype",
-    var %in% c("wthr_PC1", "clim_PC1") ~ "Environment",
-    var %in% c("capprop_shift", "cap_prop_night") ~ "Behavior\n(timing)",
-    var %in% c("ticks_attached") ~ "Parasitism\n(ticks)",
-    var %in% c("Bb_infected") ~ "Infection",
-    .default = NA
-  )
-)
-# combine with the cumulative coefficients
-new_cumu_tab <- cumu_tab %>% 
-  left_join(
-    group_tab %>% rename(Response = var, Resp_grp = group), by = "Response"
-  ) %>% 
-  left_join(
-    group_tab %>% rename(Predictor = var, Pred_grp = group), by = "Predictor"
-  )
-  
-new_cumu_tab <- new_cumu_tab %>% 
-  mutate(new_direct = if_else(P.Value <= 0.1, new_direct, 0)) %>% 
-  group_by(Response, Resp_grp, Pred_grp) %>% 
-  summarize(
-    total_mag = mean(abs(new_direct), na.rm = TRUE),
-    total = mean(new_direct, na.rm = TRUE),
-    # total_mag = mean(abs(total), na.rm = TRUE),
-    # total = mean(total, na.rm = TRUE),
-    .groups = "drop"
-  ) %>% 
-  group_by(Resp_grp, Pred_grp) %>% 
-  summarize(
-    total_mag = mean(total_mag, na.rm = TRUE),
-    total = mean(total, na.rm = TRUE), 
-    .groups = "drop"
-  ) %>% 
-  mutate(
-    total_pick = if_else(Pred_grp == "Environment", total_mag, total),
-  ) %>% 
-  bind_rows(
-    tibble(Resp_grp = "Infection", Pred_grp = "Immune\nexpression", total_pick = 0.0001)
-  )
+# # group the variables by type
+# group_tab <- tibble(
+#   var = with(simple_out$coefficients, unique(c(Response, Predictor))),
+#   group = case_when(
+#     var %in% c("expr_PC1") ~ "Immune\nexpression", #"resistance",
+#     var %in% c("expr_PC2") ~ "Immune\nexpression", #"tolerance",
+#     var %in% c("sex_male", "sex_mature", "weight") ~ "Phenotype",
+#     var %in% c("wthr_PC1", "clim_PC1") ~ "Environment",
+#     var %in% c("capprop_shift", "cap_prop_night") ~ "Behavior\n(timing)",
+#     var %in% c("ticks_attached") ~ "Parasitism\n(ticks)",
+#     var %in% c("Bb_infected") ~ "Infection",
+#     .default = NA
+#   )
+# )
+# # combine with the cumulative coefficients
+# new_cumu_tab <- cumu_tab %>% 
+#   left_join(
+#     group_tab %>% rename(Response = var, Resp_grp = group), by = "Response"
+#   ) %>% 
+#   left_join(
+#     group_tab %>% rename(Predictor = var, Pred_grp = group), by = "Predictor"
+#   )
+#   
+# new_cumu_tab <- new_cumu_tab %>% 
+#   mutate(new_direct = if_else(P.Value <= 0.1, new_direct, 0)) %>% 
+#   group_by(Response, Resp_grp, Pred_grp) %>% 
+#   summarize(
+#     total_mag = mean(abs(new_direct), na.rm = TRUE),
+#     total = mean(new_direct, na.rm = TRUE),
+#     # total_mag = mean(abs(total), na.rm = TRUE),
+#     # total = mean(total, na.rm = TRUE),
+#     .groups = "drop"
+#   ) %>% 
+#   group_by(Resp_grp, Pred_grp) %>% 
+#   summarize(
+#     total_mag = mean(total_mag, na.rm = TRUE),
+#     total = mean(total, na.rm = TRUE), 
+#     .groups = "drop"
+#   ) %>% 
+#   mutate(
+#     total_pick = if_else(Pred_grp == "Environment", total_mag, total),
+#   ) %>% 
+#   bind_rows(
+#     tibble(Resp_grp = "Infection", Pred_grp = "Immune\nexpression", total_pick = 0.0001)
+#   )
 ```
 
-```{r conceptSEM}
-cumu_edge_list <- new_cumu_tab %>%
-  filter(total_pick != 0) %>% 
-  build_nodes_edges(
-    from_col = "Pred_grp", to_col = "Resp_grp", val_col = "total_pick"
-  )
+```{r conceptSEM, fig.cap = caption}
+# cumu_edge_list <- new_cumu_tab %>%
+#   filter(total_pick != 0) %>% 
+#   build_nodes_edges(
+#     from_col = "Pred_grp", to_col = "Resp_grp", val_col = "total_pick"
+#   )
+# 
+# cumu_edge_list$edges <- cumu_edge_list$edges %>% 
+#   filter(From != To) %>% 
+#   mutate(
+#     color = case_when(
+#       From == "Immune\nexpression" & To == "Infection" ~ "grey80",
+#       From == "Behavior\n(timing)" & To == "Immune\nexpression" ~ "orange",
+#       # Val >= 0 ~ "cornflowerblue", 
+#       # Val < 0 ~ "red",
+#       .default = "cornflowerblue"
+#     ),
+#     penwidth = scales::rescale(Val, to = c(1, 4)),
+#     penwidth = if_else(is.na(penwidth), 1, penwidth),
+#     style = if_else(
+#       From == "Immune\nexpression" & To == "Infection", "dashed", "solid"
+#     ),
+#     # label = round(Val, 2)
+#   ) 
+# 
+# cumu_edge_list$nodes <- cumu_edge_list$nodes %>% 
+#   mutate(
+#     group = case_when(
+#       name %in% c("Immune\nexpression", "Infection") ~ "top",
+#       .default = "bottom"
+#     ),
+#     fillcolor = case_when(
+#       name %in% c("Infection") ~ "thistle1",
+#       .default = "white"
+#     ),
+#     coords = case_when(
+#       name == "Immune\nexpression" ~ tibble(x = -1, y = 2),
+#       name == "Infection" ~ tibble(x = 2, y = 1),
+#       name == "Parasitism\n(ticks)" ~ tibble(x = 0, y = 0.1),
+#       name == "Phenotype" ~ tibble(x = -1, y = -2),
+#       name == "Behavior\n(timing)" ~ tibble(x = -2, y = 0), 
+#       name == "Environment" ~ tibble(x = 2, y = -1)
+#     )
+#   ) %>% 
+#   unnest(coords)
+# 
+# build_psem_plot(cumu_edge_list, render = FALSE, attr_theme = "bt") %>% 
+#   add_global_graph_attrs("layout", "fdp", "graph") %>%
+#   # set_node_attrs("shape", "rectangle") %>% 
+#   set_node_attrs("width", 0.85) %>% 
+#   set_node_attrs("height", 0.4) %>% 
+#   set_node_attrs("fontcolor", "black") %>% 
+#   set_node_attrs("color", "black") %>% 
+#   set_edge_attrs("decorate", TRUE) %>% 
+#   # set_node_attrs("fontsize", 12) %>% 
+#   render_graph()
 
-cumu_edge_list$edges <- cumu_edge_list$edges %>% 
-  filter(From != To) %>% 
-  mutate(
-    color = case_when(
-      From == "Immune\nexpression" & To == "Infection" ~ "grey80",
-      From == "Behavior\n(timing)" & To == "Immune\nexpression" ~ "orange",
-      # Val >= 0 ~ "cornflowerblue", 
-      # Val < 0 ~ "red",
-      .default = "cornflowerblue"
-    ),
-    penwidth = scales::rescale(Val, to = c(1, 4)),
-    penwidth = if_else(is.na(penwidth), 1, penwidth),
-    style = if_else(
-      From == "Immune\nexpression" & To == "Infection", "dashed", "solid"
-    ),
-    # label = round(Val, 2)
-  ) 
-
-cumu_edge_list$nodes <- cumu_edge_list$nodes %>% 
-  mutate(
-    group = case_when(
-      name %in% c("Immune\nexpression", "Infection") ~ "top",
-      .default = "bottom"
-    ),
-    fillcolor = case_when(
-      name %in% c("Infection") ~ "thistle1",
-      .default = "white"
-    ),
-    coords = case_when(
-      name == "Immune\nexpression" ~ tibble(x = -1, y = 2),
-      name == "Infection" ~ tibble(x = 2, y = 1),
-      name == "Parasitism\n(ticks)" ~ tibble(x = 0, y = 0.1),
-      name == "Phenotype" ~ tibble(x = -1, y = -2),
-      name == "Behavior\n(timing)" ~ tibble(x = -2, y = 0), 
-      name == "Environment" ~ tibble(x = 2, y = -1)
-    )
-  ) %>% 
-  unnest(coords)
-
-build_psem_plot(cumu_edge_list, render = FALSE, attr_theme = "bt") %>% 
-  add_global_graph_attrs("layout", "fdp", "graph") %>%
-  # set_node_attrs("shape", "rectangle") %>% 
-  set_node_attrs("width", 0.85) %>% 
-  set_node_attrs("height", 0.4) %>% 
-  set_node_attrs("fontcolor", "black") %>% 
-  set_node_attrs("color", "black") %>% 
-  set_edge_attrs("decorate", TRUE) %>% 
-  # set_node_attrs("fontsize", 12) %>% 
-  render_graph()
+knitr::include_graphics("infection-modeling/graphics/conceptual-SEM-full.png")
 
 caption = paste(
   "Factors contributing to infection of *Peromyscus* with *Borrelia*.",
-  "Blue solid vectors represent paths that matched our hypothesis and",
-  "grey dashed vectors represent paths we hypothesized that were not supported,",
-  # "Orange vectors represent paths that we did not hypothesize but were supported.",
+  "Black solid vectors represent effects that matched our hypothesis and",
+  "grey dashed vectors represent effects we hypothesized that were not",
+  "supported,",
   "Widths of vectors are proportional to average observed direct effect sizes.",
   "For full model results, please see Table \\@ref(tab:fullSEMcoefTab)"
 )
 ```
 
 ```{r, include=FALSE, eval=FALSE}
-## Check the 
-new_cumu_tab %>% 
-  filter(total != 0) %>% 
-  ggplot(aes(y = Pred_grp, x = total, fill = Pred_grp)) + 
-  geom_vline(xintercept = 0, linetype = "dotted", color = "black") +
-  facet_wrap(~Resp_grp, scales = "free_x") + 
-  geom_col(aes(x = total_pick, fill = "pick"), fill = "grey50", col = NA) + 
-  geom_col(
-    width = 0.3, position = position_nudge(y = 0.151),
-    aes(col = "total")
-  ) + 
-  geom_col(
-    width = 0.3, position = position_nudge(y = -0.151),
-    aes(x = total_mag, col = "total_mag")
-  ) + 
-  scale_color_manual(values = c("black", "white"))
-
-new_cumu_tab <- cumu_tab %>% 
-  filter(Predictor %in% c("cap_prop_night", "capprop_shift")) %>% 
-  group_by(Response) %>% 
-  summarize(
-    Predictor = "activity_timing", P.Value = NA, across(direct:total, ~sum(.x))
-  ) %>% 
-  bind_rows(cumu_tab) %>% 
-  arrange(Response, Predictor)
-
-## check how the activity timing bar compares to others (OK)
-new_cumu_tab %>% 
-  filter(!total == 0) %>% 
-  ggplot(aes(x = total, y = Predictor, fill = Response)) + 
-  geom_vline(xintercept = 0, col = "black", linetype = "dotted") + 
-  facet_wrap(~Response, scales = "free_x") + 
-  geom_col(position = "dodge", show.legend = FALSE, col = "black", width = 1) + 
-  theme_bw() + 
-  theme(
-    panel.spacing = unit(0, "lines"),
-    strip.background = element_blank()
-  )
+# ## Check the 
+# new_cumu_tab %>% 
+#   filter(total != 0) %>% 
+#   ggplot(aes(y = Pred_grp, x = total, fill = Pred_grp)) + 
+#   geom_vline(xintercept = 0, linetype = "dotted", color = "black") +
+#   facet_wrap(~Resp_grp, scales = "free_x") + 
+#   geom_col(aes(x = total_pick, fill = "pick"), fill = "grey50", col = NA) + 
+#   geom_col(
+#     width = 0.3, position = position_nudge(y = 0.151),
+#     aes(col = "total")
+#   ) + 
+#   geom_col(
+#     width = 0.3, position = position_nudge(y = -0.151),
+#     aes(x = total_mag, col = "total_mag")
+#   ) + 
+#   scale_color_manual(values = c("black", "white"))
+# 
+# new_cumu_tab <- cumu_tab %>% 
+#   filter(Predictor %in% c("cap_prop_night", "capprop_shift")) %>% 
+#   group_by(Response) %>% 
+#   summarize(
+#     Predictor = "activity_timing", P.Value = NA, across(direct:total, ~sum(.x))
+#   ) %>% 
+#   bind_rows(cumu_tab) %>% 
+#   arrange(Response, Predictor)
+# 
+# ## check how the activity timing bar compares to others (OK)
+# new_cumu_tab %>% 
+#   filter(!total == 0) %>% 
+#   ggplot(aes(x = total, y = Predictor, fill = Response)) + 
+#   geom_vline(xintercept = 0, col = "black", linetype = "dotted") + 
+#   facet_wrap(~Response, scales = "free_x") + 
+#   geom_col(position = "dodge", show.legend = FALSE, col = "black", width = 1) + 
+#   theme_bw() + 
+#   theme(
+#     panel.spacing = unit(0, "lines"),
+#     strip.background = element_blank()
+#   )
 ```
 
 ## Species comparison
 
 ```{r}
-pele_model_objects <- readRDS(
-  "infection-modeling/data/model-objects/PELE-SEM-objects.rds"
-)
-pele_sem <- pele_model_objects$sem_mod$fit
-pema_model_objects <- readRDS(
-  "infection-modeling/data/model-objects/PEMA-SEM-objects.rds"
-)
-pema_sem <- pema_model_objects$sem_mod$fit
-
-spec_coefs <- readRDS(
-  "infection-modeling/data/model-objects/joint-species-coefficients_SEM.rds"
-)
-
-sp_cumeffs <- readRDS(
-  file.path(
-    "infection-modeling/data/model-objects",
-    "species_cumulative-effects-table_simplified-SEM.rds"
-  )
-)
+# pele_model_objects <- readRDS(
+#   "infection-modeling/data/model-objects/PELE-SEM-objects.rds"
+# )
+# pele_sem <- pele_model_objects$sem_mod$fit
+# pema_model_objects <- readRDS(
+#   "infection-modeling/data/model-objects/PEMA-SEM-objects.rds"
+# )
+# pema_sem <- pema_model_objects$sem_mod$fit
+# 
+# spec_coefs <- readRDS(
+#   "infection-modeling/data/model-objects/joint-species-coefficients_SEM.rds"
+# )
+# 
+# sp_cumeffs <- readRDS(
+#   file.path(
+#     "infection-modeling/data/model-objects",
+#     "species_cumulative-effects-table_simplified-SEM.rds"
+#   )
+# )
 ```
 
 ```{r PelePemaSem, out.width="100%", fig.asp = 1, fig.cap=caption, warning=FALSE}
-pele_fp <- build_nodes_edges(pele_sem$coefficients)
-pema_fp <- build_nodes_edges(pema_sem$coefficients)
-
-format_edge_lab <- function(x, y){
-  x.small = round(x, 2)
-  y.small = round(y, 2)
-  paste0(x.small, " (", y.small, ")")
-}
-
-spec_unif_coefs <- spec_coefs %>%
-  select(Response, Predictor, species, CI_overlap, Std.Estimate, P.Value) %>% 
-  pivot_wider(names_from = species, values_from = c(Std.Estimate, P.Value)) %>% 
-  mutate(
-    opposite_signs = if_else(
-      Std.Estimate_PEMA * Std.Estimate_PELE < 0, TRUE, FALSE
-    ), 
-    label = format_edge_lab(Std.Estimate_PELE, Std.Estimate_PEMA),
-    tooltip = label,
-    style = if_else(P.Value_PELE <= 0.1, "solid", "dashed"),
-    color = case_when(
-      CI_overlap & Std.Estimate_PELE >= 0 ~ "cornflowerblue",
-      CI_overlap & Std.Estimate_PELE < 0 ~ "orange",
-      !CI_overlap & !opposite_signs & Std.Estimate_PELE >= 0 ~ "cornflowerblue",
-      !CI_overlap & !opposite_signs & Std.Estimate_PELE < 0 ~ "orange",
-      !CI_overlap & opposite_signs ~ "purple"
-    ),
-    fontcolor = color,
-  ) %>% ungroup()
-
-pele_fp$edges <- spec_unif_coefs %>% 
-  mutate(
-    To = factor(
-      Response, levels = var_table$var, labels = var_table$label
-    ),
-    From = factor(
-      Predictor, levels = var_table$var, labels = var_table$label
-    ),
-  )
-
-pele_fp$nodes <- pele_fp$nodes %>% 
-  mutate(
-    name = factor(name, levels = var_table$var, labels = var_table$label)
-  )
-
-
-build_psem_plot(pele_fp) %>% 
-  set_node_attrs("shape", "rectangle") %>% 
-  set_node_attrs("width", 1.1) %>% 
-  set_node_attrs("height", 0.5) %>% 
-  render_graph()
-
+# pele_fp <- build_nodes_edges(pele_sem$coefficients)
+# pema_fp <- build_nodes_edges(pema_sem$coefficients)
+# 
+# format_edge_lab <- function(x, y){
+#   x.small = round(x, 2)
+#   y.small = round(y, 2)
+#   paste0(x.small, " (", y.small, ")")
+# }
+# 
+# spec_unif_coefs <- spec_coefs %>%
+#   select(Response, Predictor, species, CI_overlap, Std.Estimate, P.Value) %>% 
+#   pivot_wider(names_from = species, values_from = c(Std.Estimate, P.Value)) %>% 
+#   mutate(
+#     opposite_signs = if_else(
+#       Std.Estimate_PEMA * Std.Estimate_PELE < 0, TRUE, FALSE
+#     ), 
+#     label = format_edge_lab(Std.Estimate_PELE, Std.Estimate_PEMA),
+#     tooltip = label,
+#     style = if_else(P.Value_PELE <= 0.1, "solid", "dashed"),
+#     color = case_when(
+#       CI_overlap & Std.Estimate_PELE >= 0 ~ "cornflowerblue",
+#       CI_overlap & Std.Estimate_PELE < 0 ~ "orange",
+#       !CI_overlap & !opposite_signs & Std.Estimate_PELE >= 0 ~ "cornflowerblue",
+#       !CI_overlap & !opposite_signs & Std.Estimate_PELE < 0 ~ "orange",
+#       !CI_overlap & opposite_signs ~ "purple"
+#     ),
+#     fontcolor = color,
+#   ) %>% ungroup()
+# 
+# pele_fp$edges <- spec_unif_coefs %>% 
+#   mutate(
+#     To = factor(
+#       Response, levels = var_table$var, labels = var_table$label
+#     ),
+#     From = factor(
+#       Predictor, levels = var_table$var, labels = var_table$label
+#     ),
+#   )
+# 
+# pele_fp$nodes <- pele_fp$nodes %>% 
+#   mutate(
+#     name = factor(name, levels = var_table$var, labels = var_table$label)
+#   )
+# 
+# 
+# build_psem_plot(pele_fp) %>% 
+#   set_node_attrs("shape", "rectangle") %>% 
+#   set_node_attrs("width", 1.1) %>% 
+#   set_node_attrs("height", 0.5) %>% 
+#   render_graph()
+# 
 caption = paste(
   "Path diagram comparing a simplified SEM between *P. leucopus* and",
   "*P. maniculatus*. Blue vectors indicate positive effects, orange indicate",
@@ -700,48 +702,73 @@ PELE. This could indicate that PEMA is more resistant to infection than PELE.
 
 
 ```{r spCoefTab}
-spec_coefs %>% 
-  select(-c(upper_low, lower_high, CI_overlap)) %>% 
-  arrange(Response, Predictor, species) %>% 
-  relocate(species, .after = Predictor) %>% 
-  mutate(DF = as.integer(DF)) %>% 
-  select(-c(Crit.Value, Var.9)) %>% 
+# spec_coefs %>% 
+#   select(-c(upper_low, lower_high, CI_overlap)) %>% 
+#   arrange(Response, Predictor, species) %>% 
+#   relocate(species, .after = Predictor) %>% 
+#   mutate(DF = as.integer(DF)) %>% 
+#   select(-c(Crit.Value, Var.9)) %>% 
+#   knitr::kable(
+#     col.names = c(
+#       "Response", "Predictor", "Species code", "Coefficient", "SE", 
+#       "DF", "P", "Effect size"
+#     ), 
+#     caption = "Species-specific SEM",
+#     digits = 2
+#   )
+
+species_coef_tab <- readRDS(
+  "infection-modeling/data/MS-tables/species-SEM-coef-tab.rds"
+)
+
+col_names = c(
+  "Response", "Predictor", 
+  rep(c("Coef.", "SE", "DF", "P", "Direct", "Indirect", "Total"), times = 2)
+)
+
+species_coef_tab %>% 
+  mutate(
+    # Response = gsub("\\n", " ", Response),
+    # Predictor = gsub("\\n", " ", Predictor),
+    DF.PELE = round(DF.PELE), 
+    DF.PEMA = round(DF.PEMA), 
+    P.PELE = Hmisc::format.pval(round(P.PELE, 3), nsmall = 3, eps = 0.001),
+    P.PEMA = Hmisc::format.pval(round(P.PEMA, 3), nsmall = 3, eps = 0.001)
+  ) %>% 
   knitr::kable(
-    col.names = c(
-      "Response", "Predictor", "Species code", "Coefficient", "SE", 
-      "DF", "P", "Effect size"
-    ), 
-    caption = "Species-specific SEM",
-    digits = 2
-  )
+    col.names = col_names, digits = 2, format = "html",
+    align = c(rep("l", 2), rep("r", nrow(species_coef_tab) - 2))
+  ) %>% 
+  kableExtra::add_header_above(c(" " = 2, "PELE" = 7, "PEMA" = 7))
+
 ```
 
 
 
 ```{r spCumInf, fig.cap=caption}
-# TODO: move to .Rmd
-## visualize
-sp_cumeffs %>%
-  filter(Response == "Bb_infected") %>%
-  ggplot(aes(y = Predictor)) +
-  geom_vline(xintercept = 0, linetype = "solid", color = "grey50") +
-  facet_wrap(~Species) +
-  geom_col(aes(x = total, fill = "total"), col = "black") +
-  geom_col(
-    aes(x = direct, fill = "direct"), width = 0.4, col = "black",
-    position = position_nudge(y = 0.2)
-    ) +
-  geom_col(
-    aes(x = indirect, fill = "indirect"), width = 0.4, col = "black",
-    position = position_nudge(y = -0.2)
-  ) +
-  theme_bw() +
-  labs(x = "Effect on infection status (standardized)")
-
-caption = paste(
-  "Cumulative standardized effects on infection status for *P. leucopus* PELE",
-  "and *P. maniculatus* (PEMA)."
-)
+# # TODO: move to .Rmd
+# ## visualize
+# sp_cumeffs %>%
+#   filter(Response == "Bb_infected") %>%
+#   ggplot(aes(y = Predictor)) +
+#   geom_vline(xintercept = 0, linetype = "solid", color = "grey50") +
+#   facet_wrap(~Species) +
+#   geom_col(aes(x = total, fill = "total"), col = "black") +
+#   geom_col(
+#     aes(x = direct, fill = "direct"), width = 0.4, col = "black",
+#     position = position_nudge(y = 0.2)
+#     ) +
+#   geom_col(
+#     aes(x = indirect, fill = "indirect"), width = 0.4, col = "black",
+#     position = position_nudge(y = -0.2)
+#   ) +
+#   theme_bw() +
+#   labs(x = "Effect on infection status (standardized)")
+# 
+# caption = paste(
+#   "Cumulative standardized effects on infection status for *P. leucopus* PELE",
+#   "and *P. maniculatus* (PEMA)."
+# )
 ```
 
 

@@ -46,3 +46,4 @@ tab:SemR2N
 fig:PelePemaSem
 tab:spCoefTab
 fig:spCumInf
+fig:conceptSEM
