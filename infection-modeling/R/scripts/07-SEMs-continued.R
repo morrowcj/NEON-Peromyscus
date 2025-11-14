@@ -390,18 +390,52 @@ z_crit <- qnorm(crit_prob)
 
 ## Determine whether 90% confidence intervals (unstandardized) overlap by
 ### species for each coefficient...
-spec_coefs <- spec_coefs %>% arrange(Response, Predictor, species) %>%
-  group_by(Response, Predictor) %>%
+spec_coefs <- spec_coefs %>% 
+  rename(Species = species) %>% 
+  arrange(Response, Predictor, Species) %>% 
+  relocate(Species, .after = Predictor) %>% 
+  mutate(z_crit = z_crit) %>% 
+  rowwise() %>% 
   mutate(
-    larger = which.max(Estimate),
-    smaller = which.min(Estimate),
-    upper_low = Estimate[unique(larger)] - (z_crit*Std.Error[unique(larger)]),
-    lower_high = Estimate[unique(smaller)] + (z_crit*Std.Error[unique(smaller)]),
-    CI_overlap = upper_low < lower_high,
-  ) %>%
-  select(
-    -larger, -smaller
-  )
+    t_crit = qt(crit_prob, DF),
+    lower_CL = Estimate - (t_crit * Std.Error),
+    upper_CL = Estimate + (t_crit * Std.Error),
+    lower_zCL = Estimate - (z_crit * Std.Error),
+    upper_zCL = Estimate + (z_crit * Std.Error)
+  ) %>% 
+  group_by(Response, Predictor) %>% 
+  mutate(
+    CI_overlap = first(lower_CL) <= last(upper_CL) & 
+      last(lower_CL) <= first(upper_CL)
+  ) # %>% 
+  # ggplot(aes(x = Predictor, y = Estimate, col = species)) +
+  # facet_wrap(~Response, scales = "free_y") + 
+  # geom_hline(yintercept = 0, col = "black", linetype = "dotted") + 
+  # geom_errorbar(
+  #   aes(ymin = lower_CL, ymax = upper_CL, linetype = CI_overlap),
+  #   width = 0.2, linewidth = 1,
+  #   position = position_dodge(.2)
+  # ) + 
+  # geom_point(
+  #   size = 4, aes(shape = P.Value > 0.1), stroke = 2, fill = "grey",
+  #   position = position_dodge(.2)
+  # ) + 
+  # theme_bw() + 
+  # scale_linetype_manual(values = c("solid", "dashed")) + 
+  # scale_shape_manual(values = c(16, 21))
+
+# spec_coefs <- spec_coefs %>% arrange(Response, Predictor, species) %>%
+#   group_by(Response, Predictor) %>%
+#   mutate(
+#     larger = which.max(Estimate),
+#     smaller = which.min(Estimate),
+#     upper_low = Estimate[unique(larger)] - (z_crit*Std.Error[unique(larger)]),
+#     lower_high = Estimate[unique(smaller)] + (z_crit*Std.Error[unique(smaller)]),
+#     CI_overlap = upper_low < lower_high,
+#   ) %>%
+#   select(
+#     -larger, -smaller
+#   )
 
 saveRDS(
   spec_coefs,

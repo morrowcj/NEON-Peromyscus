@@ -610,12 +610,12 @@ pema_fp <- build_nodes_edges(pema_sem$coefficients)
 format_edge_lab <- function(x, y){
   x.small = round(x, 2)
   y.small = round(y, 2)
-  paste0("  ", x.small, " (", y.small, ")")
+  paste0("", x.small, " (", y.small, ")")
 }
 
 spec_unif_coefs <- spec_coefs %>% ungroup() %>% 
-  select(Response, Predictor, species, CI_overlap, Std.Estimate, P.Value) %>%
-  pivot_wider(names_from = species, values_from = c(Std.Estimate, P.Value)) %>%
+  select(Response, Predictor, Species, CI_overlap, Std.Estimate, P.Value) %>%
+  pivot_wider(names_from = Species, values_from = c(Std.Estimate, P.Value)) %>%
   mutate(
     opposite_signs = if_else(
       Std.Estimate_PEMA * Std.Estimate_PELE < 0, TRUE, FALSE,
@@ -659,6 +659,7 @@ build_psem_plot(pele_fp) %>%
   set_node_attrs("shape", "rectangle") %>%
   set_node_attrs("width", 1.1) %>%
   set_node_attrs("height", 0.5) %>%
+  # set_edge_attrs("fontsize", 12) %>% 
   render_graph()
 # 
 caption = paste(

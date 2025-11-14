@@ -18,10 +18,10 @@ if (!dir.exists("infection-modeling/data/MS-tables/")) {
 # Read and clean the data
 Peros <- readRDS("infection-modeling/data/peromyscus-model-data.rds") %>%
   mutate(
-    species = updated_taxa
-  ) %>% filter(!is.na(species)) %>%
+    Species = updated_taxa
+  ) %>% filter(!is.na(Species)) %>%
   mutate(
-    across(c(siteID, plotID, year, iid, species), ~as.factor(.x)) # factor vars
+    across(c(siteID, plotID, year, iid, Species), ~as.factor(.x)) # factor vars
   )
 
 # Read and reformat SEM objects
@@ -361,7 +361,7 @@ pema_sem <- pema_model_objects$sem_mod$fit
 spec_coefs <- readRDS(
   "infection-modeling/data/model-objects/joint-species-coefficients_SEM.rds"
 ) %>% 
-  rename(Species = species)
+  rename(Species = Species)
 
 pele_fp <- build_nodes_edges(pele_sem$coefficients)
 pema_fp <- build_nodes_edges(pema_sem$coefficients)
@@ -430,6 +430,10 @@ build_psem_plot(pele_fp, attr_theme = "lr") %>%
   set_node_attrs("height", 0.5) %>%
   set_edge_attrs("fontsize", 12) %>%
   render_graph()
+
+# Try to match the conceptual SEM, but with phenotype expanded:
+## TODO
+
 
 ## ---- Table S1 (full SEM coefficients) ----
 
