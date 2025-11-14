@@ -43,7 +43,6 @@ fig:simpSemGraph
 tab:fullSEMcoefTab
 fig:fullCumuFig
 tab:SemR2N
-fig:PelePemaSem
-tab:spCoefTab
-fig:spCumInf
 fig:conceptSEM
+fig:PelePemaSem
+fig:spCumInf

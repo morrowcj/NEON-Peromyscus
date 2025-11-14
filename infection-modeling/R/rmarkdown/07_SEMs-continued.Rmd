@@ -117,40 +117,40 @@ simple_out$coefficients <- simple_out$coefficients %>%
 
 
 ```{r}
-# group_tiers <- c(
-#   "environment", "trait", "behavior", "parasitism", "expression", "infection"
+group_tiers <- c(
+  "environment", "trait", "behavior", "parasitism", "expression", "infection"
+)
+
+group_cols <- RColorBrewer::brewer.pal(length(group_tiers) + 1, "Pastel2")[-2]
+
+# group_cols <- c(
+#   "green", "burlywood", "azure", "grey80", "darkorchid1", "hotpink1"
 # )
-# 
-# group_cols <- RColorBrewer::brewer.pal(length(group_tiers) + 1, "Pastel2")[-2]
-# 
-# # group_cols <- c(
-# #   "green", "burlywood", "azure", "grey80", "darkorchid1", "hotpink1"
-# # )
-# 
-# var_table <- tibble(
-#   var = c(
-#     "expr_PC2", "Bb_infected", "expr_PC1", "ticks_attached", "capprop_shift",
-#     "cap_prop_night", "weight", "sex_mature", 
-#     "sex_male", "wthr_PC1", "clim_PC1"
-#   ),
-#   label = c(
-#     "Tolerance\nexpression", "Infection\nstatus", "Resistance\nexpression", 
-#     "Parasitism\n rate (ticks)", "Capture\ntime shift", 
-#     "Capture\ntime", "Weight", "Reproductive\nmaturity", 
-#     "Sex", "Weather\nPC", "Climate\nPC"
-#   ),
-#   response = c(
-#     TRUE, TRUE, TRUE, TRUE, TRUE, 
-#     TRUE, TRUE, TRUE, 
-#     FALSE, FALSE, FALSE
-#   ),
-#   group = c(
-#     "expression", "infection", "expression", "parasitism", "behavior",
-#     "behavior", "trait", "trait", 
-#     "trait", "environment", "environment"
-#   ) %>% 
-#     factor(levels = group_tiers)
-# )
+
+var_table <- tibble(
+  var = c(
+    "expr_PC2", "Bb_infected", "expr_PC1", "ticks_attached", "capprop_shift",
+    "cap_prop_night", "weight", "sex_mature",
+    "sex_male", "wthr_PC1", "clim_PC1"
+  ),
+  label = c(
+    "Tolerance\nexpression", "Infection\nstatus", "Resistance\nexpression",
+    "Parasitism\n rate (ticks)", "Capture\ntime shift",
+    "Capture\ntime", "Weight", "Reproductive\nmaturity",
+    "Sex", "Weather\nPC", "Climate\nPC"
+  ),
+  response = c(
+    TRUE, TRUE, TRUE, TRUE, TRUE,
+    TRUE, TRUE, TRUE,
+    FALSE, FALSE, FALSE
+  ),
+  group = c(
+    "expression", "infection", "expression", "parasitism", "behavior",
+    "behavior", "trait", "trait",
+    "trait", "environment", "environment"
+  ) %>%
+    factor(levels = group_tiers)
+)
 ```
 
 
@@ -169,54 +169,54 @@ neg_col = "orange"
 ```
 
 ```{r}
-# paths <- simple_out$coefficients %>% 
-#   select(Response, Predictor, DF, Std.Estimate, P.Value) %>% 
-#   mutate(
-#     # pos_effect = Std.Estimate >= 0,
-#     Response = factor(
-#       Response, levels = var_table$var, labels = var_table$label
-#     ),
-#     Predictor = factor(
-#       Predictor, levels = var_table$var, labels = var_table$label
-#     ),
-#     color = if_else(Std.Estimate >= 0, pos_col, neg_col),
-#     penwidth = scales::rescale(x = abs(Std.Estimate) ,to = c(1, 9)),
-#     style = if_else(P.Value <= 0.1, "solid", "dashed"),
-#     tooltip = round(Std.Estimate, 2)
-#     # headlabel = round(Std.Estimate, 2),
-#     # labelfontsize = 14
-#   )
-# 
-# nodes <- tibble(
-#   var = unique(
-#     c(simple_out$coefficients$Response, simple_out$coefficients$Predictor)
-#   )
-# ) %>% 
-#   mutate(
-#     var = factor(var, levels = var_table$var, labels = var_table$label),
-#     id = row_number(),
-#     group = var_table$group[match(var, var_table$label)],
-#     # y = as.numeric(group),
-#     shape = "rectangle",
-#     fillcolor = group_cols[match(group, group_tiers)]
-#   )
+paths <- simple_out$coefficients %>%
+  select(Response, Predictor, DF, Std.Estimate, P.Value) %>%
+  mutate(
+    # pos_effect = Std.Estimate >= 0,
+    Response = factor(
+      Response, levels = var_table$var, labels = var_table$label
+    ),
+    Predictor = factor(
+      Predictor, levels = var_table$var, labels = var_table$label
+    ),
+    color = if_else(Std.Estimate >= 0, pos_col, neg_col),
+    penwidth = scales::rescale(x = abs(Std.Estimate) ,to = c(1, 9)),
+    style = if_else(P.Value <= 0.1, "solid", "dashed"),
+    tooltip = round(Std.Estimate, 2)
+    # headlabel = round(Std.Estimate, 2),
+    # labelfontsize = 14
+  )
+
+nodes <- tibble(
+  var = unique(
+    c(simple_out$coefficients$Response, simple_out$coefficients$Predictor)
+  )
+) %>%
+  mutate(
+    var = factor(var, levels = var_table$var, labels = var_table$label),
+    id = row_number(),
+    group = var_table$group[match(var, var_table$label)],
+    # y = as.numeric(group),
+    shape = "rectangle",
+    fillcolor = group_cols[match(group, group_tiers)]
+  )
 ```
 
 ```{r simpSemGraph, out.width="100%", fig.asp = 1, fig.cap=caption, warning=FALSE}
-# sem_graph <- create_graph(attr_theme = "bt") %>% 
-#   # add_global_graph_attrs("layout", "dot", "graph") %>%
-#   # add_global_graph_attrs("rankdir", "LR", "graph") %>%
-#   add_nodes_from_table(nodes, label_col = var) %>% 
-#   add_edges_from_table(
-#     paths, from_col = Predictor, to_col = Response, from_to_map = label
-#   ) %>% 
-#   set_node_attrs(width, 1.4) %>%
-#   set_node_attrs(height, .7) %>%
-#   set_node_attrs(fontsize, 16) %>%
-#   set_node_attrs(fontcolor, "black") %>% 
-#   set_node_attrs(color, "black")
-# 
-# sem_graph %>% render_graph() 
+sem_graph <- create_graph(attr_theme = "bt") %>%
+  # add_global_graph_attrs("layout", "dot", "graph") %>%
+  # add_global_graph_attrs("rankdir", "LR", "graph") %>%
+  add_nodes_from_table(nodes, label_col = var) %>%
+  add_edges_from_table(
+    paths, from_col = Predictor, to_col = Response, from_to_map = label
+  ) %>%
+  set_node_attrs(width, 1.4) %>%
+  set_node_attrs(height, .7) %>%
+  set_node_attrs(fontsize, 16) %>%
+  set_node_attrs(fontcolor, "black") %>%
+  set_node_attrs(color, "black")
+
+sem_graph %>% render_graph()
 # 
 caption = paste(
   "PATH diagram for the full SEM of *Peromyscus*-*Borrelia* dynamics.",
@@ -581,90 +581,101 @@ caption = paste(
 ## Species comparison
 
 ```{r}
-# pele_model_objects <- readRDS(
-#   "infection-modeling/data/model-objects/PELE-SEM-objects.rds"
-# )
-# pele_sem <- pele_model_objects$sem_mod$fit
-# pema_model_objects <- readRDS(
-#   "infection-modeling/data/model-objects/PEMA-SEM-objects.rds"
-# )
-# pema_sem <- pema_model_objects$sem_mod$fit
-# 
-# spec_coefs <- readRDS(
-#   "infection-modeling/data/model-objects/joint-species-coefficients_SEM.rds"
-# )
-# 
-# sp_cumeffs <- readRDS(
-#   file.path(
-#     "infection-modeling/data/model-objects",
-#     "species_cumulative-effects-table_simplified-SEM.rds"
-#   )
-# )
+pele_model_objects <- readRDS(
+  "infection-modeling/data/model-objects/PELE-SEM-objects.rds"
+)
+pele_sem <- pele_model_objects$sem_mod$fit
+pema_model_objects <- readRDS(
+  "infection-modeling/data/model-objects/PEMA-SEM-objects.rds"
+)
+pema_sem <- pema_model_objects$sem_mod$fit
+
+spec_coefs <- readRDS(
+  "infection-modeling/data/model-objects/joint-species-coefficients_SEM.rds"
+)
+spec_coefs_OG <- spec_coefs # copy
+
+sp_cumeffs <- readRDS(
+  file.path(
+    "infection-modeling/data/model-objects",
+    "species_cumulative-effects-table_simplified-SEM.rds"
+  )
+)
 ```
 
 ```{r PelePemaSem, out.width="100%", fig.asp = 1, fig.cap=caption, warning=FALSE}
-# pele_fp <- build_nodes_edges(pele_sem$coefficients)
-# pema_fp <- build_nodes_edges(pema_sem$coefficients)
-# 
-# format_edge_lab <- function(x, y){
-#   x.small = round(x, 2)
-#   y.small = round(y, 2)
-#   paste0(x.small, " (", y.small, ")")
-# }
-# 
-# spec_unif_coefs <- spec_coefs %>%
-#   select(Response, Predictor, species, CI_overlap, Std.Estimate, P.Value) %>% 
-#   pivot_wider(names_from = species, values_from = c(Std.Estimate, P.Value)) %>% 
-#   mutate(
-#     opposite_signs = if_else(
-#       Std.Estimate_PEMA * Std.Estimate_PELE < 0, TRUE, FALSE
-#     ), 
-#     label = format_edge_lab(Std.Estimate_PELE, Std.Estimate_PEMA),
-#     tooltip = label,
-#     style = if_else(P.Value_PELE <= 0.1, "solid", "dashed"),
-#     color = case_when(
-#       CI_overlap & Std.Estimate_PELE >= 0 ~ "cornflowerblue",
-#       CI_overlap & Std.Estimate_PELE < 0 ~ "orange",
-#       !CI_overlap & !opposite_signs & Std.Estimate_PELE >= 0 ~ "cornflowerblue",
-#       !CI_overlap & !opposite_signs & Std.Estimate_PELE < 0 ~ "orange",
-#       !CI_overlap & opposite_signs ~ "purple"
-#     ),
-#     fontcolor = color,
-#   ) %>% ungroup()
-# 
-# pele_fp$edges <- spec_unif_coefs %>% 
-#   mutate(
-#     To = factor(
-#       Response, levels = var_table$var, labels = var_table$label
-#     ),
-#     From = factor(
-#       Predictor, levels = var_table$var, labels = var_table$label
-#     ),
-#   )
-# 
-# pele_fp$nodes <- pele_fp$nodes %>% 
-#   mutate(
-#     name = factor(name, levels = var_table$var, labels = var_table$label)
-#   )
-# 
-# 
-# build_psem_plot(pele_fp) %>% 
-#   set_node_attrs("shape", "rectangle") %>% 
-#   set_node_attrs("width", 1.1) %>% 
-#   set_node_attrs("height", 0.5) %>% 
-#   render_graph()
+pele_fp <- build_nodes_edges(pele_sem$coefficients)
+pema_fp <- build_nodes_edges(pema_sem$coefficients)
+
+format_edge_lab <- function(x, y){
+  x.small = round(x, 2)
+  y.small = round(y, 2)
+  paste0("  ", x.small, " (", y.small, ")")
+}
+
+spec_unif_coefs <- spec_coefs %>% ungroup() %>% 
+  select(Response, Predictor, species, CI_overlap, Std.Estimate, P.Value) %>%
+  pivot_wider(names_from = species, values_from = c(Std.Estimate, P.Value)) %>%
+  mutate(
+    opposite_signs = if_else(
+      Std.Estimate_PEMA * Std.Estimate_PELE < 0, TRUE, FALSE,
+    ),
+    abs_diff = abs(Std.Estimate_PELE - Std.Estimate_PEMA),
+    penwidth = scales::rescale(.data$abs_diff, to = c(1, 6)),
+    label = format_edge_lab(Std.Estimate_PELE, Std.Estimate_PEMA),
+    tooltip = label,
+    style = if_else(
+      P.Value_PELE <= 0.1 | P.Value_PEMA <= 0.1, "solid", "dashed"
+    ),
+    color = case_when(
+      !CI_overlap ~ "purple",
+      # P.Value_PEMA <= 0.1 & P.Value_PELE > 0.1 ~ "forestgreen",
+      # P.Value_PELE <= 0.1 & P.Value_PEMA > 0.1 ~ "forestgreen",
+      CI_overlap ~ "black",
+      .default = "grey50"
+    ),
+    fontcolor = color,
+  ) 
+
+## TODO: 
+
+pele_fp$edges <- spec_unif_coefs %>%
+  mutate(
+    To = factor(
+      Response, levels = var_table$var, labels = var_table$label
+    ),
+    From = factor(
+      Predictor, levels = var_table$var, labels = var_table$label
+    ),
+  )
+
+pele_fp$nodes <- pele_fp$nodes %>%
+  mutate(
+    name = factor(name, levels = var_table$var, labels = var_table$label)
+  )
+
+
+build_psem_plot(pele_fp) %>%
+  set_node_attrs("shape", "rectangle") %>%
+  set_node_attrs("width", 1.1) %>%
+  set_node_attrs("height", 0.5) %>%
+  render_graph()
 # 
 caption = paste(
   "Path diagram comparing a simplified SEM between *P. leucopus* and",
-  "*P. maniculatus*. Blue vectors indicate positive effects, orange indicate",
-  "negative effects, purple indicate conflicting effect directions between",
-  "the two species, solid lines are statistically significant (for *leucopus*)",
-  "and dotted lines are not.",
+  "*P. maniculatus*. Solid lines represent paths that are significant for at",
+  "least one species, dotted lines represent paths that are not significant",
+  "for either species. Purple paths are statistically different between",
+  "species and black vectors are not. Vector widths are proportional to",
+  "the difference in effect size between the species.", 
+  # "The green vector from parasitism to infection indicates that, while their",
+  # "effects are not statistically different from each other, PELE's effect is",
+  # "significant (different from zero) whereas PEMA's is not.",
   "Path labels represent standardized effect sizes for both species, with",
-  "*P. maniculatus* in parentheses.",
+  "*P. maniculatus* in parentheses.", 
   "See Table \\@ref(tab:spCoefTab) for more model differences and",
-  "Figure \\@ref(fig:spCumInf) for the cumulative effects on infection for each",
-  "species."
+  "Figure \\@ref(fig:spCumInf) for the cumulative effects on infection for",
+  "each species."
 )
 ```
 
@@ -689,7 +700,12 @@ and via Sex among PEMA only.
 2. NA - behavior not assessed
 
 3. Tick parasitism is directly associated with infection status 
-**only among PELE**
+**only among PELE**: Though it is not entirely clear through the figure, the 
+effect of parasitism on infection status was significant for PELE (P = 0.003)
+but not for PEMA (P = 0.95). This path is not purple in the figure because their
+unadjusted 90% confidence levels overlap
+(0.847 ± 0.47 and -0.096 ± 2.29 respectively) - but PELE is different
+from 0 (effect) while PEMA is not (no effect).
 
 4. NA - immunity not assessed
 
@@ -698,7 +714,12 @@ long-term climate only impacted parasitism rates directly, as in the full model.
 
 This means that, while both species exhibit intraspecific variation in
 disease competence, interaction with ticks is less important for PEMA than for
-PELE. This could indicate that PEMA is more resistant to infection than PELE. 
+PELE. This is likely because PEMA is more arboreal, meaning they are less 
+likely to move through tick habitat (e.g., grassy areas).
+
+Additionally all but one path (direct and indirect) from phenotypic traits 
+through to infection differed between *P. leucopus* and *P. maniculatus* 
+whereas *none* of the environmental effects differed.
 
 
 ```{r spCoefTab}
@@ -736,10 +757,10 @@ species_coef_tab %>%
     P.PEMA = Hmisc::format.pval(round(P.PEMA, 3), nsmall = 3, eps = 0.001)
   ) %>% 
   knitr::kable(
-    col.names = col_names, digits = 2, format = "html",
+    col.names = col_names, digits = 2, 
     align = c(rep("l", 2), rep("r", nrow(species_coef_tab) - 2))
-  ) %>% 
-  kableExtra::add_header_above(c(" " = 2, "PELE" = 7, "PEMA" = 7))
+  ) #%>% 
+  #kableExtra::add_header_above(c(" " = 2, "PELE" = 7, "PEMA" = 7))
 
 ```
 
@@ -748,27 +769,27 @@ species_coef_tab %>%
 ```{r spCumInf, fig.cap=caption}
 # # TODO: move to .Rmd
 # ## visualize
-# sp_cumeffs %>%
-#   filter(Response == "Bb_infected") %>%
-#   ggplot(aes(y = Predictor)) +
-#   geom_vline(xintercept = 0, linetype = "solid", color = "grey50") +
-#   facet_wrap(~Species) +
-#   geom_col(aes(x = total, fill = "total"), col = "black") +
-#   geom_col(
-#     aes(x = direct, fill = "direct"), width = 0.4, col = "black",
-#     position = position_nudge(y = 0.2)
-#     ) +
-#   geom_col(
-#     aes(x = indirect, fill = "indirect"), width = 0.4, col = "black",
-#     position = position_nudge(y = -0.2)
-#   ) +
-#   theme_bw() +
-#   labs(x = "Effect on infection status (standardized)")
-# 
-# caption = paste(
-#   "Cumulative standardized effects on infection status for *P. leucopus* PELE",
-#   "and *P. maniculatus* (PEMA)."
-# )
+sp_cumeffs %>%
+  filter(To == "Bb_infected") %>%
+  ggplot(aes(y = From)) +
+  geom_vline(xintercept = 0, linetype = "solid", color = "grey50") +
+  facet_wrap(~Species) +
+  geom_col(aes(x = total, fill = "total"), col = "black") +
+  geom_col(
+    aes(x = direct, fill = "direct"), width = 0.4, col = "black",
+    position = position_nudge(y = 0.2)
+    ) +
+  geom_col(
+    aes(x = indirect, fill = "indirect"), width = 0.4, col = "black",
+    position = position_nudge(y = -0.2)
+  ) +
+  theme_bw() +
+  labs(x = "Effect on infection status (standardized)")
+
+caption = paste(
+  "Cumulative standardized effects on infection status for *P. leucopus* PELE",
+  "and *P. maniculatus* (PEMA)."
+)
 ```
 
 
