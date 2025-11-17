@@ -1,0 +1,335 @@
+---
+title: "SEM cookbook"
+author: "Clay Morrow"
+date: "2025-11-17"
+output: bookdown::html_document2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(lme4)
+library(piecewiseSEM)
+```
+
+# Basic Usage
+
+First, we will load the `keeley` dataset from the `piecewiseSEM` package to use
+as our example:
+
+```{r loadKeeley}
+# load example data
+data("keeley", package = "piecewiseSEM")
+
+# scale and center all columns
+keeley_scaled <- keeley %>% tibble() %>% 
+  mutate(across(c(everything()), ~as.vector(scale(.x))))
+```
+
+## Initial Fit
+
+Next we'll fit the component models that will comprise our SEM. These can be
+many kinds of model fit objects (`lm`, `glm`, `lme4`, `glmmTMB`, etc.). The
+important things to keep in mind here are that each model represents all the 
+*direct* paths into a response variable and that **there can be no loops** in
+the model (i.e., if Y is a response of X, then no direct or indirect paths from
+Y can go back to X). In the case of our example SEM, we will fit 3 models: 
+1) post-fire species richness dependent on ground cover, 2) ground cover
+dependent on fire severity, and 3) fire severity dependent upon pre-fire stand
+age. For this example, we'll just use simple linear regressions.
+
+```{r compMods}
+# Top level: richness affected by plant cover
+rich_mod <- lm(rich ~ cover, data = keeley)
+
+# middle level: plant cover affected by fire severity
+cover_mod <- lm(cover ~ firesev, data = keeley)
+
+# bottom level: fire severity affected by stand age prior to fire 
+fire_mod <- lm(firesev ~ age, data = keeley)
+```
+
+Next we will combine these component models into the SEM, using the `psem`
+function. Then we will actually perform the fit using the `summary.psem` method:
+
+```{r pSEM}
+# specify SEM
+rich_psem <- psem(rich_mod, cover_mod, fire_mod, data = keeley)
+
+# fit the SEM
+rich_fit <- summary(rich_psem, .progressBar = FALSE)
+```
+
+The fitted SEM object contains many components (use `names(rich_fit)` to see 
+what they are called). We'll go through the key ones in this example. First, 
+let's take a look at the tests of d-separated independence 
+(Table \@ref(tab:dTab)), which evaluates
+whether there are any paths that might be important for our model that we did
+not include. Here, there are 3 unconsidered paths: the effect of age on cover,
+the effect of age on richness, and the effect of fire severity on richness. 
+The p-values indicate that the age->richness path is significant (P < 0.05) 
+and should be included in the SEM. The other p-values are also marginally
+significant (P < 0.1), so these could also be included. For the sake of this
+example, we will only add the age->richness path.
+
+```{r dTab, fig.cap=caption}
+rich_fit$dTable %>% 
+  knitr::kable(
+    digits = 3,
+    caption = "D-separated independence claims"
+  )
+```
+
+## Update fit
+
+To do so, we can update our component models with the new variables:
+
+```{r reFit}
+# add age and firesev to rich mod
+new_rich <- update(rich_mod, . ~ . + age)
+
+# updated SEM spec
+new_psem <- psem(new_rich, cover_mod, fire_mod, data = keeley)
+
+# updated SEM spec
+new_rich_fit <- summary(new_psem, .progressBar = FALSE)
+```
+
+Then we again check for any additional missing paths (\@ref(tab:dSepNew), 
+no change):
+
+```{r dSepNew}
+new_rich_fit$dTable %>% 
+  knitr::kable(
+    digits = 3,
+    caption = "Second d-sep table"
+  )
+```
+
+Now that we have an updated SEM, let's check its overall fit. The `piecewiseSEM`
+packages provides two goodness of fit tests Fischer's C test and Chi-squared 
+test. Both test if the SEM is *different from an optimal model* (i.e., one that
+describes all variation in the data). However, this means that well-fitting 
+models should have p-values *greater* than 0.05 (indicating that they are not
+different; 
+[source link](https://jslefche.github.io/sem_book/local-estimation.html#)). 
+Since both of our goodness-of-fit p-values are less than .05, we can conclude
+that the overall fit is relatively poor. Our next steps would be to try and find
+a model that better fits the data (add new variables, change path orders, etc)
+but for the simplicity of this example, we will proceed with the model as is.
+
+```{r}
+## Overall tests of model fit (explains variation in the full dataset)
+new_rich_fit$Cstat %>% 
+  bind_rows(new_rich_fit$ChiSq) %>% 
+  mutate(
+    stat = if_else(!is.na(Chisq), "Chisq", "Fisher.C"),
+    val = if_else(!is.na(Chisq), Chisq, Fisher.C)
+  ) %>% 
+  select(stat, val, df, P.Value)
+```
+
+Additionally, we can look at the fits of the component models. The below table
+shows that each component model has a reasonable $R^2$ value:
+
+```{r}
+new_rich_fit$R2
+```
+
+Note that in some instances, scaling and centering the data can sometimes help
+with model fitting if the variables are on vastly different scales. But that
+is not the case for this dataset:
+
+```{r}
+tmp <- psem(
+  new_rich %>% update(. ~ ., data = keeley_scaled), 
+  cover_mod %>% update(. ~ ., data = keeley_scaled), 
+  fire_mod %>% update(. ~ ., data = keeley_scaled), 
+  data = keeley_scaled
+)
+smry <- summary(tmp, .progressBar = FALSE)
+smry$Cstat %>% 
+  bind_rows(smry$ChiSq) %>% 
+  mutate(
+    stat = if_else(!is.na(Chisq), "Chisq", "Fisher.C"),
+    val = if_else(!is.na(Chisq), Chisq, Fisher.C)
+  ) %>% 
+  select(stat, val, df, P.Value)
+```
+
+## Model coefficients
+
+Finally, we can look at the model coefficients (\@ref(fig:coefTab)). It is
+recommended to use P $\leq$ 0.1 for determining path significance. By this 
+metric, all paths are significant.
+
+```{r coefTab}
+new_rich_fit$coefficients %>% 
+  data.frame() %>% 
+  knitr::kable(
+    digits = 2,
+    col.names = c(
+      "Resp.", "Pred.", "Coef. Est.", "SE", "DF", "Crit", "P", 
+      "Std. Effect", "Sig."
+    ),
+    caption = paste(
+      "SEM coefficient table: Response variable, Predictor variable",
+      "Regression coefficient, Standard Error, Degrees of freedom,",
+      "Critical value, P-value, Standardized effect size, and significance",
+      "stars."
+    )
+  )
+```
+
+And we can plot a simple version of the SEM using the `DiagrammeR` package:
+
+```{r plotSEM}
+library(DiagrammeR)
+
+# copy data
+path_tab <- new_rich_fit$coefficients %>% 
+  data.frame()
+
+# build table of nodes containing a node name and numeric ID
+nodes_tab <- tibble(
+  name = unique(c(path_tab$Response, path_tab$Predictor))
+) %>% 
+  mutate(id = row_number())
+
+# add some plotting aesthetics to the path table (optional)
+path_tab <- path_tab %>% 
+  mutate(
+    ## width of arrows proportional to effect size
+    penwidth = scales::rescale(Std.Estimate, to = c(1, 5)),
+    ## color of arrows by direction
+    color = if_else(Std.Estimate <= 0, "red", "blue"),
+    ## linetype of the arrow by significance
+    style = if_else(P.Value <= 0.1, "solid", "dashed"),
+    ## edge labels (near center)
+    label = round(Std.Estimate, 2)
+  )
+
+# create the graph
+sem_graph <- create_graph(attr_theme = "bt") %>% 
+  add_nodes_from_table(nodes_tab, label_col = "name") %>% 
+  add_edges_from_table(
+    path_tab, from_col = "Predictor", to_col = "Response",
+    from_to_map = "label"
+  ) %>% 
+  ## set some universal node attributes
+  set_node_attrs("color", "black") %>% 
+  set_node_attrs("fillcolor", "white")
+
+# render the graph
+render_graph(sem_graph)
+```
+
+## Cumulative effects
+
+Next, let's show how to calculate the cummulative (direct + indirect) effects
+in an SEM. Let's use the effects of age on richness as our example.
+There are two paths from age to fire severity in the above SEM: 1) the direct
+effect of age on richness (-0.21) and 2) the indirect effect of age on fire
+severity *through* fire severity and ground cover. The cummulative indirect 
+effect of age on richness is equal to the product of the direct effects of age
+on fire severity (0.45), fire severity on cover (-0.44), and cover on 
+richness (0.25). Then, the total effect of age on richness is the sum of this 
+indirect effect and the direct effect 
+(i.e., $-0.21 + (0.45 \times -0.44 \times -0.25) = -0.29$).
+
+The following code calculates all the indirect and total effects and then 
+plots them:
+
+```{r}
+## function to get all coefficients along a path
+get_coefs_along_path <- function(p, edges, nodes){
+  # early return for a missing path
+  if (length(p) == 1 | all(is.na(p))){
+    return(NA)
+  }
+  # convert the path numbers into names
+  v <- nodes$name[p]
+  # direct effect
+  if (length(p) == 2) {
+    ## return the direct effect
+    edges %>%
+      filter(Predictor == v[1], Response == v[2]) %>%
+      pull(Std.Estimate) %>% return()
+  }
+  # indirect effects
+  ## join into a lag table
+  tab <- cbind(from = head(v, -1), to = tail(v, -1))
+  ## go through all the rows of the table and find the matching coefficient
+  apply(
+    tab, 1, function(x) {
+      pull(filter(edges, Predictor == x[1], Response == x[2]), Std.Estimate)
+    }
+  ) %>% return()
+}
+```
+
+```{r}
+# build a table to fill
+breakdown <- expand_grid(
+  Response = unique(path_tab$Response), Predictor = unique(path_tab$Predictor)
+) %>% 
+  ## response can't equal predictor
+  filter(Response != Predictor) %>%
+  ## add IDs for response and predictors
+  mutate(
+    resp_ID = nodes_tab$id[match(Response, nodes_tab$name)],
+    pred_ID = nodes_tab$id[match(Predictor, nodes_tab$name)]
+  ) %>% 
+  ## add direct effects and associated P-value
+  left_join(
+    path_tab %>% 
+      select(Response, Predictor, direct_P = P.Value, direct = Std.Estimate),
+    by = c("Response", "Predictor")
+  ) %>% 
+  ## prepare to loop through each row
+  rowwise() %>% 
+  ## perform operations to each row...
+  mutate(
+    ## get a list of all possible paths from the predictor to the response
+    all_paths = list(unique(get_paths(sem_graph, from = pred_ID, to = resp_ID))),
+    ## get a list of coefficients along those paths
+    all_coefs = list(
+      lapply(all_paths, function(x)get_coefs_along_path(x, path_tab, nodes_tab))
+    ),
+    ## multiply the coefficients along a path
+    coef_prods = list(lapply(all_coefs, prod)),
+    ## get the total effect, by adding up the products
+    total = sum(unlist(coef_prods), na.rm = TRUE),
+    ## calculate indirect effects by subtracting the direct effects from the total
+    indirect = if_else(!is.na(direct), total - direct, total - 0)
+  ) %>% 
+  ## remove the rowwise grouping
+  ungroup()
+```
+
+```{r brkdwnPlot, warning=FALSE}
+# plot the breakdown
+breakdown %>% 
+  select(Response, Predictor, direct_P, direct, indirect, total) %>% 
+  mutate(
+    Resposne = factor(Response, levels = nodes_tab$name),
+    Predictor = factor(Predictor, levels = nodes_tab$name)
+  ) %>% 
+  ggplot(aes(x = Predictor)) + 
+  facet_wrap(~Response, labeller = label_both) + 
+  geom_col(aes(y = total, fill = "total"), col = "black", width = 1) + 
+  geom_col(
+    aes(y = direct, fill = "direct"), 
+    col = "black", width = 0.4, position = position_nudge(x = 0.2)
+  ) + 
+  geom_col(
+    aes(y = indirect, fill = "indirect"), 
+    col = "black", width = 0.4, position = position_nudge(x = -0.2)
+  ) + 
+  theme_bw() + 
+  labs(x = "Predictor", y = "Effect", fill = NULL)
+```
+
