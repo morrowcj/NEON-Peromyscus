@@ -434,6 +434,113 @@ build_psem_plot(pele_fp, attr_theme = "lr") %>%
 # Try to match the conceptual SEM, but with phenotype expanded:
 ## TODO
 
+split_lookup <- var_lookup %>% 
+  mutate(
+    grp_lab = if_else(group == "Phenotype", label, grp_lab),
+    new_group = if_else(group == "Phenotype", var, group)
+  ) %>% 
+  select(-group) %>% 
+  rename(group = new_group) %>% 
+  relocate(group, .before = grp_lab)
+
+grp_split_lookup <- split_lookup %>% 
+  select(group, grp_lab, x, y) %>% 
+  distinct() %>% 
+  mutate(
+    x = x*5, y = y*5,
+    x = case_when(
+      group == "sex_male" ~ x + .125 ,
+      group == "sex_mature" ~ x - 0,
+      group == "weight" ~ x + .2,
+      TRUE ~ x,
+      .default = x
+    ),
+    y = case_when(
+      group == "sex_male" ~ y - 0,
+      group == "sex_mature" ~ y + .3,
+      group == "weight" ~ y - .2,
+      TRUE ~ y,
+      .default = y
+    ),
+  )
+
+# check
+grp_split_lookup %>% 
+  ggplot(aes(x = x, y = y, label = group)) + 
+  geom_label()
+
+# Join with data
+split_specs <- spec_coefs %>% 
+  left_join(
+    split_lookup %>% 
+      select(
+        Response = var, resp_grp = group, resp_lab = label, 
+        resp_grplab = grp_lab
+      ),
+    by = "Response"
+  ) %>% 
+  left_join(
+    split_lookup %>% 
+      select(
+        Predictor = var, pred_grp = group, pred_lab = label, 
+        pred_grplab = grp_lab
+      ),
+    by = "Predictor"
+  )
+
+# summarize the data
+group_spec <- split_specs %>% 
+  group_by(Response, resp_grp, resp_grplab, Species, pred_grp, pred_grplab) %>%
+  summarize(
+    mean_coef = mean(Std.Estimate, na.rm = TRUE),
+    overlap_prop = mean(CI_overlap, na.rm = TRUE), .groups = "drop"
+  ) %>% 
+  group_by(resp_grp, resp_grplab, Species, pred_grp, pred_grplab) %>% 
+  summarize(
+    mean_coef = mean(mean_coef, na.rm = TRUE),
+    overlap_prop = mean(overlap_prop, na.rm = TRUE), .groups = "drop"
+  ) %>% group_by(resp_grplab, pred_grplab) %>% 
+  summarize(
+    mean_coef = mean(mean_coef, na.rm = TRUE), 
+    overlap_prop = mean(overlap_prop, na.rm = TRUE), .groups = "drop"
+  )
+
+spec_nes <- build_nodes_edges(
+  coef_tab = group_spec, from_col = "pred_grplab",
+  to_col = "resp_grplab", val_col = "mean_coef"
+)
+  
+spec_nes$nodes <- spec_nes$nodes %>% 
+  full_join(grp_split_lookup %>% select(name = grp_lab, x, y), by = "name")
+
+build_psem_plot(spec_nes, render = F) %>% 
+  add_global_graph_attrs("layout", "fdp", "graph") %>% 
+  set_node_attrs("width", 0.9) %>% 
+  set_node_attrs("fontcolor", "black") %>% 
+  set_node_attrs("color", "black") %>% 
+  render_graph()
+
+## This is too tedious... need to look into ggnetwork
+
+# pheno_preds <- grp_specs %>% filter(pred_grp == "Phenotype") %>% 
+#   mutate(
+#     pred_grp = Predictor,
+#     pred_grplab = pred_lab,
+#     mean_coef = Std.Estimate, 
+#     overlap_prop = as.numeric(CI_overlap)
+#   ) %>% ungroup()
+# 
+# non_phenopreds <- grp_specs %>% filter(pred_grp != "Phenotype") %>% 
+#   group_by(Response, resp_lab, resp_grplab, Species, pred_grp, pred_lab) %>% 
+#   summarize(
+#     mean_coef = mean(Std.Estimate, na.rm = TRUE),
+#     overlap_prop = mean(CI_overlap, na.rm = TRUE)
+#   ) %>% ungroup()
+# 
+# grp_specs <- bind_rows(
+#   non_phenopreds,
+#   pheno_preds %>% select(c(colnames(non_phenopreds)))
+# )
 
 ## ---- Table S1 (full SEM coefficients) ----
 
