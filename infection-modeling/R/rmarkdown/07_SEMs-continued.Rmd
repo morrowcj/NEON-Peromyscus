@@ -838,3 +838,7 @@ caption = paste(
 #   guides(linetype = FALSE, alpha = FALSE)
 
 ```
+
+## Predictions
+
+NOTE: USE `semEff` PACKAGE!!
