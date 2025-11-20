@@ -1,11 +1,10 @@
 # load libraries
-library(tidyverse)
+library(dplyr)
 library(piecewiseSEM)
 library(semEff)
 
 # load data
-data("shipley")
-shipley <- tibble(shipley)
+# data("shipley")
 
 # ----  fit with semEff ----
 
@@ -28,8 +27,10 @@ shipley <- tibble(shipley)
 # shipley.sem.eff <- semEff(shipley.sem.boot)
 
 # View the effects
-shipley.effects <- summary(shipley.sem.eff)
+# shipley.effects <- summary(shipley.sem.eff)
 shipley.direct <- getDirEff(shipley.sem.eff, type = "orig")
+
+
 
 # ---- Fit with piecewiseSEM ----
 shipley.psem <- as.psem(shipley.sem)
@@ -50,4 +51,8 @@ shipley.psem.coefs %>%
 
 # Check to see if perhaps the alternative standardization is matched
 coefs(shipley.psem, standardize.type = "Menard.OE") %>%
-  select(Response, Predictor, Std.Estimate) # nope.
+  data.frame() %>% 
+  filter(Response == "Live") %>% pull(Std.Estimate) # 0.5292
+
+## Check if unique.eff helps
+stdEff(shipley.sem, unique.eff = FALSE)$Live["Growth"] # 0.368
