@@ -20,7 +20,6 @@ Peros <- readRDS("infection-modeling/data/peromyscus-model-data.rds") %>%
     species = updated_taxa
   ) %>% filter(!is.na(species))
 
-
 # get only the complete cases for variables to use
 mod_dat <- Peros %>%
   mutate(
@@ -118,6 +117,12 @@ simple_tick <- glmer(
 
 # ---- Full simple SEM ----
 
+simple_modlist = list(
+  tolerance = simple_tol, infection = simple_inf, resistance = simple_res,
+  ticks = simple_tick, captime_shift = simple_shift, captime = simple_captime,
+  weight = simple_weight, maturity = simple_mature
+)
+
 ## Full model
 simple_sem <- psem(
   simple_tol,
@@ -134,11 +139,7 @@ simple_out <- summary(simple_sem)
 
 ## save the results to a file
 simple_model_objects <- list(
-  component_mods = list(
-    tolerance = simple_tol, infection = simple_inf, resistance = simple_res,
-    ticks = simple_tick, captime_shift = simple_shift, captime = simple_captime,
-    weight = simple_weight, maturity = simple_mature
-  ),
+  component_mods = simple_modlist,
   sem_mod = list(spec = simple_sem, fit = simple_out)
 )
 saveRDS(
@@ -225,6 +226,47 @@ saveRDS(
     "cumulative-effects-table_simplified-SEM.rds"
     )
 )
+
+## ---- Use the semEff package to bootstrap ----
+# library(semEff)
+# ## TODO
+# ## This takes a long time to run
+# run_bootstrap = TRUE
+# if (run_bootstrap){
+#   simple_boot <- bootEff(
+#     simple_modlist, R = 10, type = 'parametric',
+#     parallel = "snow", ncpus = parallel::detectCores() - 4
+#     # .progress = "txt"
+#   )
+#
+#   simple_effs <- semEff(simple_boot)
+# }
+#
+# dir_effs <- semEff::getDirEff(simple_effs)
+#
+# tmp_boot = bootMer(
+#   simple_modlist$weight,
+#   FUN = function(x){
+#     fixef(x)
+#   }
+# )
+# summary(tmp_boot)
+#
+# tmp_effs <- stdEff(
+#   simple_modlist, unique.eff = TRUE,
+#   incl.raw = FALSE, refit.x = TRUE,
+#   cen.x = TRUE, std.x = TRUE,
+#   cen.y = TRUE, std.y = TRUE
+# )
+# tmp_effs$weight
+#
+# # Not the same...
+# simple_model_objects$sem_mod$fit$coefficients %>%
+#   data.frame() %>% filter(Response == "weight")
+#
+# fixef(simple_modlist$infection)
+#
+# tmp_effs
 
 ## ---- Collect random effects ----
 
@@ -390,38 +432,38 @@ z_crit <- qnorm(crit_prob)
 
 ## Determine whether 90% confidence intervals (unstandardized) overlap by
 ### species for each coefficient...
-spec_coefs <- spec_coefs %>% 
-  rename(Species = species) %>% 
-  arrange(Response, Predictor, Species) %>% 
-  relocate(Species, .after = Predictor) %>% 
-  mutate(z_crit = z_crit) %>% 
-  rowwise() %>% 
+spec_coefs <- spec_coefs %>%
+  rename(Species = species) %>%
+  arrange(Response, Predictor, Species) %>%
+  relocate(Species, .after = Predictor) %>%
+  mutate(z_crit = z_crit) %>%
+  rowwise() %>%
   mutate(
     t_crit = qt(crit_prob, DF),
     lower_CL = Estimate - (t_crit * Std.Error),
     upper_CL = Estimate + (t_crit * Std.Error),
     lower_zCL = Estimate - (z_crit * Std.Error),
     upper_zCL = Estimate + (z_crit * Std.Error)
-  ) %>% 
-  group_by(Response, Predictor) %>% 
+  ) %>%
+  group_by(Response, Predictor) %>%
   mutate(
-    CI_overlap = first(lower_CL) <= last(upper_CL) & 
+    CI_overlap = first(lower_CL) <= last(upper_CL) &
       last(lower_CL) <= first(upper_CL)
-  ) # %>% 
+  ) # %>%
   # ggplot(aes(x = Predictor, y = Estimate, col = species)) +
-  # facet_wrap(~Response, scales = "free_y") + 
-  # geom_hline(yintercept = 0, col = "black", linetype = "dotted") + 
+  # facet_wrap(~Response, scales = "free_y") +
+  # geom_hline(yintercept = 0, col = "black", linetype = "dotted") +
   # geom_errorbar(
   #   aes(ymin = lower_CL, ymax = upper_CL, linetype = CI_overlap),
   #   width = 0.2, linewidth = 1,
   #   position = position_dodge(.2)
-  # ) + 
+  # ) +
   # geom_point(
   #   size = 4, aes(shape = P.Value > 0.1), stroke = 2, fill = "grey",
   #   position = position_dodge(.2)
-  # ) + 
-  # theme_bw() + 
-  # scale_linetype_manual(values = c("solid", "dashed")) + 
+  # ) +
+  # theme_bw() +
+  # scale_linetype_manual(values = c("solid", "dashed")) +
   # scale_shape_manual(values = c(16, 21))
 
 # spec_coefs <- spec_coefs %>% arrange(Response, Predictor, species) %>%
