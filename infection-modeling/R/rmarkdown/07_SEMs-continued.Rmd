@@ -581,6 +581,51 @@ caption = paste(
 ## Species comparison
 
 ```{r}
+(prop_infect <- Peros %>% 
+  filter(!is.na(Bb_infected)) %>% 
+  group_by(Species) %>% 
+  summarize(
+    n = n(), 
+    P_infected = mean(Bb_infected),
+    successes = sum(Bb_infected)
+  ))
+
+p_test <- prop.test(
+  x = prop_infect$successes, n = prop_infect$n
+)
+
+with(
+  p_test,
+  c(estimate, statistic, parameter, P = p.value)
+) %>% round(3)
+```
+
+```{r}
+# Peros %>% 
+#   group_by(siteID, Species) %>% 
+#   tally()
+
+(prop_tick <- Peros %>% 
+  filter(!is.na(ticks_attached)) %>% 
+  group_by(Species) %>% 
+  summarize(
+    n = n(),
+    P_parasitized = mean(ticks_attached),
+    successes = sum(ticks_attached)
+  ))
+
+p_test_tick <- prop.test(
+  x = prop_tick$successes, n = prop_tick$n
+)
+
+with(
+  p_test_tick,
+  c(estimate, statistic, parameter, P = p.value)
+) %>% round(4)
+```
+
+
+```{r}
 pele_model_objects <- readRDS(
   "infection-modeling/data/model-objects/PELE-SEM-objects.rds"
 )
@@ -629,8 +674,8 @@ spec_unif_coefs <- spec_coefs %>% ungroup() %>%
     ),
     color = case_when(
       !CI_overlap ~ "purple",
-      # P.Value_PEMA <= 0.1 & P.Value_PELE > 0.1 ~ "forestgreen",
-      # P.Value_PELE <= 0.1 & P.Value_PEMA > 0.1 ~ "forestgreen",
+      P.Value_PEMA <= 0.1 & P.Value_PELE > 0.1 ~ "forestgreen",
+      P.Value_PELE <= 0.1 & P.Value_PEMA > 0.1 ~ "forestgreen",
       CI_overlap ~ "black",
       .default = "grey50"
     ),
@@ -678,6 +723,16 @@ caption = paste(
   "Figure \\@ref(fig:spCumInf) for the cumulative effects on infection for",
   "each species."
 )
+
+## temporary save point
+build_psem_plot(pele_fp) %>%
+  set_node_attrs("shape", "rectangle") %>%
+  set_node_attrs("width", 1.1) %>%
+  set_node_attrs("height", 0.5) %>%
+  export_graph(
+    file_name = "C:/Users/morrow5/Downloads/Species-comparison-sem.png", 
+    file_type = "png", width = 5*300, height = 5*300*1.35
+  )
 ```
 
 Because relatively few *P. maniculatus* were observed with a combination of
@@ -771,10 +826,10 @@ species_coef_tab %>%
 # # TODO: move to .Rmd
 # ## visualize
 sp_cumeffs %>%
-  filter(To == "Bb_infected") %>%
+  filter(To %in% c("Bb_infected", "ticks_attached")) %>%
   ggplot(aes(y = From)) +
   geom_vline(xintercept = 0, linetype = "solid", color = "grey50") +
-  facet_wrap(~Species) +
+  facet_grid(To~Species) +
   geom_col(aes(x = total, fill = "total"), col = "black") +
   geom_col(
     aes(x = direct, fill = "direct"), width = 0.4, col = "black",
