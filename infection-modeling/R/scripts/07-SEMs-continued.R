@@ -37,6 +37,11 @@ scaled_dat <- mod_dat %>%
     )
   )
 
+saveRDS(
+  list(mod_data = mod_dat, scaled_dat = scaled_dat),
+  file = "infection-modeling/data/model-objects/peromyscus-model-dataframes.rds"
+)
+
 # ---- Simplified SEM (no interactions) ----
 
 ## Weight
@@ -124,16 +129,8 @@ simple_modlist = list(
 )
 
 ## Full model
-simple_sem <- psem(
-  simple_tol,
-  simple_inf,
-  simple_res,
-  simple_tick,
-  simple_shift,
-  simple_captime,
-  simple_weight,
-  simple_mature,
-  data = scaled_dat
+simple_sem <- as.psem(
+  simple_modlist
 )
 simple_out <- summary(simple_sem)
 
