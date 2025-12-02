@@ -9,11 +9,23 @@ output: bookdown::html_document2
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
 ```{r}
 library(tidyverse)
 library(lme4)
 library(piecewiseSEM)
+library(semEff)
 ```
+
+# Intro
+
+This document outlines the basics of piecewiseSEMs. To render this notebook
+use the following code (or similar)
+
+```{r, eval = FALSE}
+rmarkdown::render("infection-modeling/R/rmarkdown/SEM-cookbook.Rmd")
+```
+
 
 # Basic Usage
 
@@ -76,11 +88,12 @@ significant (P < 0.1), so these could also be included. For the sake of this
 example, we will only add the age->richness path.
 
 ```{r dTab, fig.cap=caption}
-rich_fit$dTable %>% 
-  knitr::kable(
-    digits = 3,
-    caption = "D-separated independence claims"
-  )
+rich_fit$dTable # %>% 
+  # knitr::kable(
+  #   digits = 3,
+  #   caption = "D-separated independence claims"
+  # )
+caption = paste()
 ```
 
 ## Update fit
@@ -102,11 +115,11 @@ Then we again check for any additional missing paths (\@ref(tab:dSepNew),
 no change):
 
 ```{r dSepNew}
-new_rich_fit$dTable %>% 
-  knitr::kable(
-    digits = 3,
-    caption = "Second d-sep table"
-  )
+new_rich_fit$dTable #%>% 
+  # knitr::kable(
+  #   digits = 3,
+  #   caption = "Second d-sep table"
+  # )
 ```
 
 Now that we have an updated SEM, let's check its overall fit. The `piecewiseSEM`
@@ -167,21 +180,21 @@ recommended to use P $\leq$ 0.1 for determining path significance. By this
 metric, all paths are significant.
 
 ```{r coefTab}
-new_rich_fit$coefficients %>% 
-  data.frame() %>% 
-  knitr::kable(
-    digits = 2,
-    col.names = c(
-      "Resp.", "Pred.", "Coef. Est.", "SE", "DF", "Crit", "P", 
-      "Std. Effect", "Sig."
-    ),
-    caption = paste(
-      "SEM coefficient table: Response variable, Predictor variable",
-      "Regression coefficient, Standard Error, Degrees of freedom,",
-      "Critical value, P-value, Standardized effect size, and significance",
-      "stars."
-    )
-  )
+new_rich_fit$coefficients #%>% 
+  # data.frame() %>% 
+  # knitr::kable(
+  #   digits = 2,
+  #   col.names = c(
+  #     "Resp.", "Pred.", "Coef. Est.", "SE", "DF", "Crit", "P", 
+  #     "Std. Effect", "Sig."
+  #   ),
+  #   caption = paste(
+  #     "SEM coefficient table: Response variable, Predictor variable",
+  #     "Regression coefficient, Standard Error, Degrees of freedom,",
+  #     "Critical value, P-value, Standardized effect size, and significance",
+  #     "stars."
+  #   )
+  # )
 ```
 
 And we can plot a simple version of the SEM using the `DiagrammeR` package:
@@ -333,3 +346,35 @@ breakdown %>%
   labs(x = "Predictor", y = "Effect", fill = NULL)
 ```
 
+# semEff
+
+The `semEff` package can be used to obtain bootstrapped confidence intervals, 
+and/or to automatically extract indirect and total effects:
+
+```{r, cache = TRUE, warning = FALSE}
+# the SEM as a list of models
+modlist <- list(richness = new_rich, cover = cover_mod, fire = fire_mod)
+
+# boot strap the model (with 10 iterations), using default settings
+sem_boot <- bootEff(modlist, R = 10)
+```
+
+```{r}
+# calculate the effects from the bootsrapped model
+sem_effs <- semEff(sem_boot, ci.conf = 0.90)
+
+# print a summary of all effects
+summary(sem_effs)
+```
+
+And to extract the indirect effects, use `getIndEff`. Below we can see that
+there is an indirect effect of fireseverity on richness, but no indirect
+effects on cover or fire. 
+
+```{r}
+# just extract indirect effects
+getIndEff(sem_effs, type = "orig")
+```
+
+`getDirEff` and `getMedEff` can also be used to extract direct and mediator
+effects, respectively.
