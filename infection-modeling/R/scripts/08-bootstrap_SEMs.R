@@ -45,19 +45,20 @@ if (force_run || !exists("unscaled_modlist") | !exists("unscaled_psem.fit")) {
 full_boot_file <- "infection-modeling/data/model-objects/bootSEM_full.rds"
 
 # Bootstrap the model
-if (force_run || !exists("full_boot") || !file.exists(full_boot_file)) {
+if (force_run || !file.exists(full_boot_file)) {
   boot_time <- system.time(
     full_boot <- bootEff(
-      unscaled_modlist, R = 10,
+      unscaled_modlist, R = 1000,
       # ran.eff = "siteID",
       type = "parametric",
       std.x = FALSE, std.y = FALSE,
       parallel = "snow", ncpus = 12,
-      bM.arg = list(".progress" = "txt", "PBargs" = list(style=3))
+      #bM.arg = list(".progress" = "txt", "PBargs" = list(style=3))
     )
   )
 
-  boot_time*100/60/60 # estimated hours to run...
+  cat(boot_time["elapsed"]/60, "minutes") 
+  # cat(boot_time*100/60/60, "estimated hours") # estimated hours to run...
   ## nonparametric = 164.19 seconds (R=10, ncpus=12)
   ## parametric =  292.24 seconds (R=10, ncpus=12)
 
@@ -65,3 +66,10 @@ if (force_run || !exists("full_boot") || !file.exists(full_boot_file)) {
 } else {
   full_boot <- readRDS(file = full_boot_file)
 }
+
+## Standardize the effects
+# TODO
+
+## Summarize the effects
+full_effs <- semEff(full_boot, ci.conf = 0.9)
+full_smry <- summary(full_effs)

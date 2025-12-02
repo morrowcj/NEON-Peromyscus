@@ -20,7 +20,7 @@ library(semEff)
 # Intro
 
 This document outlines the basics of piecewiseSEMs. To render this notebook
-use the following code (or similar)
+use the following code (or similar).
 
 ```{r, eval = FALSE}
 rmarkdown::render("infection-modeling/R/rmarkdown/SEM-cookbook.Rmd")
