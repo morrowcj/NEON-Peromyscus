@@ -2,7 +2,9 @@
 title: "SEM cookbook"
 author: "Clay Morrow"
 date: "2025-11-17"
-output: bookdown::html_document2
+output: 
+  bookdown::html_document2: default
+  bookdown::pdf_document2: default
 ---
 
 ```{r setup, include=FALSE}
@@ -375,11 +377,12 @@ getIndEff(sem_effs, type = "orig")
 ```
 
 `getDirEff` and `getMedEff` can also be used to extract direct and mediator
-effects, respectively.
+effects, respectively. Mediator effects are simply the sum of all indirect 
+paths which operate through the mediator variable.
 
 ## TODO:
 
-* [ ] look into mediators
+* [x] look into mediators
 
 * [ ] binomial response / categorical predictors
 
