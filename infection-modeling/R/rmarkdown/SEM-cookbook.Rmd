@@ -9,7 +9,6 @@ output: bookdown::html_document2
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
 ```{r}
 library(tidyverse)
 library(lme4)
@@ -25,7 +24,6 @@ use the following code (or similar).
 ```{r, eval = FALSE}
 rmarkdown::render("infection-modeling/R/rmarkdown/SEM-cookbook.Rmd")
 ```
-
 
 # Basic Usage
 
@@ -353,7 +351,7 @@ and/or to automatically extract indirect and total effects:
 
 ```{r, cache = TRUE, warning = FALSE}
 # the SEM as a list of models
-modlist <- list(richness = new_rich, cover = cover_mod, fire = fire_mod)
+modlist <- list(richness = new_rich, cover = cover_mod, firesev = fire_mod)
 
 # boot strap the model (with 10 iterations), using default settings
 sem_boot <- bootEff(modlist, R = 10)
@@ -378,3 +376,11 @@ getIndEff(sem_effs, type = "orig")
 
 `getDirEff` and `getMedEff` can also be used to extract direct and mediator
 effects, respectively.
+
+## TODO:
+
+* [ ] look into mediators
+
+* [ ] binomial response / categorical predictors
+
+* [ ] work through example together?

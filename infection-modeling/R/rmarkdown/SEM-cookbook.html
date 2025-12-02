@@ -1585,8 +1585,8 @@ library(semEff)</code></pre>
 <div id="intro" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Intro</h1>
 <p>This document outlines the basics of piecewiseSEMs. To render this notebook
-use</p>
-<pre class="r"><code>rmarkdown::render()</code></pre>
+use the following code (or similar).</p>
+<pre class="r"><code>rmarkdown::render(&quot;infection-modeling/R/rmarkdown/SEM-cookbook.Rmd&quot;)</code></pre>
 </div>
 <div id="basic-usage" class="section level1" number="2">
 <h1><span class="header-section-number">2</span> Basic Usage</h1>
@@ -1786,8 +1786,8 @@ sem_graph &lt;- create_graph(attr_theme = &quot;bt&quot;) %&gt;%
 
 # render the graph
 render_graph(sem_graph)</code></pre>
-<div class="grViz html-widget html-fill-item" id="htmlwidget-fce9d70d98a43685cf59" style="width:672px;height:480px;"></div>
-<script type="application/json" data-for="htmlwidget-fce9d70d98a43685cf59">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"rich\", color = \"black\", fillcolor = \"#FFFFFF\", fontcolor = \"#000000\"] \n  \"2\" [label = \"cover\", color = \"black\", fillcolor = \"#FFFFFF\", fontcolor = \"#000000\"] \n  \"3\" [label = \"firesev\", color = \"black\", fillcolor = \"#FFFFFF\", fontcolor = \"#000000\"] \n  \"4\" [label = \"age\", color = \"black\", fillcolor = \"#FFFFFF\", fontcolor = \"#000000\"] \n\"2\"->\"1\" [penwidth = \"4.10527497194164\", color = \"blue\", style = \"solid\", label = \"0.25\"] \n\"4\"->\"1\" [penwidth = \"2.00650953984287\", color = \"red\", style = \"solid\", label = \"-0.21\"] \n\"3\"->\"2\" [penwidth = \"1\", color = \"red\", style = \"solid\", label = \"-0.44\"] \n\"4\"->\"3\" [penwidth = \"5\", color = \"blue\", style = \"solid\", label = \"0.45\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-216f51212cba617af735" style="width:672px;height:480px;"></div>
+<script type="application/json" data-for="htmlwidget-216f51212cba617af735">{"x":{"diagram":"digraph {\n\ngraph [layout = \"dot\",\n       rankdir = \"BT\",\n       outputorder = \"edgesfirst\",\n       bgcolor = \"white\"]\n\nnode [fontname = \"Helvetica\",\n      fontsize = \"10\",\n      shape = \"circle\",\n      fixedsize = \"true\",\n      width = \"0.5\",\n      style = \"filled\",\n      fillcolor = \"aliceblue\",\n      color = \"gray70\",\n      fontcolor = \"gray50\"]\n\nedge [fontname = \"Helvetica\",\n     fontsize = \"8\",\n     len = \"1.5\",\n     color = \"gray80\",\n     arrowsize = \"0.5\"]\n\n  \"1\" [label = \"rich\", color = \"black\", fillcolor = \"#FFFFFF\", fontcolor = \"#000000\"] \n  \"2\" [label = \"cover\", color = \"black\", fillcolor = \"#FFFFFF\", fontcolor = \"#000000\"] \n  \"3\" [label = \"firesev\", color = \"black\", fillcolor = \"#FFFFFF\", fontcolor = \"#000000\"] \n  \"4\" [label = \"age\", color = \"black\", fillcolor = \"#FFFFFF\", fontcolor = \"#000000\"] \n\"2\"->\"1\" [penwidth = \"4.10527497194164\", color = \"blue\", style = \"solid\", label = \"0.25\"] \n\"4\"->\"1\" [penwidth = \"2.00650953984287\", color = \"red\", style = \"solid\", label = \"-0.21\"] \n\"3\"->\"2\" [penwidth = \"1\", color = \"red\", style = \"solid\", label = \"-0.44\"] \n\"4\"->\"3\" [penwidth = \"5\", color = \"blue\", style = \"solid\", label = \"0.45\"] \n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="cumulative-effects" class="section level2" number="2.4">
 <h2><span class="header-section-number">2.4</span> Cumulative effects</h2>
@@ -1892,7 +1892,7 @@ breakdown %&gt;%
 <p>The <code>semEff</code> package can be used to obtain bootstrapped confidence intervals,
 and/or to automatically extract indirect and total effects:</p>
 <pre class="r"><code># the SEM as a list of models
-modlist &lt;- list(richness = new_rich, cover = cover_mod, fire = fire_mod)
+modlist &lt;- list(richness = new_rich, cover = cover_mod, firesev = fire_mod)
 
 # boot strap the model (with 10 iterations), using default settings
 sem_boot &lt;- bootEff(modlist, R = 10)</code></pre>
@@ -1905,86 +1905,92 @@ summary(sem_effs)</code></pre>
 ## SEM direct, summed indirect, total, and mediator effects:</code></pre>
 <pre><code>## 
 ## Response &#39;richness&#39; (1/3):</code></pre>
-<pre><code>##                       Effect     Bias   Std. Err.   Lower CI
-##                       ------   ------   ---------   --------
-##  DIRECT:    age     | -0.199 |  0.007 |     0.068 |   -0.285
-##             cover   |  0.238 | -0.006 |     0.104 |    0.040
-##                     |        |        |           |         
-##  INDIRECT:  firesev | -0.104 | -0.001 |     0.058 |   -0.233
-##                     |        |        |           |         
-##  TOTAL:     age     | -0.199 |  0.007 |     0.068 |   -0.285
-##             firesev | -0.104 | -0.001 |     0.058 |   -0.233
-##             cover   |  0.238 | -0.006 |     0.104 |    0.040
-##                     |        |        |           |         
-##  MEDIATORS: cover   | -0.104 | -0.001 |     0.058 |   -0.233
-##  Upper CI    
-##  --------    
-##    -0.090 | *
-##     0.406 | *
-##           |  
-##    -0.030 | *
-##           |  
-##    -0.090 | *
-##    -0.030 | *
-##     0.406 | *
-##           |  
-##    -0.030 | *</code></pre>
+<pre><code>##                       Effect     Bias   Std. Err.   Lower CI Upper CI  
+##                       ------   ------   ---------   -------- --------  
+##  DIRECT:    age     | -0.199 | -0.015 |     0.108 |   -0.383   -0.077 |
+##             cover   |  0.238 | -0.035 |     0.106 |    0.059    0.366 |
+##                     |        |        |           |                   |
+##  INDIRECT:  age     | -0.047 |  0.008 |     0.024 |   -0.075   -0.024 |
+##             firesev | -0.104 |  0.016 |     0.056 |   -0.180   -0.058 |
+##                     |        |        |           |                   |
+##  TOTAL:     age     | -0.247 | -0.007 |     0.091 |   -0.394   -0.140 |
+##             cover   |  0.238 | -0.035 |     0.106 |    0.059    0.366 |
+##             firesev | -0.104 |  0.016 |     0.056 |   -0.180   -0.058 |
+##                     |        |        |           |                   |
+##  MEDIATORS: cover   | -0.152 |  0.024 |     0.079 |   -0.250   -0.082 |
+##             firesev | -0.047 |  0.008 |     0.024 |   -0.075   -0.024 |
+##   
+##   
+##  *
+##  *
+##   
+##  *
+##  *
+##   
+##  *
+##  *
+##  *
+##   
+##  *
+##  *</code></pre>
 <pre><code>## 
 ## Response &#39;cover&#39; (2/3):</code></pre>
-<pre><code>##                       Effect     Bias   Std. Err.   Lower CI
-##                       ------   ------   ---------   --------
-##  DIRECT:    firesev | -0.437 | -0.001 |     0.079 |   -0.574
-##                     |        |        |           |         
-##  INDIRECT:  -       |      - |      - |         - |        -
-##                     |        |        |           |         
-##  TOTAL:     firesev | -0.437 | -0.001 |     0.079 |   -0.574
-##                     |        |        |           |         
-##  MEDIATORS: -       |      - |      - |         - |        -
-##  Upper CI    
-##  --------    
-##    -0.385 | *
-##           |  
-##         - |  
-##           |  
-##    -0.385 | *
-##           |  
-##         - |</code></pre>
+<pre><code>##                       Effect     Bias   Std. Err.   Lower CI Upper CI  
+##                       ------   ------   ---------   -------- --------  
+##  DIRECT:    firesev | -0.437 |  0.006 |     0.095 |   -0.549   -0.278 |
+##                     |        |        |           |                   |
+##  INDIRECT:  age     | -0.198 | -0.004 |     0.069 |   -0.334   -0.114 |
+##                     |        |        |           |                   |
+##  TOTAL:     age     | -0.198 | -0.004 |     0.069 |   -0.334   -0.114 |
+##             firesev | -0.437 |  0.006 |     0.095 |   -0.549   -0.278 |
+##                     |        |        |           |                   |
+##  MEDIATORS: firesev | -0.198 | -0.004 |     0.069 |   -0.334   -0.114 |
+##   
+##   
+##  *
+##   
+##  *
+##   
+##  *
+##  *
+##   
+##  *</code></pre>
 <pre><code>## 
-## Response &#39;fire&#39; (3/3):</code></pre>
-<pre><code>##                   Effect    Bias   Std. Err.   Lower CI Upper CI  
-##                   ------   -----   ---------   -------- --------  
-##  DIRECT:    age |  0.454 | 0.007 |     0.117 |    0.257    0.587 |
-##                 |        |       |           |                   |
-##  INDIRECT:  -   |      - |     - |         - |        -        - |
-##                 |        |       |           |                   |
-##  TOTAL:     age |  0.454 | 0.007 |     0.117 |    0.257    0.587 |
-##                 |        |       |           |                   |
-##  MEDIATORS: -   |      - |     - |         - |        -        - |
-##   
-##   
-##  *
-##   
-##   
-##   
-##  *
-##   
-## </code></pre>
+## Response &#39;firesev&#39; (3/3):</code></pre>
+<pre><code>##                   Effect    Bias   Std. Err.   Lower CI Upper CI    
+##                   ------   -----   ---------   -------- --------    
+##  DIRECT:    age |  0.454 | 0.005 |     0.076 |    0.373    0.591 | *
+##                 |        |       |           |                   |  
+##  INDIRECT:  -   |      - |     - |         - |        -        - |  
+##                 |        |       |           |                   |  
+##  TOTAL:     age |  0.454 | 0.005 |     0.076 |    0.373    0.591 | *
+##                 |        |       |           |                   |  
+##  MEDIATORS: -   |      - |     - |         - |        -        - |</code></pre>
 <p>And to extract the indirect effects, use <code>getIndEff</code>. Below we can see that
 there is an indirect effect of fireseverity on richness, but no indirect
 effects on cover or fire.</p>
 <pre class="r"><code># just extract indirect effects
 getIndEff(sem_effs, type = &quot;orig&quot;)</code></pre>
 <pre><code>## $richness
-##   (Intercept)       firesev 
-##  1.411146e-15 -1.042210e-01 
+##   (Intercept)           age       firesev 
+##  1.411146e-15 -4.730230e-02 -1.042210e-01 
 ## 
 ## $cover
-## [1] NA
+##   (Intercept)           age 
+## -1.749845e-15 -1.984003e-01 
 ## 
-## $fire
+## $firesev
 ## [1] NA</code></pre>
 <p><code>getDirEff</code> and <code>getMedEff</code> can also be used to extract direct and mediator
 effects, respectively.</p>
+<div id="todo" class="section level2" number="3.1">
+<h2><span class="header-section-number">3.1</span> TODO:</h2>
+<ul class="task-list">
+<li><p><label><input type="checkbox"></input>look into mediators</label></p></li>
+<li><p><label><input type="checkbox"></input>binomial response / categorical predictors</label></p></li>
+<li><p><label><input type="checkbox"></input>work through example together?</label></p></li>
+</ul>
+</div>
 </div>
 
 
