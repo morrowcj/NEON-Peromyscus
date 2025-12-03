@@ -82,7 +82,7 @@ if (force_run || !file.exists(full_boot_file)) {
   # save (and time) the bootstrap
   boot_time <- system.time(
     full_boot <- bootEff(
-      unname(unscaled_modlist), R = 1000, type = "parametric",
+      unname(unscaled_modlist), R = 2000, type = "parametric",
       std.x = FALSE, std.y = FALSE, parallel = "snow", ncpus = 12
     )
   )
@@ -156,11 +156,17 @@ full_effs_tab <- getEffTable(full_effs) %>% tibble() %>%
     Predictor = gsub("\\.", "_", Predictor)
   )
 
-## Calculate empirical P-value
-# TODO
-warning("WRITE CODE FOR THE EMPIRICAL P-VALUES")
-## ... This should be the proportion of samples less than 0
-## (for positive effects) times 2
+# Calculate empirical P-value
+empirical_pvals <- lapply(
+  full_boot, function(x) {
+    pos_dist <- apply(x$t, 2, function(y) y >= 0)
+    pos_prop <- apply(pos_dist, 2, function(y) mean(y, na.rm = TRUE))
+    one_sided <- if_else(pos_prop >= 0.5, (1 - pos_prop), pos_prop)
+    two_sided <- one_sided * 2
+    two_sided
+  }
+)
+## TODO: I don't know how to calculate empirical Pvals for indirect/total effs.
 
 # Extract join the bootstrapped results with the psem coefficient table
 full_stats <- unscaled_psem.fit$coefficients %>%
@@ -214,6 +220,12 @@ full_stats %>% filter(effect_type == "direct") %>%
     position = position_nudge(y = -0.1), width = 0.5
   )
 
+# save the stats
+saveRDS(
+  full_stats, 
+  "infection-modeling/data/model-objects/SEM-statistics-all.rds"
+)
+
 # # Compare scaled vs unscaled effects
 #
 # def <- stdEff(unscaled_modlist)
@@ -262,7 +274,7 @@ if (force_run || !file.exists(unscaled_species_file)) {
 
   # psem fits
   pele_psem <- summary(pele_spec)
-  peme_psem <- summary(pema_spec)
+  pema_psem <- summary(pema_spec)
 
   # collect output
   out_list <- list(
@@ -272,7 +284,7 @@ if (force_run || !file.exists(unscaled_species_file)) {
     ),
     pema = list(
       component_mods = pema_modlist,
-      sem_mod = list(spec = pema_spec, fit = pema_spec)
+      sem_mod = list(spec = pema_spec, fit = pema_psem)
     )
   )
 
@@ -291,8 +303,8 @@ if (force_run || !file.exists(unscaled_species_file)) {
   pema_modlist <- out_list$pema$component_mods
   pele_spec <- out_list$pele$sem_mod$spec
   pema_spec <- out_list$pema$sem_mod$spec
-  pele_fit <- out_list$pele$sem_mod$fit
-  pema_fit <- out_list$pema$sem_mod$fit
+  pele_psem <- out_list$pele$sem_mod$fit
+  pema_psem <- out_list$pema$sem_mod$fit
 
   # remove the list copy
   rm(out_list)
@@ -312,7 +324,7 @@ pema_boot_file <- file.path(
 if (force_run || !file.exists(pele_boot_file)) {
   boot_time <- system.time(
     pele_boot <- bootEff(
-      unname(pele_modlist), R = 1000, type = "parametric",
+      unname(pele_modlist), R = 2000, type = "parametric",
       std.x = FALSE, std.y = FALSE, parallel = "snow", ncpus = 12
     )
   )
@@ -326,7 +338,7 @@ if (force_run || !file.exists(pele_boot_file)) {
 if (force_run || !file.exists(pema_boot_file)) {
   boot_time <- system.time(
     pema_boot <- bootEff(
-      unname(pema_modlist), R = 1000, type = "parametric",
+      unname(pema_modlist), R = 2000, type = "parametric",
       std.x = FALSE, std.y = FALSE, parallel = "snow", ncpus = 12
     )
   )
@@ -385,5 +397,59 @@ for (resp.no in seq_len(length(pema_modlist))) {
   }
 }
 
-## TODO
-warning("THE SPECIES EFFECTS CODE IS UNFINISHED")
+# calculate the effect coefficients, with 90% conf. interval
+pele_effs <- semEff(pele_boot, ci.conf = 0.9)
+pema_effs <- semEff(pema_boot, ci.conf = 0.9)
+
+# PELE effects table
+pele_effs_tab <- getEffTable(pele_effs) %>% tibble() %>%
+  rename(
+    Response = response, Predictor = predictor, boot.eff = effect,
+    boot.bias = bias, boot.SE = std_err, boot.ci.low = lower_ci,
+    boot.ci.up = upper_ci
+  ) %>%
+  mutate(
+    Response = gsub("\\.", "_", Response),
+    Predictor = gsub("\\.", "_", Predictor),
+    Species = "PELE"
+  ) %>% 
+  relocate(Predictor, .after = Response) %>% 
+  relocate(Species, .before = 0) %>% 
+  full_join(
+    pele_psem$coefficients %>% data.frame() %>% rename(sigstar = Var.9) %>% 
+      tibble() %>% mutate(effect_type = "direct", Species = "PELE") %>% 
+      relocate(effect_type, .after = "Predictor") %>% 
+      relocate(Species, .before = 0),
+    by = c("Species", "Response", "Predictor", "effect_type")
+  )
+
+# PEMA effects table
+pema_effs_tab <- getEffTable(pema_effs) %>% tibble() %>%
+  rename(
+    Response = response, Predictor = predictor, boot.eff = effect,
+    boot.bias = bias, boot.SE = std_err, boot.ci.low = lower_ci,
+    boot.ci.up = upper_ci
+  ) %>%
+  mutate(
+    Response = gsub("\\.", "_", Response),
+    Predictor = gsub("\\.", "_", Predictor),
+    Species = "PEMA"
+  ) %>% 
+  relocate(Predictor, .after = Response) %>% 
+  relocate(Species, .before = 0) %>% 
+  full_join(
+    pema_psem$coefficients %>% data.frame() %>% rename(sigstar = Var.9) %>% 
+      tibble() %>% mutate(effect_type = "direct", Species = "PEMA") %>% 
+      relocate(effect_type, .after = "Predictor") %>% 
+      relocate(Species, .before = 0),
+    by = c("Species", "Response", "Predictor", "effect_type")
+  )
+
+# combine them into one table
+species_effs_tab <- full_join(pele_effs_tab, pema_effs_tab)
+
+# save the stats
+saveRDS(
+  species_effs_tab, 
+  "infection-modeling/data/model-objects/SEM-statistics-species.rds"
+)
