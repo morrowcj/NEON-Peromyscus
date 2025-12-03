@@ -232,8 +232,8 @@ pema_mod_obs <- readRDS(
 )
 
 # filter the unscaled data
-pele_data <- model_data_list$mod_data %>% filter(specie == "PELE")
-pema_data <- model_data_list$mod_data %>% filter(specie == "PEMA")
+pele_data <- model_data_list$mod_data %>% filter(species == "PELE")
+pema_data <- model_data_list$mod_data %>% filter(species == "PEMA")
 
 # extract the model lists
 pele_modlist <- pele_mod_obs$component_mods
