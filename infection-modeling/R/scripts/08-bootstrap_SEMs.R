@@ -1,12 +1,24 @@
-## ---- Parameters ----
-force_run = FALSE
-
 ## ---- Load Packages ----
+library(optparse)
 library(tidyverse)
 library(lme4)
 library(lmerTest)
 library(piecewiseSEM)
 library(semEff)
+
+## ---- Parse arguments ----
+parser <- OptionParser()
+parser <- add_option(
+  parser, c("-f", "--force"),
+  action = "store_true",
+  default = FALSE,
+  dest = "force",
+  help = "Force long-running code to execute [FALSE]"
+)
+opt <- parse_args(parser)
+
+## ---- Parameters ----
+force_run = opt$force
 
 ## ---- Load objects ----
 
@@ -173,7 +185,14 @@ full_stats <- unscaled_psem.fit$coefficients %>%
   data.frame() %>% rename(sigstar = Var.9) %>% tibble() %>%
   mutate(effect_type = "direct") %>%
   relocate(effect_type, .after = "Predictor") %>%
-  full_join(full_effs_tab)
+  full_join(full_effs_tab) %>%
+  # group_by(Response, Predictor, effect_type) %>%
+  rowwise() %>%
+  mutate(
+    boot.z = boot.eff / boot.SE,
+    boot.p = min(pnorm(boot.z), pnorm(boot.z, lower.tail = FALSE)) * 2
+  ) %>%
+  ungroup()
 
 # Plot the discrepancies between psem P-values and confidence intervals
 full_stats %>% filter(effect_type == "direct") %>%
@@ -222,7 +241,7 @@ full_stats %>% filter(effect_type == "direct") %>%
 
 # save the stats
 saveRDS(
-  full_stats, 
+  full_stats,
   "infection-modeling/data/model-objects/SEM-statistics-all.rds"
 )
 
@@ -412,13 +431,13 @@ pele_effs_tab <- getEffTable(pele_effs) %>% tibble() %>%
     Response = gsub("\\.", "_", Response),
     Predictor = gsub("\\.", "_", Predictor),
     Species = "PELE"
-  ) %>% 
-  relocate(Predictor, .after = Response) %>% 
-  relocate(Species, .before = 0) %>% 
+  ) %>%
+  relocate(Predictor, .after = Response) %>%
+  relocate(Species, .before = 0) %>%
   full_join(
-    pele_psem$coefficients %>% data.frame() %>% rename(sigstar = Var.9) %>% 
-      tibble() %>% mutate(effect_type = "direct", Species = "PELE") %>% 
-      relocate(effect_type, .after = "Predictor") %>% 
+    pele_psem$coefficients %>% data.frame() %>% rename(sigstar = Var.9) %>%
+      tibble() %>% mutate(effect_type = "direct", Species = "PELE") %>%
+      relocate(effect_type, .after = "Predictor") %>%
       relocate(Species, .before = 0),
     by = c("Species", "Response", "Predictor", "effect_type")
   )
@@ -434,13 +453,13 @@ pema_effs_tab <- getEffTable(pema_effs) %>% tibble() %>%
     Response = gsub("\\.", "_", Response),
     Predictor = gsub("\\.", "_", Predictor),
     Species = "PEMA"
-  ) %>% 
-  relocate(Predictor, .after = Response) %>% 
-  relocate(Species, .before = 0) %>% 
+  ) %>%
+  relocate(Predictor, .after = Response) %>%
+  relocate(Species, .before = 0) %>%
   full_join(
-    pema_psem$coefficients %>% data.frame() %>% rename(sigstar = Var.9) %>% 
-      tibble() %>% mutate(effect_type = "direct", Species = "PEMA") %>% 
-      relocate(effect_type, .after = "Predictor") %>% 
+    pema_psem$coefficients %>% data.frame() %>% rename(sigstar = Var.9) %>%
+      tibble() %>% mutate(effect_type = "direct", Species = "PEMA") %>%
+      relocate(effect_type, .after = "Predictor") %>%
       relocate(Species, .before = 0),
     by = c("Species", "Response", "Predictor", "effect_type")
   )
@@ -450,6 +469,6 @@ species_effs_tab <- full_join(pele_effs_tab, pema_effs_tab)
 
 # save the stats
 saveRDS(
-  species_effs_tab, 
+  species_effs_tab,
   "infection-modeling/data/model-objects/SEM-statistics-species.rds"
 )
