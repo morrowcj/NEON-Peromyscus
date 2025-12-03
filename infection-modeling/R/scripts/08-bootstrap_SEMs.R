@@ -214,12 +214,12 @@ full_stats %>% filter(effect_type == "direct") %>%
     position = position_nudge(y = -0.1), width = 0.5
   )
 
-# Compare scaled vs unscaled effects
-
-def <- stdEff(unscaled_modlist)
-uns <- stdEff(unscaled_modlist, std.x = FALSE, std.y = FALSE)
-nonu <- stdEff(unscaled_modlist, std.x = FALSE, std.y = FALSE,
-               unique.eff = FALSE) # this is different.
+# # Compare scaled vs unscaled effects
+#
+# def <- stdEff(unscaled_modlist)
+# uns <- stdEff(unscaled_modlist, std.x = FALSE, std.y = FALSE)
+# nonu <- stdEff(unscaled_modlist, std.x = FALSE, std.y = FALSE,
+#                unique.eff = FALSE) # this is different.
 
 ## ---- Species bootstraps ----
 
@@ -246,19 +246,19 @@ unscaled_species_file <- file.path(
 )
 
 # refit the species models to the completely unscaled data
-if (force_run || !file.exists(unscaled_psem_file)) {
+if (force_run || !file.exists(unscaled_species_file)) {
 
   # refit with unscaled data
   pele_modlist <- lapply(
-    modlist, function(x) update(x, data = pele_dat)
+    pele_modlist, function(x) update(x, data = pele_data)
   )
   pema_modlist <- lapply(
-    modlist, function(x) update(x, data = pema_dat)
+    pema_modlist, function(x) update(x, data = pema_data)
   )
 
   # psem specifications
   pele_spec <- as.psem(pele_modlist)
-  peme_spec <- as.psem(pema_modlist)
+  pema_spec <- as.psem(pema_modlist)
 
   # psem fits
   pele_psem <- summary(pele_spec)
@@ -338,12 +338,12 @@ if (force_run || !file.exists(pema_boot_file)) {
 ## ---- Species standardization ----
 
 # Get response standardizations
-pele_sdResp <- laply(
+pele_sdResp <- lapply(
   pele_modlist, function(fm){
     piecewiseSEM:::GetSDy(model = fm, data = pele_data)
   }
 )
-pema_sdResp <- laply(
+pema_sdResp <- lapply(
   pema_modlist, function(fm){
     piecewiseSEM:::GetSDy(model = fm, data = pema_data)
   }
