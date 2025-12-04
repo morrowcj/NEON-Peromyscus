@@ -65,8 +65,8 @@ var_lookup <- tribble(
 ) %>%
   mutate(across(-c(rank), ~factor(.x, levels = unique(.x))))
 
-group_lookup <- var_lookup %>% 
-  select(group, grp_lab) %>% distinct() %>% 
+group_lookup <- var_lookup %>%
+  select(group, grp_lab) %>% distinct() %>%
   mutate(
     coords = case_when(
       grepl("expression", group, ignore.case = TRUE) ~ tibble(x = -1, y = 2),
@@ -79,7 +79,7 @@ group_lookup <- var_lookup %>%
     )
   ) %>% unnest(coords)
 
-var_lookup <- var_lookup %>% 
+var_lookup <- var_lookup %>%
   left_join(group_lookup, by = c("group", "grp_lab"))
 
 # join these alternate variable names into the coefficient table
@@ -104,9 +104,9 @@ full_brkdwn <- readRDS(
   file.path(
     "infection-modeling/data/model-objects",
     "cumulative-effects-table_simplified-SEM.rds"
-  ) 
+  )
 ) %>%
-  rename(Response = To, Predictor = From) %>% 
+  rename(Response = To, Predictor = From) %>%
   left_join(
     var_lookup %>%
       select(
@@ -164,7 +164,7 @@ group_nodes_edge$edges <- group_nodes_edge$edges %>%
 group_nodes_edge$nodes <- group_nodes_edge$nodes %>%
   mutate(
     fill_color = if_else(grepl("Infection", name), "thistle1", "white")
-  ) %>% 
+  ) %>%
   left_join(
     group_lookup %>% select(name = grp_lab, group, x, y),
     by = "name"
@@ -172,17 +172,17 @@ group_nodes_edge$nodes <- group_nodes_edge$nodes %>%
 
 full_psem_plot <- build_psem_plot(
   group_nodes_edge, render = FALSE, attr_theme = "bt"
-) %>% 
-  add_global_graph_attrs("layout", "fdp", "graph") %>% 
-  set_node_attrs("width", 0.9) %>% 
-  set_node_attrs("fontcolor", "black") %>% 
+) %>%
+  add_global_graph_attrs("layout", "fdp", "graph") %>%
+  set_node_attrs("width", 0.9) %>%
+  set_node_attrs("fontcolor", "black") %>%
   set_node_attrs("color", "black")
 
 render_graph(full_psem_plot)
 
-full_psem_plot %>% 
+full_psem_plot %>%
   export_graph(
-    "infection-modeling/graphics/conceptual-SEM-full.png", 
+    "infection-modeling/graphics/conceptual-SEM-full.png",
     width = 4.5*300, height = 4.5*300
   )
 
@@ -360,7 +360,7 @@ pema_sem <- pema_model_objects$sem_mod$fit
 
 spec_coefs <- readRDS(
   "infection-modeling/data/model-objects/joint-species-coefficients_SEM.rds"
-) %>% 
+) %>%
   rename(Species = Species)
 
 pele_fp <- build_nodes_edges(pele_sem$coefficients)
@@ -408,12 +408,12 @@ pele_fp$edges <- spec_unif_coefs %>%
         Predictor = var, clean_pred = clean_name, pred_lab = label,
         pred_grp = group, pred_grplab = grp_lab
       ), by = "Predictor"
-  ) %>% 
+  ) %>%
   mutate(
     # x = jitter(.data$x, factor = 0.1), y = jitter(.data$y, factor = 0.1),
     From = pred_lab, To = resp_lab
   )
-  
+
 pele_fp$nodes <- pele_fp$nodes %>%
   left_join(var_lookup %>% select(name = var, label, x, y)) %>%
   mutate(
@@ -422,7 +422,7 @@ pele_fp$nodes <- pele_fp$nodes %>%
     x = jitter(x*2, factor = 0.1),
     y = jitter(y*2, factor = 0.1),
   ) %>% select(-label, -x, -y)
-  
+
 build_psem_plot(pele_fp, attr_theme = "lr") %>%
   # add_global_graph_attrs("layout", "fdp", "graph") %>%
   # set_node_attrs("shape", "rectangle") %>%
@@ -434,18 +434,18 @@ build_psem_plot(pele_fp, attr_theme = "lr") %>%
 # Try to match the conceptual SEM, but with phenotype expanded:
 ## TODO
 
-split_lookup <- var_lookup %>% 
+split_lookup <- var_lookup %>%
   mutate(
     grp_lab = if_else(group == "Phenotype", label, grp_lab),
     new_group = if_else(group == "Phenotype", var, group)
-  ) %>% 
-  select(-group) %>% 
-  rename(group = new_group) %>% 
+  ) %>%
+  select(-group) %>%
+  rename(group = new_group) %>%
   relocate(group, .before = grp_lab)
 
-grp_split_lookup <- split_lookup %>% 
-  select(group, grp_lab, x, y) %>% 
-  distinct() %>% 
+grp_split_lookup <- split_lookup %>%
+  select(group, grp_lab, x, y) %>%
+  distinct() %>%
   mutate(
     x = x*5, y = y*5,
     x = case_when(
@@ -465,43 +465,43 @@ grp_split_lookup <- split_lookup %>%
   )
 
 # check
-grp_split_lookup %>% 
-  ggplot(aes(x = x, y = y, label = group)) + 
+grp_split_lookup %>%
+  ggplot(aes(x = x, y = y, label = group)) +
   geom_label()
 
 # Join with data
-split_specs <- spec_coefs %>% 
+split_specs <- spec_coefs %>%
   left_join(
-    split_lookup %>% 
+    split_lookup %>%
       select(
-        Response = var, resp_grp = group, resp_lab = label, 
+        Response = var, resp_grp = group, resp_lab = label,
         resp_grplab = grp_lab
       ),
     by = "Response"
-  ) %>% 
+  ) %>%
   left_join(
-    split_lookup %>% 
+    split_lookup %>%
       select(
-        Predictor = var, pred_grp = group, pred_lab = label, 
+        Predictor = var, pred_grp = group, pred_lab = label,
         pred_grplab = grp_lab
       ),
     by = "Predictor"
   )
 
 # summarize the data
-group_spec <- split_specs %>% 
+group_spec <- split_specs %>%
   group_by(Response, resp_grp, resp_grplab, Species, pred_grp, pred_grplab) %>%
   summarize(
     mean_coef = mean(Std.Estimate, na.rm = TRUE),
     overlap_prop = mean(CI_overlap, na.rm = TRUE), .groups = "drop"
-  ) %>% 
-  group_by(resp_grp, resp_grplab, Species, pred_grp, pred_grplab) %>% 
+  ) %>%
+  group_by(resp_grp, resp_grplab, Species, pred_grp, pred_grplab) %>%
   summarize(
     mean_coef = mean(mean_coef, na.rm = TRUE),
     overlap_prop = mean(overlap_prop, na.rm = TRUE), .groups = "drop"
-  ) %>% group_by(resp_grplab, pred_grplab) %>% 
+  ) %>% group_by(resp_grplab, pred_grplab) %>%
   summarize(
-    mean_coef = mean(mean_coef, na.rm = TRUE), 
+    mean_coef = mean(mean_coef, na.rm = TRUE),
     overlap_prop = mean(overlap_prop, na.rm = TRUE), .groups = "drop"
   )
 
@@ -509,34 +509,34 @@ spec_nes <- build_nodes_edges(
   coef_tab = group_spec, from_col = "pred_grplab",
   to_col = "resp_grplab", val_col = "mean_coef"
 )
-  
-spec_nes$nodes <- spec_nes$nodes %>% 
+
+spec_nes$nodes <- spec_nes$nodes %>%
   full_join(grp_split_lookup %>% select(name = grp_lab, x, y), by = "name")
 
-build_psem_plot(spec_nes, render = F) %>% 
-  add_global_graph_attrs("layout", "fdp", "graph") %>% 
-  set_node_attrs("width", 0.9) %>% 
-  set_node_attrs("fontcolor", "black") %>% 
-  set_node_attrs("color", "black") %>% 
+build_psem_plot(spec_nes, render = F) %>%
+  add_global_graph_attrs("layout", "fdp", "graph") %>%
+  set_node_attrs("width", 0.9) %>%
+  set_node_attrs("fontcolor", "black") %>%
+  set_node_attrs("color", "black") %>%
   render_graph()
 
 ## This is too tedious... need to look into ggnetwork
 
-# pheno_preds <- grp_specs %>% filter(pred_grp == "Phenotype") %>% 
+# pheno_preds <- grp_specs %>% filter(pred_grp == "Phenotype") %>%
 #   mutate(
 #     pred_grp = Predictor,
 #     pred_grplab = pred_lab,
-#     mean_coef = Std.Estimate, 
+#     mean_coef = Std.Estimate,
 #     overlap_prop = as.numeric(CI_overlap)
 #   ) %>% ungroup()
-# 
-# non_phenopreds <- grp_specs %>% filter(pred_grp != "Phenotype") %>% 
-#   group_by(Response, resp_lab, resp_grplab, Species, pred_grp, pred_lab) %>% 
+#
+# non_phenopreds <- grp_specs %>% filter(pred_grp != "Phenotype") %>%
+#   group_by(Response, resp_lab, resp_grplab, Species, pred_grp, pred_lab) %>%
 #   summarize(
 #     mean_coef = mean(Std.Estimate, na.rm = TRUE),
 #     overlap_prop = mean(CI_overlap, na.rm = TRUE)
 #   ) %>% ungroup()
-# 
+#
 # grp_specs <- bind_rows(
 #   non_phenopreds,
 #   pheno_preds %>% select(c(colnames(non_phenopreds)))
@@ -606,7 +606,7 @@ sp_cumeffs <- readRDS(
     "infection-modeling/data/model-objects",
     "species_cumulative-effects-table_simplified-SEM.rds"
   )
-) %>% 
+) %>%
   rename(Response = To, Predictor = From)
 
 sp_cumeffs <- full_join(
@@ -629,23 +629,23 @@ sp_cumeffs <- sp_cumeffs %>%
       ), by = "Predictor"
   )
 
-species_coef_tab <- sp_cumeffs %>% 
+species_coef_tab <- sp_cumeffs %>%
   select(
-    Species, Response = resp_lab, Predictor = pred_lab, 
+    Species, Response = resp_lab, Predictor = pred_lab,
     Coef = Estimate, SE = Std.Error, DF, P = P.Value,
     direct, indirect, total
-  ) %>% 
-  mutate(DF = round(DF)) %>% 
+  ) %>%
+  mutate(DF = round(DF)) %>%
   pivot_wider(
     names_from = Species, values_from = Coef:total, names_sep = "."
-  ) %>% 
+  ) %>%
   relocate(ends_with("PELE"), .after = "Predictor")
-  
+
 
 species_coef_tab
 
 saveRDS(
-  species_coef_tab, 
+  species_coef_tab,
   "infection-modeling/data/MS-tables/species-SEM-coef-tab.rds"
 )
 
@@ -659,3 +659,149 @@ write.csv(
 
 ## ---- Figure S2 ----
 # TODO: needed??
+
+
+## ---- Experimental stuff ----
+
+full_stats <- readRDS(
+  "infection-modeling/data/model-objects/SEM-statistics-all.rds"
+)
+
+pd <- position_dodge(width = 0.8)
+
+plot_dat <- full_stats %>%
+  filter(
+    # effect_type %in% c("direct", "indirect", "total"),
+    Response %in% c("Bb_infected", "expr_PC1", "expr_PC2", "ticks_attached")
+  ) %>%
+  group_by(Response) %>%
+  complete(Predictor, effect_type) %>%
+  ungroup() %>%
+  mutate(
+    effect_type = factor(
+      effect_type, levels = c("direct", "indirect", "mediators", "total")
+    ),
+    Predictor = factor(
+      Predictor, levels = var_lookup$var, labels = var_lookup$clean_name
+    ),
+    Response = factor(
+      Response,
+      levels = c("Bb_infected", "ticks_attached", "expr_PC1", "expr_PC2"),
+      labels = c("Infection", "Parasitism", "Resistance", "Tolerance")
+    ),
+    across(c(boot.eff, boot.ci.low, boot.ci.up), ~replace_na(.x, 0)),
+    across(c(P.Value, boot.p), ~replace_na(.x, 1))
+  )
+
+point_size = 0.25
+point_stroke = 0.75
+point_offset = 0.2
+
+plot_dat %>%
+  filter(effect_type == "total") %>%
+  ggplot(
+    aes(
+      y = Predictor, x = boot.eff,
+      xmin = boot.ci.low, xmax = boot.ci.up,
+    )
+  ) +
+  facet_wrap(
+    ~Response, #scales = "free_y"
+  ) +
+  geom_vline(
+    xintercept = 0, color = "grey50", linetype = "dotted", linewidth = 1/2
+  ) +
+  geom_col(
+    aes(color = "total"), fill = "grey90", linewidth = 1/3,
+    show.legend = FALSE, width = 0.9
+  ) +
+  geom_pointrange(
+    aes(linetype = boot.p <= 0.1, shape = boot.p <= 0.1, color = "total"),
+    linewidth = 2/3, size = point_size, fill = "white",
+    stroke = point_stroke*(1/3), shape = NA
+  ) +
+  geom_pointrange(
+    data = plot_dat %>% filter(effect_type == "direct"),
+    aes(color = "direct", shape = P.Value <= 0.1, linetype = P.Value <= 0.1),
+    fill = "white", position = position_nudge(y = point_offset),
+    linewidth = 2/3, size = point_size,
+    stroke = point_stroke
+  ) +
+  geom_pointrange(
+    data = plot_dat %>% filter(effect_type == "indirect"),
+    aes(color = "indirect", shape = boot.p <= 0.1, linetype = boot.p <= 0.1),
+    fill = "white", position = position_nudge(y = -point_offset),
+    linewidth = 2/3, size = point_size,
+    stroke = point_stroke
+  ) +
+  theme_bw() +
+  theme(
+    # panel.spacing.x = unit(0.2, "lines"),
+    legend.position = "inside", legend.position.inside = c(1/2, 1/3),
+    legend.justification = c(0.5, 0.5),
+    panel.spacing.x = unit(0, "lines"),
+    legend.background = element_rect(color = "black"),
+    strip.background = element_blank(),
+    legend.key.width = unit(3, "lines")
+  ) +
+  labs(
+    x = "Standardized effect (\U00B1 90% CI)", y = "Predictor",
+    color = "Effect type",
+    shape = NULL, linetype = NULL
+    # shape = "P \U2264 0.1", linetype = "P \U2264 0.1"
+  ) +
+  scale_linetype_manual(
+    values = c("dashed", "solid"), labels = c("P > 0.1", "P \U2264 0.1")
+  ) +
+  scale_shape_manual(
+    values = c(21, 16), labels = c("P > 0.1", "P \U2264 0.1")
+  ) +
+  scale_color_manual(values = c("cornflowerblue", "orange", "black"))
+
+ggsave(
+  filename =  "infection-modeling/graphics/bootstrap_SEMcoefs.png",
+  width = 6, height = 6*0.8, dpi = 300
+)
+
+# unscaled_species_file <- file.path(
+#   "infection-modeling/data/model-objects",
+#   "unscaled-species_SEM-objects.rds"
+# )
+#
+species_effs_tab <- readRDS(
+  "infection-modeling/data/model-objects/SEM-statistics-species.rds"
+)
+
+
+species_effs_tab %>%
+  filter(
+    effect_type %in% c("direct", "total"),
+    Response %in% c("Bb_infected", "ticks_attached")
+  ) %>%
+  group_by(Response, Predictor, effect_type) %>%
+  mutate(
+    overlap = first(boot.ci.low) <= last(boot.ci.up) &
+      last(boot.ci.low) <= first(boot.ci.up),
+  ) %>% ungroup() %>%
+  mutate(sig.ci = !(boot.ci.low < 0 & boot.ci.up > 0)) %>%
+  ggplot(
+    aes(
+      y = Predictor, x = boot.eff, xmin = boot.ci.low, xmax = boot.ci.up,
+      color = Species, shape = sig.ci, linetype = sig.ci
+    )
+  ) +
+  geom_vline(xintercept = 0, color = "grey50", linetype = "dotted") +
+  facet_grid(effect_type~Response, scales = "free_x") +
+  geom_pointrange(position = position_dodge(0.33), fill = "white") +
+  theme_bw() +
+  theme(
+    panel.spacing = unit(0, "lines")
+  ) +
+  labs(x = "Effect", linetype = NULL, shape = NULL) +
+  scale_linetype_manual(
+    values = c("dotdash", "solid"), labels = c("P > 0.1", "P \U2264 0.1")
+  ) +
+  scale_shape_manual(
+    values = c(21, 16), labels = c("P > 0.1", "P \U2264 0.1")
+  ) +
+  scale_x_continuous(breaks = c(-.5, 0, .5))

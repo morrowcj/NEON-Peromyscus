@@ -465,7 +465,13 @@ pema_effs_tab <- getEffTable(pema_effs) %>% tibble() %>%
   )
 
 # combine them into one table
-species_effs_tab <- full_join(pele_effs_tab, pema_effs_tab)
+species_effs_tab <- full_join(pele_effs_tab, pema_effs_tab) %>%
+  rowwise() %>%
+  mutate(
+    boot.z = boot.eff / boot.SE,
+    boot.p = min(pnorm(boot.z), pnorm(boot.z, lower.tail = FALSE)) * 2
+  ) %>%
+  ungroup()
 
 # save the stats
 saveRDS(
