@@ -42,15 +42,15 @@ var_lookup <- tribble(
   ~group, ~grp_lab,
   1, "expr_PC2", "Tolerance", "Tolerance\nexpression",
   "Expression", "Immune\nexpression",
-  2, "Bb_infected", "Infection", "Infection",
+  2, "Bb_infected", "Infection", "Infection\nstatus",
   "Infection", "Infection",
   3, "expr_PC1", "Resistance", "Resistance\nexpression",
   "Expression", "Immune\nexpression",
   4, "ticks_attached", "Parasitism", "Parasitism\n(ticks)",
   "Parasitism", "Parasitism\n(ticks)",
-  5,"capprop_shift", "Cap. Shift", "Capture\ntime \U0394",
+  5,"capprop_shift", "Cap. shift", "Capture\ntime \U0394",
   "Behavior", "Behavior\n(timing)",
-  6, "cap_prop_night", "Cap. Time", "Capture\ntime",
+  6, "cap_prop_night", "Cap. time", "Capture\ntime",
   "Behavior", "Behavior\n(timing)",
   7, "weight", "Weight", "Weight",
   "Phenotype", "Phenotype\n(morphology)",
@@ -667,22 +667,60 @@ full_stats <- readRDS(
   "infection-modeling/data/model-objects/SEM-statistics-all.rds"
 )
 
-pd <- position_dodge(width = 0.8)
+# Compare psem breakdown with semEff breakdown
+full_stats <- full_brkdwn %>%
+  select(Response, Predictor, new_direct:total) %>%
+  pivot_longer(
+    c(new_direct:total), names_to = "effect_type", values_to = "psem.eff"
+  ) %>%
+  mutate(
+    effect_type = factor(
+      effect_type, levels = c("new_direct", "indirect", "total"),
+      labels = c("direct", "indirect", "total")
+    )
+  ) %>%
+  full_join(
+    full_stats, by = c("Response", "Predictor", "effect_type")
+  )
 
+# Flag significance based on various methods
+full_stats <- full_stats %>%
+  mutate(
+    psem.sig = P.Value <= 0.1, boot.sig = boot.p <= 0.1,
+    boot.sig.mean = boot.p.mean <= 0.1,
+    ci.sig = !(boot.ci.low < 0 & boot.ci.up > 0),
+    joint_sig = if_else(effect_type == "direct", psem.sig, ci.sig)
+  )
+
+# Places where significance do not match across methods
+full_stats %>%
+  filter(
+    psem.sig != boot.sig | psem.sig != boot.sig.mean |
+      boot.sig != boot.sig.mean | ci.sig != psem.sig |
+      ci.sig != boot.sig | ci.sig != boot.sig.mean,
+    effect_type != "mediators"
+  ) %>%
+  select(
+    Response, Predictor, effect_type, psem.eff, boot.eff,
+    P.Value = P.Value, boot.p, boot.p.mean, ci.sig, joint_sig
+  )
+
+# Figure for effects breakdown
 plot_dat <- full_stats %>%
   filter(
     # effect_type %in% c("direct", "indirect", "total"),
     Response %in% c("Bb_infected", "expr_PC1", "expr_PC2", "ticks_attached")
   ) %>%
-  group_by(Response) %>%
-  complete(Predictor, effect_type) %>%
+  group_by(Response, Predictor) %>%
+  complete(effect_type) %>%
   ungroup() %>%
   mutate(
     effect_type = factor(
       effect_type, levels = c("direct", "indirect", "mediators", "total")
     ),
     Predictor = factor(
-      Predictor, levels = var_lookup$var, labels = var_lookup$clean_name
+      Predictor, levels = var_lookup$var,
+      labels = gsub("Cap. shift", "Cap. time \U0394", var_lookup$label)
     ),
     Response = factor(
       Response,
@@ -690,78 +728,195 @@ plot_dat <- full_stats %>%
       labels = c("Infection", "Parasitism", "Resistance", "Tolerance")
     ),
     across(c(boot.eff, boot.ci.low, boot.ci.up), ~replace_na(.x, 0)),
-    across(c(P.Value, boot.p), ~replace_na(.x, 1))
+    across(c(P.Value, boot.p), ~replace_na(.x, 1)),
+    across(c(psem.sig:joint_sig), ~replace_na(.x, FALSE))
+  ) %>%
+  arrange(Response, Predictor, effect_type, joint_sig) %>%
+  group_by(Response, Predictor) %>%
+  mutate(drop = all(boot.eff == 0 | is.na(boot.eff))) %>%
+  ungroup() %>%
+  filter(
+    effect_type %in% c("direct", "indirect", "total"),
+    !drop
+  ) %>%
+  mutate(effect_type = factor(
+    effect_type, levels = c("indirect", "direct", "total"),
+    labels = c("Indirect", "Direct", "Total")
+    ),
+    panel_labs = factor(
+      Response, levels = levels(Response),
+      label = c("A", "B", "C", "D")
+    ),
+    Predictor = factor(Predictor, levels = rev(levels(Predictor)))
   )
 
-point_size = 0.25
-point_stroke = 0.75
-point_offset = 0.2
+label_tab <- tibble(
+  id = 1:4, lab = LETTERS[id],
+  Response = c("Infection", "Parasitism", "Resistance", "Tolerance"),
+  Predictor = "Infection\nstatus",
+  x = -Inf, y = Inf
+) %>%
+  mutate(
+    Resposne = factor(Response, levels = levels(plot_dat$Response)),
+    Predictor = factor(Predictor, levels = levels(plot_dat$Predictor))
+  )
 
+
+pd = position_dodge(0.9, preserve = "single")
+type_colors = c("black", "firebrick", "cornflowerblue")
+lighten_amnt = c(0.8, 0.6, 0.6)
+
+
+library(lemon)
 plot_dat %>%
-  filter(effect_type == "total") %>%
   ggplot(
     aes(
-      y = Predictor, x = boot.eff,
-      xmin = boot.ci.low, xmax = boot.ci.up,
+      y = Predictor, x = boot.eff, xmin = boot.ci.low, xmax = boot.ci.up,
+      col = effect_type
     )
   ) +
-  facet_wrap(
-    ~Response, #scales = "free_y"
+  facet_wrap(~Response, nrow = 1, scales = "free_x") +
+  # facet_grid(Predictor ~ Response, scale = "free_y") +
+  geom_text(
+    data = label_tab, inherit.aes = FALSE, aes(label = lab, x = -Inf, y = Inf),
+    hjust = -.5, vjust = 1.5, fontface = "bold", size = 3.5
   ) +
-  geom_vline(
-    xintercept = 0, color = "grey50", linetype = "dotted", linewidth = 1/2
+  geom_hline(
+    yintercept = seq_len(length(unique(plot_dat$Predictor)) - 1) + 0.5,
+    color = "grey80", linetype = "solid"
   ) +
+  geom_vline(xintercept = 0, color = "grey80", linetype = "dashed") +
   geom_col(
-    aes(color = "total"), fill = "grey90", linewidth = 1/3,
-    show.legend = FALSE, width = 0.9
+    aes(fill = effect_type), col = "black",
+    position = pd, width = 0.9
   ) +
   geom_pointrange(
-    aes(linetype = boot.p <= 0.1, shape = boot.p <= 0.1, color = "total"),
-    linewidth = 2/3, size = point_size, fill = "white",
-    stroke = point_stroke*(1/3), shape = NA
+    aes(group = effect_type, shape = joint_sig, linetype = joint_sig), fill = "white",
+    position = pd, size = 1/3,
+    linewidth = 3/4, stroke = 1
   ) +
-  geom_pointrange(
-    data = plot_dat %>% filter(effect_type == "direct"),
-    aes(color = "direct", shape = P.Value <= 0.1, linetype = P.Value <= 0.1),
-    fill = "white", position = position_nudge(y = point_offset),
-    linewidth = 2/3, size = point_size,
-    stroke = point_stroke
+  scale_color_manual(
+    breaks = c("Total", "Direct", "Indirect"),
+    values = type_colors
   ) +
-  geom_pointrange(
-    data = plot_dat %>% filter(effect_type == "indirect"),
-    aes(color = "indirect", shape = boot.p <= 0.1, linetype = boot.p <= 0.1),
-    fill = "white", position = position_nudge(y = -point_offset),
-    linewidth = 2/3, size = point_size,
-    stroke = point_stroke
+  scale_fill_manual(
+    breaks = c("Total", "Direct", "Indirect"),
+    values = colorspace::lighten(type_colors, lighten_amnt)
+  ) +
+  scale_shape_manual(values = c(21, 16)) +
+  scale_linetype_manual(values = c("twodash", "solid")) +
+  scale_x_continuous(
+    breaks = c(-0.4, 0, 0.4),
+    sec.axis = sec_axis(transform = . ~ ., name = "Response")
+  ) +
+  guides(shape = "none", linetype = "none") +
+  labs(
+    x = "Standardized effect (\U00B1 90% CI)",
+    fill = NULL, color = NULL,
   ) +
   theme_bw() +
   theme(
-    # panel.spacing.x = unit(0.2, "lines"),
-    legend.position = "inside", legend.position.inside = c(1/2, 1/3),
-    legend.justification = c(0.5, 0.5),
-    panel.spacing.x = unit(0, "lines"),
+    # Text properties
+    axis.text = element_text(color = "black", size = 10),
+    legend.text = element_text(color = "black", size = 10),
+    axis.title = element_text(color = "black", size = 12),
+    legend.title = element_text(color = "black", size = 12),
+    strip.text = element_text(color = "black", size = 10),
+
+    # Legend properties
+    legend.position = "inside",
+    # legend.position.inside = c(1/2, 1/4),
+    # legend.justification = c(0.5, 0.5),
+    legend.position.inside = c(1/2, 1/2),
+    legend.justification = c(1/2, 1/2),
     legend.background = element_rect(color = "black"),
+    legend.margin = margin(l = -0.6, r = 2, t = -0.6, b = -0.6),
+    legend.key = element_blank(), legend.key.spacing.y =  unit(-0.1, "lines"),
+
+    # panel properties
     strip.background = element_blank(),
-    legend.key.width = unit(3, "lines")
-  ) +
-  labs(
-    x = "Standardized effect (\U00B1 90% CI)", y = "Predictor",
-    color = "Effect type",
-    shape = NULL, linetype = NULL
-    # shape = "P \U2264 0.1", linetype = "P \U2264 0.1"
-  ) +
-  scale_linetype_manual(
-    values = c("dashed", "solid"), labels = c("P > 0.1", "P \U2264 0.1")
-  ) +
-  scale_shape_manual(
-    values = c(21, 16), labels = c("P > 0.1", "P \U2264 0.1")
-  ) +
-  scale_color_manual(values = c("cornflowerblue", "orange", "black"))
+    # panel.spacing.x = unit(0.2, "lines"),
+    # panel.grid.minor.x = element_blank()
+    panel.spacing.y = unit(-0.2, "lines"),
+    panel.spacing.x = unit(0.25, "lines"),
+    strip.text.y = element_blank(),
+    panel.grid = element_blank(),
+    # axis.ticks.y = element_blank(),
+    axis.ticks.x.top = element_blank(),
+    axis.text.x.top = element_blank(),
+    panel.border = element_rect(color = "black", linewidth = 1)
+  )
+
 
 ggsave(
   filename =  "infection-modeling/graphics/bootstrap_SEMcoefs.png",
-  width = 6, height = 6*0.8, dpi = 300
+  width = 6*0.9, height = 6, dpi = 300
 )
+
+# point_size = 0.25
+# point_stroke = 0.75
+# point_offset = 0.2
+#
+# plot_dat %>%
+#   filter(effect_type == "total") %>%
+#   ggplot(
+#     aes(
+#       y = Predictor, x = boot.eff,
+#       xmin = boot.ci.low, xmax = boot.ci.up,
+#     )
+#   ) +
+#   facet_wrap(
+#     ~Response, #scales = "free_y"
+#   ) +
+#   geom_vline(
+#     xintercept = 0, color = "grey50", linetype = "dotted", linewidth = 1/2
+#   ) +
+#   geom_col(
+#     aes(color = "total"), fill = "grey90", linewidth = 1/3,
+#     show.legend = FALSE, width = 0.9
+#   ) +
+#   geom_pointrange(
+#     aes(linetype = boot.p <= 0.1, shape = boot.p <= 0.1, color = "total"),
+#     linewidth = 2/3, size = point_size, fill = "white",
+#     stroke = point_stroke*(1/3), shape = NA
+#   ) +
+#   geom_pointrange(
+#     data = plot_dat %>% filter(effect_type == "direct"),
+#     aes(color = "direct", shape = P.Value <= 0.1, linetype = P.Value <= 0.1),
+#     fill = "white", position = position_nudge(y = point_offset),
+#     linewidth = 2/3, size = point_size,
+#     stroke = point_stroke
+#   ) +
+#   geom_pointrange(
+#     data = plot_dat %>% filter(effect_type == "indirect"),
+#     aes(color = "indirect", shape = boot.p <= 0.1, linetype = boot.p <= 0.1),
+#     fill = "white", position = position_nudge(y = -point_offset),
+#     linewidth = 2/3, size = point_size,
+#     stroke = point_stroke
+#   ) +
+#   theme_bw() +
+#   theme(
+#     # panel.spacing.x = unit(0.2, "lines"),
+#     legend.position = "inside", legend.position.inside = c(1/2, 1/3),
+#     legend.justification = c(0.5, 0.5),
+#     panel.spacing.x = unit(0, "lines"),
+#     legend.background = element_rect(color = "black"),
+#     strip.background = element_blank(),
+#     legend.key.width = unit(3, "lines")
+#   ) +
+#   labs(
+#     x = "Standardized effect (\U00B1 90% CI)", y = "Predictor",
+#     color = "Effect type",
+#     shape = NULL, linetype = NULL
+#     # shape = "P \U2264 0.1", linetype = "P \U2264 0.1"
+#   ) +
+#   scale_linetype_manual(
+#     values = c("dashed", "solid"), labels = c("P > 0.1", "P \U2264 0.1")
+#   ) +
+#   scale_shape_manual(
+#     values = c(21, 16), labels = c("P > 0.1", "P \U2264 0.1")
+#   ) +
+#   scale_color_manual(values = c("cornflowerblue", "orange", "black"))
 
 # unscaled_species_file <- file.path(
 #   "infection-modeling/data/model-objects",
@@ -805,3 +960,4 @@ species_effs_tab %>%
     values = c(21, 16), labels = c("P > 0.1", "P \U2264 0.1")
   ) +
   scale_x_continuous(breaks = c(-.5, 0, .5))
+

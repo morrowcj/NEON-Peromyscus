@@ -190,7 +190,12 @@ full_stats <- unscaled_psem.fit$coefficients %>%
   rowwise() %>%
   mutate(
     boot.z = boot.eff / boot.SE,
-    boot.p = min(pnorm(boot.z), pnorm(boot.z, lower.tail = FALSE)) * 2
+    boot.p = min(pnorm(boot.z), pnorm(boot.z, lower.tail = FALSE)) * 2,
+    boot.eff.mean = (boot.ci.up + boot.ci.low) / 2 ,
+    boot.p.mean = boot.eff.mean / boot.SE,
+    boot.p.mean = min(
+      pnorm(boot.p.mean), pnorm(boot.p.mean, lower.tail = FALSE)
+    ) * 2,
   ) %>%
   ungroup()
 
@@ -469,7 +474,12 @@ species_effs_tab <- full_join(pele_effs_tab, pema_effs_tab) %>%
   rowwise() %>%
   mutate(
     boot.z = boot.eff / boot.SE,
-    boot.p = min(pnorm(boot.z), pnorm(boot.z, lower.tail = FALSE)) * 2
+    boot.p = min(pnorm(boot.z), pnorm(boot.z, lower.tail = FALSE)) * 2,
+    boot.eff.mean = (boot.ci.up + boot.ci.low) / 2,
+    boot.p.mean = boot.eff.mean / boot.SE,
+    boot.p.mean = min(
+      pnorm(boot.p.mean), pnorm(boot.p.mean, lower.tail = FALSE)
+    ) * 2,
   ) %>%
   ungroup()
 

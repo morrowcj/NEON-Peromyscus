@@ -579,16 +579,19 @@ caption = paste(
 ```
 
 ## Species comparison
+```{r}
+Peros <- Peros %>% mutate(Species = updated_taxa)
+```
 
 ```{r}
 (prop_infect <- Peros %>% 
-  filter(!is.na(Bb_infected)) %>% 
-  group_by(Species) %>% 
-  summarize(
-    n = n(), 
-    P_infected = mean(Bb_infected),
-    successes = sum(Bb_infected)
-  ))
+   filter(!is.na(Bb_infected)) %>% 
+   group_by(Species) %>% 
+   summarize(
+     n = n(), 
+     P_infected = mean(Bb_infected),
+     successes = sum(Bb_infected)
+   ))
 
 p_test <- prop.test(
   x = prop_infect$successes, n = prop_infect$n
@@ -606,13 +609,13 @@ with(
 #   tally()
 
 (prop_tick <- Peros %>% 
-  filter(!is.na(ticks_attached)) %>% 
-  group_by(Species) %>% 
-  summarize(
-    n = n(),
-    P_parasitized = mean(ticks_attached),
-    successes = sum(ticks_attached)
-  ))
+   filter(!is.na(ticks_attached)) %>% 
+   group_by(Species) %>% 
+   summarize(
+     n = n(),
+     P_parasitized = mean(ticks_attached),
+     successes = sum(ticks_attached)
+   ))
 
 p_test_tick <- prop.test(
   x = prop_tick$successes, n = prop_tick$n
@@ -816,7 +819,7 @@ species_coef_tab %>%
     col.names = col_names, digits = 2, 
     align = c(rep("l", 2), rep("r", nrow(species_coef_tab) - 2))
   ) #%>% 
-  #kableExtra::add_header_above(c(" " = 2, "PELE" = 7, "PEMA" = 7))
+#kableExtra::add_header_above(c(" " = 2, "PELE" = 7, "PEMA" = 7))
 
 ```
 
@@ -834,7 +837,7 @@ sp_cumeffs %>%
   geom_col(
     aes(x = direct, fill = "direct"), width = 0.4, col = "black",
     position = position_nudge(y = 0.2)
-    ) +
+  ) +
   geom_col(
     aes(x = indirect, fill = "indirect"), width = 0.4, col = "black",
     position = position_nudge(y = -0.2)
