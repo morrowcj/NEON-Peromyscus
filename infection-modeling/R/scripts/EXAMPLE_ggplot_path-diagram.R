@@ -16,6 +16,18 @@ node_df <- tibble(
     id = row_number()
   )
 
+degrees_to_frac = function(d){
+  d / 360
+}
+
+frac_to_pi <- function(f){
+  f * (2 * pi)
+}
+
+slope_to_degrees = function(b){
+  atan(b)
+}
+
 ## sample node pairs to make edges
 edge_df <- replicate(10, sort(sample(node_df$id, 2))) %>%
   t() %>%

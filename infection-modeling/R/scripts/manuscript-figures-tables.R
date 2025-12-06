@@ -762,10 +762,9 @@ label_tab <- tibble(
   )
 
 
-pd = position_dodge(0.9, preserve = "single")
+pd = position_dodge(0.9)
 type_colors = c("black", "firebrick", "cornflowerblue")
 lighten_amnt = c(0.8, 0.6, 0.6)
-
 
 library(lemon)
 plot_dat %>%
@@ -787,7 +786,7 @@ plot_dat %>%
   ) +
   geom_vline(xintercept = 0, color = "grey80", linetype = "dashed") +
   geom_col(
-    aes(fill = effect_type), col = "black",
+    aes(fill = effect_type, group = effect_type), col = "black",
     position = pd, width = 0.9
   ) +
   geom_pointrange(
@@ -847,86 +846,14 @@ plot_dat %>%
     panel.border = element_rect(color = "black", linewidth = 1)
   )
 
-
 ggsave(
   filename =  "infection-modeling/graphics/bootstrap_SEMcoefs.png",
   width = 6*0.9, height = 6, dpi = 300
 )
 
-# point_size = 0.25
-# point_stroke = 0.75
-# point_offset = 0.2
-#
-# plot_dat %>%
-#   filter(effect_type == "total") %>%
-#   ggplot(
-#     aes(
-#       y = Predictor, x = boot.eff,
-#       xmin = boot.ci.low, xmax = boot.ci.up,
-#     )
-#   ) +
-#   facet_wrap(
-#     ~Response, #scales = "free_y"
-#   ) +
-#   geom_vline(
-#     xintercept = 0, color = "grey50", linetype = "dotted", linewidth = 1/2
-#   ) +
-#   geom_col(
-#     aes(color = "total"), fill = "grey90", linewidth = 1/3,
-#     show.legend = FALSE, width = 0.9
-#   ) +
-#   geom_pointrange(
-#     aes(linetype = boot.p <= 0.1, shape = boot.p <= 0.1, color = "total"),
-#     linewidth = 2/3, size = point_size, fill = "white",
-#     stroke = point_stroke*(1/3), shape = NA
-#   ) +
-#   geom_pointrange(
-#     data = plot_dat %>% filter(effect_type == "direct"),
-#     aes(color = "direct", shape = P.Value <= 0.1, linetype = P.Value <= 0.1),
-#     fill = "white", position = position_nudge(y = point_offset),
-#     linewidth = 2/3, size = point_size,
-#     stroke = point_stroke
-#   ) +
-#   geom_pointrange(
-#     data = plot_dat %>% filter(effect_type == "indirect"),
-#     aes(color = "indirect", shape = boot.p <= 0.1, linetype = boot.p <= 0.1),
-#     fill = "white", position = position_nudge(y = -point_offset),
-#     linewidth = 2/3, size = point_size,
-#     stroke = point_stroke
-#   ) +
-#   theme_bw() +
-#   theme(
-#     # panel.spacing.x = unit(0.2, "lines"),
-#     legend.position = "inside", legend.position.inside = c(1/2, 1/3),
-#     legend.justification = c(0.5, 0.5),
-#     panel.spacing.x = unit(0, "lines"),
-#     legend.background = element_rect(color = "black"),
-#     strip.background = element_blank(),
-#     legend.key.width = unit(3, "lines")
-#   ) +
-#   labs(
-#     x = "Standardized effect (\U00B1 90% CI)", y = "Predictor",
-#     color = "Effect type",
-#     shape = NULL, linetype = NULL
-#     # shape = "P \U2264 0.1", linetype = "P \U2264 0.1"
-#   ) +
-#   scale_linetype_manual(
-#     values = c("dashed", "solid"), labels = c("P > 0.1", "P \U2264 0.1")
-#   ) +
-#   scale_shape_manual(
-#     values = c(21, 16), labels = c("P > 0.1", "P \U2264 0.1")
-#   ) +
-#   scale_color_manual(values = c("cornflowerblue", "orange", "black"))
-
-# unscaled_species_file <- file.path(
-#   "infection-modeling/data/model-objects",
-#   "unscaled-species_SEM-objects.rds"
-# )
-#
 species_effs_tab <- readRDS(
   "infection-modeling/data/model-objects/SEM-statistics-species.rds"
 )
-
 
 species_effs_tab %>%
   filter(
@@ -961,3 +888,177 @@ species_effs_tab %>%
   ) +
   scale_x_continuous(breaks = c(-.5, 0, .5))
 
+## ---- Rebuild network ----
+
+var_lookup <- var_lookup %>%
+  rename(group.x = x, group.y = y) %>%
+  group_by(group) %>%
+  mutate(n = n())
+
+var_lookup %>%
+  ggplot(aes(x = group.x*4, y = group.y*4)) +
+  geom_point(size = 30, shape = 21, col = "black", fill = "white") +
+  geom_label(aes(label = group)) +
+  scale_x_binned(expand = c(0.1, 0)) +
+  scale_y_binned(expand = c(0.1, 0)) +
+  theme_blank()
+
+t = seq(0, 2*pi, length.out = length(unique(var_lookup$group)))
+x_coords = c(0, cos(t))
+y_coords = c(0, sin(t))
+
+coords_tab <- tribble(
+  ~group, ~x, ~y,
+  "Parasitism", 0, 0.5,
+  "Infection", 1.5, 2,
+  "Environment", 2, -1,
+  "Phenotype", -1, -2,
+  "Behavior", -2, 0,
+  "Expression", -1, 2
+)
+
+coords_tab$x <- x_coords[1:nrow(coords_tab)]
+coords_tab$y <- y_coords[1:nrow(coords_tab)]
+
+coords_tab <- coords_tab %>%
+  left_join(var_lookup %>% select(var, group)) %>%
+  mutate(x = x, y = y)
+
+# full_mod$coefficients %>%
+
+all_paths <- full_stats %>%
+  filter(boot.eff != 0, !is.na(boot.eff)) %>%
+  group_by(Response, Predictor) %>%
+  mutate(
+    eff.n = n(),
+    any.sig = any(joint_sig)
+  )
+
+var_coords <- all_paths %>% filter(any.sig) %>%
+  select(Response, Predictor) %>% distinct() %>%
+  left_join(
+    coords_tab %>%
+      select(
+        Response = var, resp.grp = group, resp.x = x, resp.y = y
+      )
+  ) %>%
+  left_join(
+    coords_tab %>%
+      select(
+        Predictor = var, pred.grp = group, pred.x = x, pred.y = y
+      )
+  )
+
+missing <- tibble(resp.grp = "Infection", pred.grp = "Expression") %>%
+  left_join(
+    coords_tab %>%
+      select(
+        resp.grp = group, resp.x = x, resp.y = y
+      ) %>% distinct()
+  ) %>%
+  left_join(
+    coords_tab %>%
+      select(
+        pred.grp = group, pred.x = x, pred.y = y
+      ) %>% distinct()
+  ) %>%
+  mutate(across(c(pred.x, pred.y, resp.x, resp.y), ~.x*1.1))
+
+# Plot coordinates with large paths
+var_coords %>% select(contains("resp."), contains("pred.")) %>%
+  distinct() %>%
+  left_join(
+    full_stats %>%
+      filter(effect_type == "total") %>%
+      select(Response, Predictor, boot.eff)
+  ) %>%
+  group_by(resp.grp, pred.grp, resp.x, resp.y, pred.x, pred.y) %>%
+  summarize(boot.eff = mean(boot.eff, na.rm = TRUE)) %>%
+  mutate(pair = paste(c(resp.grp, pred.grp), collapse = ".")) %>%
+  ggplot() +
+  geom_arrow_segment(
+    aes(
+      x = pred.x, y = pred.y, xend = resp.x, yend = resp.y,
+      linewidth = abs(boot.eff), group = pair,
+      col = boot.eff > 0
+    ),
+    resect_head = 11.5, length_head = 2, stroke_color = "black"
+  ) +
+  geom_arrow_segment(
+    data = missing, color = "grey50", linetype = "dashed",
+    linewidth = 1, resect_head = 16,
+    aes(x = pred.x, y = pred.y, xend = resp.x, yend = resp.y),
+
+  ) +
+  geom_point(
+    data = coords_tab %>% select(group, x, y) %>% distinct(),
+    aes(x = x, y = y), size = 30,
+    shape = 21, fill = "white", col = "black"
+  ) +
+  geom_text(
+    data = coords_tab %>% select(group, x, y) %>% distinct(),
+    aes(x = x, y = y, label = group),
+  ) +
+  scale_x_continuous(expand = c(0.15, 0)) +
+  scale_y_continuous(expand = c(0.15, 0)) +
+  scale_linewidth_continuous(range = c(2, 9)) +
+  scale_color_manual(values = c("orange", "forestgreen")) +
+  # theme_blank() +
+  theme_bw() +
+  theme(legend.position = "none")
+
+## TODO: can still add coefficient labels
+
+# ## adjust - This just doesn't work. it is way too messy.
+# coords_tab <- coords_tab %>%
+#   mutate(
+#     slope = (y - first(y)) / (x - first(x)),
+#   ) %>%
+#   group_by(group) %>%
+#   mutate(
+#     group.n = n(),
+#     group.t = (2*pi / group.n) * (row_number() - 1),
+#     adj.x = if_else(group.n > 1, cos(group.t), 0),
+#     adj.y = if_else(group.n > 1, sin(group.t), 0)
+#   )
+#
+# var_coords <- var_coords %>%
+#   left_join(
+#     coords_tab %>%
+#       select(
+#         Response = var, resp.grp = group, resp.x = x, resp.y = y,
+#         resp.adj.x = adj.x, resp.adj.y = adj.y
+#       )
+#   ) %>%
+#   left_join(
+#     coords_tab %>%
+#       select(
+#         Predictor = var, pred.grp = group, pred.x = x, pred.y = y,
+#         pred.adj.x = adj.x, pred.adj.y = adj.y
+#       )
+#   )
+#
+# coords_tab %>%
+#   ggplot(aes(x = x + adj.x, y = y + adj.y)) +
+#   geom_point()
+#
+#
+# var_coords %>% select(contains("resp."), contains("pred.")) %>%
+#   distinct() %>%
+#   ggplot() +
+#   geom_point(
+#     data = coords_tab %>% select(group, x, y, adj.x, adj.y) %>% distinct(),
+#     aes(x = x, y = y), size = 30,
+#     shape = 21, fill = "white", col = "black"
+#   ) +
+#   geom_arrow_segment(
+#     aes(x = pred.x + pred.adj.x, y = pred.y + pred.adj.y,
+#         xend = resp.x + resp.adj.x, yend = resp.y + resp.adj.y),
+#     resect = 5
+#   ) +
+#   geom_label(
+#     data = coords_tab %>% select(var, group, x, y, adj.x, adj.y) %>% distinct(),
+#     aes(x = x + adj.x, y = y + adj.y, label = var),
+#   ) +
+#   scale_x_continuous(expand = c(0.18, 0)) +
+#   scale_y_continuous(expand = c(0.18, 0))
