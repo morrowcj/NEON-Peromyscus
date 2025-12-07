@@ -249,7 +249,8 @@ ggplot(data = long_bin, aes(x = pred_val, y = resp_val)) +
   # facet_grid(clean_pred ~ clean_resp, scales = "free_y", switch = "y") +
   geom_smooth(
     data = long_bin, method = "glm", method.args = list(family = "binomial"),
-    aes(col = "logistic reg.", linetype = glm.sig), se = FALSE, col = "black"
+    aes(col = "logistic reg.", linetype = glm.sig), se = TRUE, col = "black",
+    fill = "grey80"
   ) +
   stat_summary(
     data = long_bin, fun.data = mean_cl_normal, geom = "pointrange",
@@ -259,7 +260,8 @@ ggplot(data = long_bin, aes(x = pred_val, y = resp_val)) +
   geom_smooth(
     data = long_cont,
     method = "glm", method.args = list(family = "binomial"),
-    aes(col = "logistic reg.", linetype = glm.sig), se = FALSE, col = "black"
+    aes(col = "logistic reg.", linetype = glm.sig), se = TRUE, col = "black",
+    fill = "grey80"
   ) +
   geom_point(
     data = long_cont,
@@ -290,7 +292,7 @@ ggplot(data = long_bin, aes(x = pred_val, y = resp_val)) +
   scale_linetype_manual(
     breaks = c(TRUE, FALSE), values = c("solid", "dashed")
   ) +
-  guides(linetype = FALSE)
+  guides(linetype = "none")
 
 ggsave(
   filename =  "infection-modeling/graphics/parasitism-infection-fig.png",

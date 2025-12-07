@@ -141,23 +141,25 @@ var_lookup <- var_lookup %>%
   rename(grp.x = x, grp.y = y)
 
 # create a table for response variables (renaming)
- resp_lookup <- var_lookup %>%
-   rename_with(~str_c("resp.", .), .cols = -var) %>%
-   rename(Response = var) %>%
-   select(Response, starts_with("resp.")) %>%
-   filter(Response %in% full_stats$Response)
+resp_lookup <- var_lookup %>%
+  rename_with(~str_c("resp.", .), .cols = -var) %>%
+  rename(Response = var) %>%
+  select(Response, starts_with("resp.")) %>%
+  filter(Response %in% full_stats$Response)
 
 # and for predictor variables
- pred_lookup <- var_lookup %>%
-   rename_with(~str_c("pred.", .), .cols = -var) %>%
-   rename(Predictor = var) %>%
-   select(Predictor, starts_with("pred.")) %>%
-   filter(Predictor %in% full_stats$Predictor)
+pred_lookup <- var_lookup %>%
+  rename_with(~str_c("pred.", .), .cols = -var) %>%
+  rename(Predictor = var) %>%
+  select(Predictor, starts_with("pred.")) %>%
+  filter(Predictor %in% full_stats$Predictor)
 
 # Join these to the full data too
 full_stats <- full_stats %>%
   left_join(resp_lookup, by = "Response") %>%
   left_join(pred_lookup, by = "Predictor")
+
+
 
 ## ---- Fig 1: Extreme scenarios (conceptual) ----
 
@@ -168,54 +170,193 @@ warning("Fig. 1 diagram not available")
 # filter the data into the rows needed for the conceptual model
 concept_data <- full_stats %>%
   filter(group.sig, effect_type == "total") %>%
-  group_by(pred.group, resp.group, pick(matches(".*\\.(x|y)"))) %>%
-  summarize(boot.eff = mean(boot.eff, na.rm = TRUE), .groups = "drop")
+  group_by(
+    pred.group, pred.grp_lab, resp.group, resp.grp_lab,
+    pick(matches(".*\\.(x|y)"))
+  ) %>%
+  summarize(boot.eff = mean(boot.eff, na.rm = TRUE), .groups = "drop") %>%
+  mutate(resp.group = factor(resp.group, levels = rev(coords_tab$group)),
+         pred.group = factor(pred.group, levels = rev(coords_tab$group))) %>%
+  arrange(resp.group, pred.group)
 
 # specify the shape of the arrows to be triangles
 triangle <- cbind(x = c(1, 0, 0),
                   y = c(0, .5, -.5))
 
 # add a line for the statistically unsupported path(s)
-missing_paths <- full_stats %>%
-  filter(!is.na(Estimate)) %>%
-  group_by(resp.group, pred.group, pick(matches(".*\\.(x|y)"))) %>%
-  mutate(group.sig = any(group.sig)) %>%
-  filter(effect_type == "direct", !group.sig) %>%
-  summarize(boot.eff = mean(boot.eff, na.rm = TRUE)) %>%
-  distinct() %>%
-  mutate(
-    fix_col = (resp.group == "Infection" & pred.group == "Expression"),
-    across(matches(".*\\.(x|y)"), ~if_else(.fix_col, .x*1.5, .x))
-  )
+missing_paths <- tibble(resp.group = "Infection", pred.group = "Expression") %>%
+  left_join(resp_lookup) %>%
+  right_join(pred_lookup) %>%
+  mutate(across(c(pred.grp.x, pred.grp.y, resp.grp.x, resp.grp.y), ~.x*1.1))
 
 # build the conceptual diagram
 var_lookup %>%
-  ggplot(aes(x = grp.x, y = grp.y, label = group)) +
+  ggplot(aes(x = grp.x, y = grp.y, label = grp_lab)) +
   geom_arrow_segment(
     data = concept_data, inherit.aes = FALSE,
     aes(x = pred.grp.x, y = pred.grp.y, xend = resp.grp.x, yend = resp.grp.y,
-        linewidth = abs(boot.eff), col = boot.eff > 0),
+        linewidth = abs(boot.eff),
+        col = boot.eff > 0
+    ),
     resect_head = 11.5, length_head = 2, stroke_color = "black",
-    arrow_head = triangle
-  ) +
+    arrow_head = triangle) +
   geom_arrow_segment(
     data = missing_paths, inherit.aes = FALSE,
     aes(x = pred.grp.x, y = pred.grp.y, xend = resp.grp.x, yend = resp.grp.y),
-    color = "grey50", resect_head = 11.5, length_head = 2,
-    linewidth = 2, linetype = "dashed", arrow_head = triangle
+    color = "grey80", resect_head = 13.5, length_head = 2,
+    linewidth = 1, linetype = "solid", arrow_head = triangle,
+    stroke_color = "black"
   ) +
   geom_point(size = 30, shape = 21, fill = "white", color = "black") +
-  geom_text() +
+  geom_text(size = 3.3) +
   theme_classic() +
+  ggnetwork::theme_blank() +
   theme(
     axis.line = element_blank(),
     legend.position = "none"
   ) +
   labs(x = NULL, y = NULL) +
   scale_x_continuous(expand = c(0.1, 0)) +
-  scale_y_continuous(expand = c(0.2, 0)) +
-  scale_linewidth_continuous(range = c(2, 9))
+  scale_y_continuous(expand = c(0.1, 0)) +
+  scale_linewidth_continuous(range = c(1, 9)) +
+  scale_color_manual(values = c("indianred1", "cornflowerblue"))
 
+ggsave(
+  filename = "infection-modeling/graphics/conceptual-SEM-full.png",
+  width = 4.5, height = 4.5, dpi = 300
+)
+
+warning("Fig. 2 may need to use labels instead of groups")
+
+## ---- Table S1 ----
+# full_stats
+
+## ---- Figure 2: Logistic correlations ----
+
+# elongate the data for multi-panel plotting
+long_peros <- Peros %>%
+  filter(sex_male != 0.5, weight <= 50) %>% # remove ambiguous sex
+  select(
+    iid, cap_num, siteID, year, Bb_infected, ticks_attached, sex_male,
+         sex_mature, weight, cap_prop_night, capprop_shift
+  ) %>% distinct() %>%
+  pivot_longer(
+    cols = c(Bb_infected, ticks_attached), names_to = "Response",
+    values_to = "resp_val"
+  ) %>%
+  pivot_longer(
+    cols = c(sex_male:capprop_shift), names_to = "Predictor",
+    values_to = "pred_val"
+  ) %>%
+  left_join(
+    var_lookup %>%
+      select(Response = var, clean_resp = clean_name, resp_lab = label,
+             resp_grp = group, resp_grplab = grp_lab),
+    by = "Response"
+  ) %>%
+  left_join(
+    var_lookup %>%
+      select(Predictor = var, clean_pred = clean_name, pred_lab = label,
+             pred_grp = group, pred_grplab = grp_lab),
+    by = "Predictor"
+  ) %>%
+  mutate(
+    new_predlab = fct_rev(pred_lab),
+    sig_line = case_when(
+      clean_resp == "Infection" & clean_pred == "Cap. Shift" ~ FALSE,
+      clean_resp == "Infection" & clean_pred == "Sex" ~ FALSE,
+      .default = TRUE),
+    prob_resp = paste0("P(", clean_resp, ")") %>%
+      factor(levels = paste0("P(", levels(clean_resp), ")"))
+  )
+
+# Add GLM p values
+long_peros <- long_peros %>%
+  group_by(Response, Predictor) %>%
+  mutate(
+    glm.pval = anova(
+      glm(resp_val ~ pred_val, family = "binomial")
+    )$`Pr(>Chi)`[2], glm.sig = glm.pval <= 0.05
+  )
+
+# break data into continuous and binary predictor variables
+
+## continuous
+long_cont <- long_peros %>%
+  filter(!Predictor %in% c("sex_male", "sex_mature"))
+
+## binary (summaries)
+long_bin <- long_peros %>%
+  filter(Predictor %in% c("sex_male", "sex_mature"))
+
+# Panel data
+panel_dat <- long_peros %>%
+  select(prob_resp, new_predlab) %>% distinct() %>%
+  arrange(prob_resp, new_predlab) %>%
+  ungroup() %>%
+  mutate(panel_lab = LETTERS[row_number()])
+
+# Create the plot
+ggplot(data = long_bin, aes(x = pred_val, y = resp_val)) +
+  facet_grid(prob_resp ~ new_predlab, scales = "free_x", switch = "both") +
+  geom_smooth(
+    data = long_bin, method = "glm", method.args = list(family = "binomial"),
+    aes(col = "logistic reg.", linetype = glm.sig), se = TRUE, col = "black",
+    fill = "khaki3"
+  ) +
+  stat_summary(
+    data = long_bin, fun.data = mean_cl_normal, geom = "pointrange",
+    size = 1/4, linewidth = 0.75,
+    aes(col = "mean\n(\U00B1 95% CI)")
+  ) +
+  geom_smooth(
+    data = long_cont,
+    method = "glm", method.args = list(family = "binomial"),
+    aes(col = "logistic reg.", linetype = glm.sig), se = TRUE, col = "black",
+    fill = "khaki3"
+  ) +
+  geom_point(
+    data = long_cont,
+    aes(col = "raw data"), size = 0.8
+  ) +
+  geom_label(
+    data = panel_dat, size = 3, fontface = "bold",
+    fill = NA, col = "black", label.size = NA,
+    aes(x = -Inf, y = Inf, label = panel_lab), hjust = -0.1, vjust = 1.5
+  ) +
+  theme_bw() +
+  theme(
+    strip.placement = "outside", strip.background = element_blank(),
+    panel.spacing.y = unit(0.1, "lines"),
+    panel.spacing.x = unit(0.1, "lines"),
+    legend.position = "inside",
+    legend.position.inside = c(0.3, 0.58),
+    legend.justification = c(0.5, 0.5),
+    legend.key = element_blank(),
+    legend.key.width = unit(0.75, "lines"),
+    legend.background = element_rect(color = "black"),
+    legend.margin = margin(l = 0, r = 3, t = 0, b = 0),
+    strip.text.x = element_text(vjust = 1),
+    strip.clip = "on",
+    strip.switch.pad.grid = unit(-0.05, "lines")
+  ) +
+  labs(x = NULL, y = NULL, col = NULL) +
+  scale_x_continuous(breaks = c(0, 1, 10, 25, 40),
+                     minor_breaks = c(-0.5, 0.5, 17.5, 32.5)) +
+  scale_color_manual(
+    breaks = c("mean\n(\U00B1 95% CI)", "raw data"),
+    values = c("cornflowerblue", "grey50")
+  ) +
+  scale_linetype_manual(
+    breaks = c(TRUE, FALSE), values = c("solid", "dashed")
+  ) +
+  guides(linetype = "none")
+
+# save the file
+ggsave(
+  filename =  "infection-modeling/graphics/parasitism-infection-fig.png",
+  width = 6, height = 6*0.5, dpi = 300
+)
 
 ## ---- OLDER ----
 
