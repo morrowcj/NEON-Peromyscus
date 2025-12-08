@@ -277,13 +277,13 @@ tab_SX <- full_stats %>%
     #   c(boot.eff.mean, boot.SE, boot.ci.low, boot.ci.up, pm_val),
     #   ~sprintf("%.3f", round(.x, 3))
     # ),
-    # boot.bias = sprintf("%.1e", boot.bias),
+    boot.bias.str = sprintf("%.1e", boot.bias),
     CI = paste0("(", boot.ci.low, ", ", boot.ci.up, ")")
   ) %>%
   select(
     Response = resp.clean_name, Predictor = pred.clean_name,
     Type = effect_type, Mean = boot.eff.mean, SE = boot.SE,
-    CI_pm = pm_val, Bias = boot.bias
+    CI_pm = pm_val, Bias = boot.bias, Bias.str = boot.bias.str
   )  %>%
   pivot_wider(
     names_from = Type, values_from = -c(Response, Predictor, Type),
@@ -299,10 +299,31 @@ saveRDS(
   tab_SX, "infection-modeling/data/MS-tables/full-SEM-boot-tab.rds"
 )
 
+# index of columns with scientific notation to preserve ast strings
+str_col_inx <- grep(".*\\.str", names(tab_SX))
+
+tab_SX %>% select(all_of(str_col_inx)) %>% head()
+
+str = "4.3e-04"
+
+convert_scinote <- function(str){
+  pattern = "(-*\\d\\.\\d{1,})e(-*\\d{1,})"
+  val = gsub(pattern, "\\1", str)
+  pow = gsub(pattern, "\\2", str)
+  out = paste0(val, "\U00D7", "10^", as.integer(pow))
+  if_else(is.na(str), NA, out)
+}
+
 # save as a csv
+tab_SX %>%
+  mutate(
+    across(
+      contains("Bias.str"), ~ifelse(is.na(.x), NA, convert_scinote(.x))
+    )
+  ) %>%
 write.csv(
-  tab_SX, "infection-modeling/data/MS-tables/full-SEM-boot-tab.csv",
-  row.names = FALSE
+  file = "infection-modeling/data/MS-tables/full-SEM-boot-tab.csv",
+  row.names = FALSE, quote = str_col_inx, fileEncoding = "UTF-8"
 )
 
 ## ---- Figure 2: Logistic correlations ----
