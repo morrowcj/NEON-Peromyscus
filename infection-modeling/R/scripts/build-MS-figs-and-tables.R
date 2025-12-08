@@ -259,7 +259,7 @@ saveRDS(
 # save as a csv
 write.csv(
   tab_S1, "infection-modeling/data/MS-tables/full-SEM-coef-tab.csv",
-  row.names = FALSE
+  row.names = FALSE,
 )
 
 ## ---- Table SX: SEM bootstrap table ----
@@ -272,24 +272,27 @@ tab_SX <- full_stats %>%
   filter(!effect_type %in% c("mediators")) %>%
   arrange(resp.group, Response, pred.group, Predictor, effect_type) %>%
   mutate(
-    # new_resp = paste0(resp.clean_name, " (", resp.group, ")"),
-    # new_pred = paste0(pred.clean_name, " (", pred.group, ")"),
-    across(
-      c(boot.eff.mean, boot.SE, boot.ci.low, boot.ci.up),
-      ~sprintf("%.3f", round(.x, 3))
-    ),
-    boot.bias = sprintf("%.1e", boot.bias),
+    pm_val = boot.ci.up - boot.eff.mean,
+    # across( ## rounding (needed?)
+    #   c(boot.eff.mean, boot.SE, boot.ci.low, boot.ci.up, pm_val),
+    #   ~sprintf("%.3f", round(.x, 3))
+    # ),
+    # boot.bias = sprintf("%.1e", boot.bias),
     CI = paste0("(", boot.ci.low, ", ", boot.ci.up, ")")
   ) %>%
   select(
     Response = resp.clean_name, Predictor = pred.clean_name,
-    Type = effect_type, Mean = boot.eff.mean, SE = boot.SE, Bias = boot.bias,
-    CI
+    Type = effect_type, Mean = boot.eff.mean, SE = boot.SE,
+    CI_pm = pm_val, Bias = boot.bias
   )  %>%
   pivot_wider(
-    names_from = Type, values_from = c(Mean:CI),
+    names_from = Type, values_from = -c(Response, Predictor, Type),
+    names_glue = "{Type}.{.value}"
   ) %>%
-  relocate()
+  relocate(
+    c(starts_with("direct."), starts_with("indirect"), starts_with("total")),
+    .after = -1
+  )
 
 # save this object
 saveRDS(
