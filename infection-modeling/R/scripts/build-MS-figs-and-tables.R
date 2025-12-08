@@ -107,7 +107,7 @@ var_lookup <- tribble(
   "Expression", "Immune\nexpression",
   4, "ticks_attached", "Parasitism", "Parasitism\n(ticks)",
   "Parasitism", "Parasitism\n(ticks)",
-  5,"capprop_shift", "Cap. shift", "Capture\ntime \U0394",
+  5,"capprop_shift", "Cap. time \U0394", "Capture\ntime \U0394",
   "Behavior", "Behavior\n(timing)",
   6, "cap_prop_night", "Cap. time", "Capture\ntime",
   "Behavior", "Behavior\n(timing)",
@@ -228,8 +228,79 @@ ggsave(
 
 warning("Fig. 2 may need to use labels instead of groups")
 
-## ---- Table S1 ----
-# full_stats
+## ---- Table S1: SEM stats ----
+
+# Build the table of SEM effects
+
+warning("NEED TO REARRANGE THE ROWS")
+
+tab_S1 <- full_stats %>% filter(effect_type == "direct") %>%
+  arrange(resp.group, Response, pred.group, Predictor) %>%
+  mutate(
+    new_resp = paste0(resp.clean_name, " (", resp.group, ")"),
+    new_pred = paste0(pred.clean_name, " (", pred.group, ")"),
+    DF = round(DF),
+    P = Hmisc::format.pval(P.Value, digits = 3, eps = 0.001),
+    across(c(Estimate, boot.eff, Std.Error),
+           ~sprintf("%.3f", round(.x, digits = 3)))
+  ) %>%
+  select(
+    Response = new_resp, Predictor = new_pred,
+    Estimate, Std.Estimate = boot.eff,
+    DF, SE = Std.Error, P,
+  )
+tab_S1
+
+# save this object
+saveRDS(
+  tab_S1, "infection-modeling/data/MS-tables/full-SEM-coef-tab.rds"
+)
+
+# save as a csv
+write.csv(
+  tab_S1, "infection-modeling/data/MS-tables/full-SEM-coef-tab.csv",
+  row.names = FALSE
+)
+
+## ---- Table SX: SEM bootstrap table ----
+
+warning("NEED TO REARRANGE THE ROWS")
+warning("NEED TO FINALIZE FORMAT")
+
+# build the table of bootstrap statistics
+tab_SX <- full_stats %>%
+  filter(!effect_type %in% c("mediators")) %>%
+  arrange(resp.group, Response, pred.group, Predictor, effect_type) %>%
+  mutate(
+    # new_resp = paste0(resp.clean_name, " (", resp.group, ")"),
+    # new_pred = paste0(pred.clean_name, " (", pred.group, ")"),
+    across(
+      c(boot.eff.mean, boot.SE, boot.ci.low, boot.ci.up),
+      ~sprintf("%.3f", round(.x, 3))
+    ),
+    boot.bias = sprintf("%.1e", boot.bias),
+    CI = paste0("(", boot.ci.low, ", ", boot.ci.up, ")")
+  ) %>%
+  select(
+    Response = resp.clean_name, Predictor = pred.clean_name,
+    Type = effect_type, Mean = boot.eff.mean, SE = boot.SE, Bias = boot.bias,
+    CI
+  )  %>%
+  pivot_wider(
+    names_from = Type, values_from = c(Mean:CI),
+  ) %>%
+  relocate()
+
+# save this object
+saveRDS(
+  tab_SX, "infection-modeling/data/MS-tables/full-SEM-boot-tab.rds"
+)
+
+# save as a csv
+write.csv(
+  tab_SX, "infection-modeling/data/MS-tables/full-SEM-boot-tab.csv",
+  row.names = FALSE
+)
 
 ## ---- Figure 2: Logistic correlations ----
 
@@ -237,8 +308,8 @@ warning("Fig. 2 may need to use labels instead of groups")
 long_peros <- Peros %>%
   filter(sex_male != 0.5, weight <= 50) %>% # remove ambiguous sex
   select(
-    iid, cap_num, siteID, year, Bb_infected, ticks_attached, sex_male,
-         sex_mature, weight, cap_prop_night, capprop_shift
+    iid, cap_num, siteID, year, Bb_infected, ticks_attached,
+    sex_male, sex_mature, weight, cap_prop_night, capprop_shift
   ) %>% distinct() %>%
   pivot_longer(
     cols = c(Bb_infected, ticks_attached), names_to = "Response",
@@ -248,26 +319,16 @@ long_peros <- Peros %>%
     cols = c(sex_male:capprop_shift), names_to = "Predictor",
     values_to = "pred_val"
   ) %>%
-  left_join(
-    var_lookup %>%
-      select(Response = var, clean_resp = clean_name, resp_lab = label,
-             resp_grp = group, resp_grplab = grp_lab),
-    by = "Response"
-  ) %>%
-  left_join(
-    var_lookup %>%
-      select(Predictor = var, clean_pred = clean_name, pred_lab = label,
-             pred_grp = group, pred_grplab = grp_lab),
-    by = "Predictor"
-  ) %>%
+  left_join(resp_lookup, by = "Response") %>%
+  left_join(pred_lookup, by = "Predictor") %>%
   mutate(
-    new_predlab = fct_rev(pred_lab),
+    new_predlab = fct_rev(pred.label),
     sig_line = case_when(
-      clean_resp == "Infection" & clean_pred == "Cap. Shift" ~ FALSE,
-      clean_resp == "Infection" & clean_pred == "Sex" ~ FALSE,
+      Response == "Bb_infected" & Predictor == "capprop_shift" ~ FALSE,
+      resp.clean_name == "Infection" & pred.clean_name == "Sex" ~ FALSE,
       .default = TRUE),
-    prob_resp = paste0("P(", clean_resp, ")") %>%
-      factor(levels = paste0("P(", levels(clean_resp), ")"))
+    prob_resp = paste0("P(", resp.clean_name, ")") %>%
+      factor(levels = paste0("P(", levels(resp.clean_name), ")"))
   )
 
 # Add GLM p values
