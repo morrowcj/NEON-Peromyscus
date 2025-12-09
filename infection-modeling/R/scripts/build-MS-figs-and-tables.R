@@ -9,6 +9,8 @@
 library(tidyverse)
 library(DiagrammeR)
 library(ggarrow)
+library(lme4)
+library(semEff)
 source("infection-modeling/R/functions/diagram_psem.R")
 
 ## ---- Data ----
@@ -25,9 +27,16 @@ Peros <- readRDS("infection-modeling/data/peromyscus-model-data.rds") %>%
 ### PSEM ###
 
 # Load and clean the SEM (psem)
+# fullSEM_model_objects <- readRDS(
+#   "infection-modeling/data/model-objects/simplified-SEM-objects.rds"
+# )
 fullSEM_model_objects <- readRDS(
-  "infection-modeling/data/model-objects/simplified-SEM-objects.rds"
+  file.path("infection-modeling/data/model-objects",
+            "unscaled-peros_SEM-objects.rds")
 )
+
+# extract the model list
+modlist <- fullSEM_model_objects$component_mods
 
 # extract the fit object
 full_psem <- fullSEM_model_objects$sem_mod$fit
@@ -442,6 +451,87 @@ ggsave(
   filename =  "infection-modeling/graphics/parasitism-infection-fig.png",
   width = 6, height = 6*0.5, dpi = 300
 )
+
+
+## ---- Prediction scenarios ----
+
+# TODO: move to 08-bootstrap_SEMs.R
+
+mod_boot <- readRDS("infection-modeling/data/model-objects/bootSEM_full.rds")
+
+Peros %>%
+  filter(year == 2023) %>%
+  group_by(siteID) %>%
+  reframe(
+    group = c("low", "high"),
+    n = n(),
+    across(c(weight, expr_PC1, expr_PC2, ticks_attached, Bb_infected),
+           ~quantile(.x, c(1, 3)/4, na.rm = TRUE))
+  ) %>% arrange(group, weight)
+
+quants <- c(low = 0.1, high = 0.9)
+
+pred_dat <- tibble(
+  scenario = c("A", "B"),
+  sex_male = c(0, 1),
+  weight = quantile(Peros$weight, quants, na.rm = TRUE),
+  cap_prop_night = quantile(Peros$cap_prop_night, quants, na.rm = TRUE),
+  expr_PC1 = quantile(Peros$expr_PC1, quants, na.rm = TRUE),
+
+  # fixed attributes:
+  capprop_shift = quantile(Peros$capprop_shift, 0.5, na.rm = TRUE),
+  sex_mature = 1,
+  species = "PELE", #Species = "PELE",
+  siteID = "MLBS", # fixed site
+  year = 2023,
+  wthr_PC1 = quantile(Peros$wthr_PC1, 0.5, na.rm = TRUE),
+  clim_PC1 = quantile(Peros$clim_PC1, 0.5, na.rm = TRUE),
+)
+
+# naive prediction of ticks
+naive_tick_preds <- predict(
+  modlist$ticks, newdata = pred_dat, type = "response"
+)
+
+# naive prediction of infection
+naive_infect_preds <- predict(
+  modlist$infection,
+  newdata = pred_dat %>% mutate(ticks_attached = naive_tick_preds),
+  type = "response"
+)
+
+## TODO: need to use the semEff (or bootEff) results (effects = sem.boot)
+
+# tick SEM predictions
+tick_preds <- predEff(
+  modlist$ticks, newdata = pred_dat, type = "response",
+  data = Peros %>% mutate(species = Species)
+)
+
+# add to predicted ticks to data
+pred_dat$ticks_attached = tick_preds
+
+# infection SEM predictions
+infect_preds <- predEff(
+  modlist$infection,
+  newdata = pred_dat, type = "response",
+  data = Peros %>% mutate(species = Species)
+)
+
+## On average, a large male PELE with high resistance who comes out early has
+## a 23% increased probability of infection and 9% increased probability of
+## being parasitized by ticks
+## compared to a small female PELE with low resistance who comes out late
+## at the same site, on the same day.
+diff(tick_preds)
+diff(infect_preds)
+
+# add predicted infection to data
+pred_dat$Bb_infected = infect_preds
+
+# # example with shipley data
+# ship_preds <- predEff(mod = shipley.sem, newdata = shipley,
+#                       type = "response", parallel = "snow", ncpus = 12)
 
 ## ---- OLDER ----
 
