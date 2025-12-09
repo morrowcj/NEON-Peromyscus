@@ -8,12 +8,14 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
 ```{r}
 library(tidyverse)
+library(glmmTMB)
 library(lme4)
+library(lmerTest)
 library(piecewiseSEM)
 library(semEff)
 ```
@@ -384,6 +386,159 @@ paths which operate through the mediator variable.
 
 * [x] look into mediators
 
-* [ ] binomial response / categorical predictors
+* [x] binomial response / categorical predictors
 
 * [ ] work through example together?
+
+# Hannah Example
+
+* 4 (blocks) fencinc manipulations - vegetative differences may be driving seed removal
+* 36 depots (9 per depot) - `deployment_id`
+* 3 different habitat types
+* 215 acorns placed 
+* 4 1m^2 quadrats, 10m radias trees (depot level)
+
+```{r, eval = FALSE}
+# load the acorn-squirrel data set
+acorn_df <- read.csv("infection-modeling/R/Rmarkdown/acorn_squirrel.csv") %>% 
+  rename(depotID = deployment_id) %>% 
+  mutate(
+    squirrels = log(SCCA_ppd + SCNI_ppd + 1),
+    num.left = initial.ct - num.gone, prop.left = num.left / initial.ct,
+    SCCA_ppd = log(SCCA_ppd + 1), SCNI_ppd = log(SCNI_ppd + 1), # log transform
+    type = factor(
+      type, levels = c("pine", "high", "med"), 
+      labels = c("pine", "highOak", "medOak")
+    ),
+    type.num = as.numeric(type)
+    # across(c(depotID, fence, type), ~factor(.x)) # convert to factor
+  )
+summary(acorn_df)
+```
+
+```{r, fig.asp = 0.85, fig.width = 3.5, eval = FALSE}
+acorn_df %>% 
+  ggplot(aes(x = type, y = prop.gone, col = type)) + 
+  geom_boxplot(fill = NA) +  
+  geom_point(size = 2) + 
+  geom_smooth(method = "lm", aes(group = 1), fill = "grey80", col = "black") + 
+  stat_summary(geom = "line", aes(group = 1), linetype = "dotted", col = "grey20") + 
+  stat_summary(
+    fun.data = mean_se, geom = "pointrange", 
+    shape = 21, fill = "white", size = 1, linewidth = 1
+  ) + 
+  guides(col = "none") + 
+  theme_bw()
+```
+
+
+## Together as lab group
+
+```{r}
+
+```
+
+## Clay's try
+
+```{r removal_binom, eval = FALSE}
+# fit a binomial mixed model (with removals serving as our "success")
+## Here, removal is a function of squirrels, canopy cover, bare ground, 
+## forest type, forast basal area, and fencing type as well as
+## random ID to control for group covariance
+remove_fm <- glmer(
+  cbind(num.gone, num.left) ~ squirrels + open.can +  
+    type.num +
+    (1|fence),
+  family = "binomial", data = acorn_df
+)
+summary(remove_fm)
+
+## Note that it does not make sense to include deployment_ID (depotID) as a
+## random effect, because there are as many IDs as there are rows in these data
+## (i.e., no repeated measures from any ID)
+```
+
+```{r, eval = FALSE}
+squirrels_fm <- lmer(
+  squirrels ~ open.can + type.num + (1|fence),
+  data = acorn_df
+)
+```
+
+
+```{r grey_pois, evall = FALSE}
+# fit a model of grey squirrel density as a function of fox squirrel density,
+## canopy cover, bare ground, forest basal area, forest type, fencing trt, 
+## and random ID
+grey_fm <- lmer(
+  SCCA_ppd ~ open.can + type.num + 
+    (1|fence),
+  data = acorn_df
+)
+summary(grey_fm)
+car::Anova(grey_fm)
+```
+
+```{r fox_pois, eval = FALSE}
+# fox squirrel density as a function of canopy cover, bare ground, 
+## forest basal area, forest type, fencing trt, and random ID
+fox_fm <- lmer(
+  SCNI_ppd ~ open.can + type.num + (1|fence),
+  data = acorn_df
+)
+summary(fox_fm)
+car::Anova(fox_fm)
+```
+
+
+```{r soil_lm, eval = FALSE}
+# fit a model of bare soil as a function of canopy cover, BA, forest type, 
+## and fencing trt
+bare_fm <- lm(
+  bare.soil ~ open.can,
+  data = acorn_df
+)
+summary(bare_fm)
+car::Anova(bare_fm)
+```
+
+```{r canopy_lm, eval = FALSE}
+# fit a model of canopy cover as a function of BA, forest type, 
+## and fencing trt
+canopy_fm <- lm(
+  open.can ~ total_BA,
+  data = acorn_df
+)
+summary(canopy_fm)
+car::Anova(canopy_fm)
+```
+
+```{r BA_fm, eval = FALSE}
+basal_fm <- lm(
+  total_BA ~ type.num, 
+  data = acorn_df
+)
+summary(basal_fm)
+car::Anova(basal_fm)
+```
+
+```{r SEM, eval = FALSE}
+modlist = list(
+  remove_fm, 
+  squirrels_fm
+  # bare_fm,
+  # # basal_fm,
+  # canopy_fm
+)
+```
+
+```{r, message = TRUE}
+removal_psem <- as.psem(object = modlist)
+remove_psem_fit <- summary(removal_psem)
+```
+
+```{r, eval = FALSE}
+remove_sem <- semEff(modlist, R = 100, data = acorn_df, ran.eff = "fence")
+
+remove_sem$Summary
+```
