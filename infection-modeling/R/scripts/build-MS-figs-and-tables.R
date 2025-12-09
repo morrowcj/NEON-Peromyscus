@@ -11,6 +11,7 @@ library(DiagrammeR)
 library(ggarrow)
 library(lme4)
 library(semEff)
+library(piecewiseSEM)
 source("infection-modeling/R/functions/diagram_psem.R")
 
 ## ---- Data ----
@@ -49,33 +50,42 @@ full_psem$dTable <- full_psem$dTable %>%
 full_psem$coefficients <- full_psem$coefficients %>%
   data.frame() %>% rename(sig = "Var.9") %>% tibble()
 
-# load the cummulative effect table (psem)
-full_brkdwn <- readRDS(
-  file.path("infection-modeling/data/model-objects",
-            "cumulative-effects-table_simplified-SEM.rds")
+species_SEM_objects <- readRDS(
+  "infection-modeling/data/model-objects/unscaled-species_SEM-objects.rds"
 )
 
-# load PELE model objects
-pele_model_objects <- readRDS(
-  "infection-modeling/data/model-objects/PELE-SEM-objects.rds"
+# Species effects table
+species_stats <- readRDS(
+  "infection-modeling/data/model-objects/SEM-statistics-species.rds"
 )
 
-# extract the PELE SEM
-pele_psem <- pele_model_objects$sem_mod$fit
-
-# load PEMA model objects
-pema_model_objects <- readRDS(
-  "infection-modeling/data/model-objects/PEMA-SEM-objects.rds"
-)
-
-# extract PEMA SEM
-pele_psem <- pema_model_objects$sem_mod$fit
-
-# load the joint species coefficients table
-spec_coefs <- readRDS(
-  "infection-modeling/data/model-objects/joint-species-coefficients_SEM.rds"
-) %>%
-  rename(Species = Species)
+# # load the cummulative effect table (psem)
+# full_brkdwn <- readRDS(
+#   file.path("infection-modeling/data/model-objects",
+#             "cumulative-effects-table_simplified-SEM.rds")
+# )
+#
+# # load PELE model objects
+# pele_model_objects <- readRDS(
+#   "infection-modeling/data/model-objects/PELE-SEM-objects.rds"
+# )
+#
+# # extract the PELE SEM
+# pele_psem <- pele_model_objects$sem_mod$fit
+#
+# # load PEMA model objects
+# pema_model_objects <- readRDS(
+#   "infection-modeling/data/model-objects/PEMA-SEM-objects.rds"
+# )
+#
+# # extract PEMA SEM
+# pele_psem <- pema_model_objects$sem_mod$fit
+#
+# # load the joint species coefficients table
+# spec_coefs <- readRDS(
+#   "infection-modeling/data/model-objects/joint-species-coefficients_SEM.rds"
+# ) %>%
+#   rename(Species = Species)
 
 ## semEFF ##
 
@@ -98,7 +108,7 @@ full_stats <- full_stats %>%
   ungroup()
 
 # species effects table (semEff)
-species_effs_tab <- readRDS(
+species_stats <- readRDS(
   "infection-modeling/data/model-objects/SEM-statistics-species.rds"
 )
 
@@ -168,7 +178,9 @@ full_stats <- full_stats %>%
   left_join(resp_lookup, by = "Response") %>%
   left_join(pred_lookup, by = "Predictor")
 
-
+species_stats <- species_stats %>%
+  left_join(resp_lookup, by = "Response") %>%
+  right_join(pred_lookup, by = "Predictor")
 
 ## ---- Fig 1: Extreme scenarios (conceptual) ----
 
@@ -241,23 +253,29 @@ warning("Fig. 2 may need to use labels instead of groups")
 
 # Build the table of SEM effects
 
-warning("NEED TO REARRANGE THE ROWS")
-
 tab_S1 <- full_stats %>% filter(effect_type == "direct") %>%
+  left_join(
+    full_psem$R2 %>%
+      select(Response, R2.marg = Marginal, R2.cond = Conditional),
+    by = "Response"
+  ) %>%
   arrange(resp.group, Response, pred.group, Predictor) %>%
   mutate(
     new_resp = paste0(resp.clean_name, " (", resp.group, ")"),
     new_pred = paste0(pred.clean_name, " (", pred.group, ")"),
     DF = round(DF),
     P = Hmisc::format.pval(P.Value, digits = 3, eps = 0.001),
-    across(c(Estimate, boot.eff, Std.Error),
-           ~sprintf("%.3f", round(.x, digits = 3)))
+    # across(c(Estimate, boot.eff, Std.Error),
+    #        ~sprintf("%.3f", round(.x, digits = 3)))
   ) %>%
   select(
-    Response = new_resp, Predictor = new_pred,
-    Estimate, Std.Estimate = boot.eff,
+    Response = new_resp, R2.marg, R2.cond,
+    Predictor = new_pred,
+    Estimate,
     DF, SE = Std.Error, P,
+    Std.Estimate = boot.eff
   )
+
 tab_S1
 
 # save this object
@@ -271,13 +289,10 @@ write.csv(
   row.names = FALSE,
 )
 
-## ---- Table SX: SEM bootstrap table ----
-
-warning("NEED TO REARRANGE THE ROWS")
-warning("NEED TO FINALIZE FORMAT")
+## ---- Table S2: SEM bootstrap table ----
 
 # build the table of bootstrap statistics
-tab_SX <- full_stats %>%
+tab_S2 <- full_stats %>%
   filter(!effect_type %in% c("mediators")) %>%
   arrange(resp.group, Response, pred.group, Predictor, effect_type) %>%
   mutate(
@@ -305,13 +320,13 @@ tab_SX <- full_stats %>%
 
 # save this object
 saveRDS(
-  tab_SX, "infection-modeling/data/MS-tables/full-SEM-boot-tab.rds"
+  tab_S2, "infection-modeling/data/MS-tables/full-SEM-boot-tab.rds"
 )
 
 # index of columns with scientific notation to preserve ast strings
-str_col_inx <- grep(".*\\.str", names(tab_SX))
+str_col_inx <- grep(".*\\.str", names(tab_S2))
 
-tab_SX %>% select(all_of(str_col_inx)) %>% head()
+tab_S2 %>% select(all_of(str_col_inx)) %>% head()
 
 str = "4.3e-04"
 
@@ -324,7 +339,7 @@ convert_scinote <- function(str){
 }
 
 # save as a csv
-tab_SX %>%
+tab_S2 %>%
   mutate(
     across(
       contains("Bias.str"), ~ifelse(is.na(.x), NA, convert_scinote(.x))
@@ -453,11 +468,55 @@ ggsave(
 )
 
 
+## ---- Table S3: Species SEM ----
+
+# R-squared values
+species_R2 <- species_SEM_objects$pele$sem_mod$fit$R2 %>%
+  mutate(Species = "PELE") %>%
+  bind_rows(
+    species_SEM_objects$pema$sem_mod$fit$R2 %>%
+      mutate(Species = "PEMA")
+  ) %>%
+  select(Response, Species, R2.marg = Marginal, R2.cond = Conditional)
+
+# table S3
+tab_S3 <- species_R2 %>%
+  right_join(
+    species_stats %>% filter(effect_type == "direct"),
+    by = c("Response", "Species")
+  )  %>%
+  arrange(resp.group, Response, Species, pred.group, Predictor) %>%
+  mutate(
+    new_resp = paste0(resp.clean_name, " (", resp.group, ")"),
+    new_pred = paste0(pred.clean_name, " (", pred.group, ")"),
+    DF = round(DF),
+    P = Hmisc::format.pval(P.Value, digits = 3, eps = 0.001),
+  ) %>%
+  select(
+    Response = resp.clean_name, Species, R2.marg, R2.cond,
+    Predictor = pred.clean_name,
+    Effect = boot.eff, SE = boot.SE, DF = DF,
+    CI.low = boot.ci.low, CI.up = boot.ci.up
+  )
+
+# save this object
+saveRDS(
+  tab_S3, "infection-modeling/data/MS-tables/species-SEM-coef-tab.rds"
+)
+
+# save as a csv
+write.csv(
+  tab_S3, "infection-modeling/data/MS-tables/species-SEM-coef-tab.csv",
+  row.names = FALSE,
+)
+
 ## ---- Prediction scenarios ----
 
 # TODO: move to 08-bootstrap_SEMs.R
 
-mod_boot <- readRDS("infection-modeling/data/model-objects/bootSEM_full.rds")
+mod_boot <- readRDS(
+  "infection-modeling/data/model-objects/rescaled_bootSEM_full.rds"
+)
 
 Peros %>%
   filter(year == 2023) %>%
@@ -502,32 +561,104 @@ naive_infect_preds <- predict(
 
 ## TODO: need to use the semEff (or bootEff) results (effects = sem.boot)
 
-# tick SEM predictions
-tick_preds <- predEff(
-  modlist$ticks, newdata = pred_dat, type = "response",
-  data = Peros %>% mutate(species = Species)
+tick_preds_noboot <- predEff(
+  modlist$ticks, newdata = pred_dat,
+  type = "response",
+  data = Peros,
 )
 
-# add to predicted ticks to data
-pred_dat$ticks_attached = tick_preds
+pred_dat$ticks_attached = tick_preds_noboot
 
-# infection SEM predictions
-infect_preds <- predEff(
+infect_preds_noboot <- predEff(
   modlist$infection,
-  newdata = pred_dat, type = "response",
-  data = Peros %>% mutate(species = Species)
+  newdata = pred_dat,
+  type = "response",
+  data = Peros
 )
+
+pred_dat$Bb_infected = infect_preds_noboot
 
 ## On average, a large male PELE with high resistance who comes out early has
 ## a 23% increased probability of infection and 9% increased probability of
 ## being parasitized by ticks
 ## compared to a small female PELE with low resistance who comes out late
 ## at the same site, on the same day.
-diff(tick_preds)
-diff(infect_preds)
+diff(tick_preds_noboot)
+diff(infect_preds_noboot)
 
-# add predicted infection to data
-pred_dat$Bb_infected = infect_preds
+stop("Predictions with the bootstraps are not ready - need fixing.")
+
+# tick SEM predictions
+if (FALSE) {
+  tick_preds <- predEff(
+    modlist$ticks, newdata = pred_dat,
+    effects = mod_boot$ticks_attached,
+    type = "response",
+    data = Peros,
+    parallel = "snow", ncpus = 12, ci.conf = 0.9
+  )
+  saveRDS(
+    tick_preds,
+    file = "infection-modeling/data/model-objects/scenario_tick_preds.rds"
+  )
+} else {
+  tick_preds <- readRDS(
+    "infection-modeling/data/model-objects/scenario_tick_preds.rds"
+  )
+}
+
+# tick_preds %>%
+#   bind_cols() %>%
+#   mutate(x = factor(LETTERS[row_number()])) %>%
+#   rowwise() %>%
+#   mutate(
+#     SE_lwr = max(fit - (2*se.fit), 0),
+#     SE_upr = min(fit + (2*se.fit), 1)
+#   ) %>% ungroup() %>%
+#   ggplot(aes(x = x)) +
+#   geom_pointrange(
+#     aes(
+#       y = fit, ymin = SE_lwr, ymax = SE_upr,
+#       col = "± 2SE"
+#     )
+#   ) +
+#   geom_pointrange(
+#     aes(
+#       y = fit, ymin = ci.lower, ymax = ci.upper,
+#       col = "± 90% CI"
+#     ),
+#     position = position_nudge(x = 0.1)
+#   ) +
+#   geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
+#   theme_bw() +
+#   theme() +
+#   labs(x = "Scenario", y = "P(Parasitism)", col = "Estimate")
+
+# add to predicted ticks to data
+
+
+# infection SEM predictions
+if (FALSE) {
+  infect_preds <- predEff(
+    modlist$infection,
+    newdata = pred_dat,
+    effects = mod_boot$Bb_infected,
+    type = "response",
+    data = Peros,
+    parallel = "snow", ncpus = 12
+  )
+
+  saveRDS(
+    infect_preds,
+    file = "infection-modeling/data/model-objects/scenario_infect_preds.rds"
+  )
+} else {
+  infect_preds <- readRDS(
+    "infection-modeling/data/model-objects/scenario_infect_preds.rds"
+  )
+}
+
+# infect_preds %>% bind_cols()
 
 # # example with shipley data
 # ship_preds <- predEff(mod = shipley.sem, newdata = shipley,

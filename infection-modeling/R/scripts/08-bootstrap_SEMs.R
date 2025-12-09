@@ -152,6 +152,12 @@ for (resp.no in seq_len(length(unscaled_modlist))) { # response numbers
   }
 }
 
+# save the standardized version of the bootstrap
+saveRDS(
+  full_boot,
+  file = "infection-modeling/data/model-objects/rescaled_bootSEM_full.rds"
+)
+
 # calculate the effect coefficients, with 90% conf. interval
 full_effs <- semEff(full_boot, ci.conf = 0.9)
 

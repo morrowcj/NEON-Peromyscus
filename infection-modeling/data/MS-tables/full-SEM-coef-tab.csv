@@ -1,36 +1,36 @@
-"Response","Predictor","Estimate","Std.Estimate","DF","SE","P"
-"Cap. time (Behavior)","Weather (Environment)","-0.052","-0.044",2948,"0.022","0.021"
-"Cap. time (Behavior)","Sex (Phenotype)","0.041","0.077",2980,"0.009","<0.001"
-"Cap. time (Behavior)","Reproductive (Phenotype)","-0.018","-0.029",2984,"0.011","0.111"
-"Cap. time (Behavior)","Weight (Phenotype)","0.008","0.122",2981,"0.001","<0.001"
-"Cap. time Δ (Behavior)","Cap. time (Behavior)","0.529","0.525",2753,"0.016","<0.001"
-"Cap. time Δ (Behavior)","Sex (Phenotype)","-0.004","-0.007",2758,"0.009","0.677"
-"Cap. time Δ (Behavior)","Reproductive (Phenotype)","-0.012","-0.019",2763,"0.010","0.232"
-"Cap. time Δ (Behavior)","Weight (Phenotype)","0.000","0.004",2740,"0.001","0.811"
-"Resistance (Expression)","Weather (Environment)","0.168","0.118",436,"0.066","0.011"
-"Resistance (Expression)","Parasitism (Parasitism)","-0.053","-0.080",436,"0.030","0.084"
-"Resistance (Expression)","Sex (Phenotype)","0.051","0.081",431,"0.028","0.067"
-"Resistance (Expression)","Reproductive (Phenotype)","-0.019","-0.026",431,"0.032","0.554"
-"Resistance (Expression)","Weight (Phenotype)","0.013","0.173",422,"0.004","<0.001"
-"Tolerance (Expression)","Infection (Infection)","0.070","0.109",249,"0.043","0.099"
-"Tolerance (Expression)","Parasitism (Parasitism)","0.029","0.044",256,"0.036","0.433"
-"Tolerance (Expression)","Reproductive (Phenotype)","0.065","0.101",253,"0.036","0.072"
-"Infection (Infection)","Cap. time Δ (Behavior)","2.237","0.232",234,"1.792","0.212"
-"Infection (Infection)","Weather (Environment)","1.887","0.166",234,"0.878","0.032"
-"Infection (Infection)","Resistance (Expression)","0.000","0.000",234,"0.603","1.000"
-"Infection (Infection)","Parasitism (Parasitism)","0.852","0.166",234,"0.370","0.021"
-"Infection (Infection)","Sex (Phenotype)","0.253","0.051",234,"0.358","0.479"
-"Infection (Infection)","Reproductive (Phenotype)","0.931","0.170",234,"0.407","0.022"
-"Infection (Infection)","Weight (Phenotype)","0.086","0.152",234,"0.050","0.083"
-"Parasitism (Parasitism)","Cap. time Δ (Behavior)","-0.344","-0.040",2140,"0.196","0.079"
-"Parasitism (Parasitism)","Climate (Environment)","-0.598","-0.244",2140,"0.313","0.056"
-"Parasitism (Parasitism)","Weather (Environment)","1.685","0.167",2140,"0.238","<0.001"
-"Parasitism (Parasitism)","Sex (Phenotype)","0.455","0.101",2140,"0.102","<0.001"
-"Parasitism (Parasitism)","Reproductive (Phenotype)","0.151","0.029",2140,"0.117","0.195"
-"Parasitism (Parasitism)","Weight (Phenotype)","-0.006","-0.011",2140,"0.014","0.663"
-"Reproductive (Phenotype)","Climate (Environment)","-0.128","-0.060",23500,"0.082","0.118"
-"Reproductive (Phenotype)","Weather (Environment)","0.520","0.059",23500,"0.070","<0.001"
-"Reproductive (Phenotype)","Sex (Phenotype)","0.206","0.053",23500,"0.028","<0.001"
-"Weight (Phenotype)","Weather (Environment)","-1.738","-0.079",18480,"0.146","<0.001"
-"Weight (Phenotype)","Sex (Phenotype)","-0.267","-0.027",19175,"0.059","<0.001"
-"Weight (Phenotype)","Reproductive (Phenotype)","4.395","0.449",19182,"0.062","<0.001"
+"Response","R2.marg","R2.cond","Predictor","Estimate","DF","SE","P","Std.Estimate"
+"Cap. time (Behavior)",0.02,0.1,"Weather (Environment)",-0.0516,2948,0.0223,"0.021",-0.0437579662587961
+"Cap. time (Behavior)",0.02,0.1,"Sex (Phenotype)",0.0406,2980,0.0094,"<0.001",0.0772993119090565
+"Cap. time (Behavior)",0.02,0.1,"Reproductive (Phenotype)",-0.0176,2984,0.011,"0.111",-0.0288809652939696
+"Cap. time (Behavior)",0.02,0.1,"Weight (Phenotype)",0.0076,2981,0.0012,"<0.001",0.122231367134103
+"Cap. time Δ (Behavior)",0.27,0.31,"Cap. time (Behavior)",0.5295,2753,0.0164,"<0.001",0.524960764923813
+"Cap. time Δ (Behavior)",0.27,0.31,"Sex (Phenotype)",-0.0035,2758,0.0085,"0.677",-0.0067031612602605
+"Cap. time Δ (Behavior)",0.27,0.31,"Reproductive (Phenotype)",-0.0119,2763,0.01,"0.232",-0.0194653569753102
+"Cap. time Δ (Behavior)",0.27,0.31,"Weight (Phenotype)",3e-04,2740,0.0011,"0.811",0.00410998708736305
+"Resistance (Expression)",0.04,0.31,"Weather (Environment)",0.1685,436,0.066,"0.011",0.117798456947979
+"Resistance (Expression)",0.04,0.31,"Parasitism (Parasitism)",-0.0527,436,0.0305,"0.084",-0.0800743400200239
+"Resistance (Expression)",0.04,0.31,"Sex (Phenotype)",0.051,431,0.0278,"0.067",0.0805533333835157
+"Resistance (Expression)",0.04,0.31,"Reproductive (Phenotype)",-0.0189,431,0.032,"0.554",-0.026206072594941
+"Resistance (Expression)",0.04,0.31,"Weight (Phenotype)",0.0128,422,0.0035,"<0.001",0.173220092665575
+"Tolerance (Expression)",0.03,0.24,"Infection (Infection)",0.0704,249,0.0425,"0.099",0.109365047472724
+"Tolerance (Expression)",0.03,0.24,"Parasitism (Parasitism)",0.0287,256,0.0365,"0.433",0.0436980088026769
+"Tolerance (Expression)",0.03,0.24,"Reproductive (Phenotype)",0.0647,253,0.0358,"0.072",0.101181670660319
+"Infection (Infection)",0.13,0.58,"Cap. time Δ (Behavior)",2.2374,234,1.7919,"0.212",0.232444433342304
+"Infection (Infection)",0.13,0.58,"Weather (Environment)",1.8873,234,0.8779,"0.032",0.16554807115505
+"Infection (Infection)",0.13,0.58,"Resistance (Expression)",2e-04,234,0.6027,"1.000",2.67882660328605e-05
+"Infection (Infection)",0.13,0.58,"Parasitism (Parasitism)",0.8516,234,0.3698,"0.021",0.166138634574932
+"Infection (Infection)",0.13,0.58,"Sex (Phenotype)",0.2532,234,0.3575,"0.479",0.0513756629401193
+"Infection (Infection)",0.13,0.58,"Reproductive (Phenotype)",0.9311,234,0.4073,"0.022",0.169967111966068
+"Infection (Infection)",0.13,0.58,"Weight (Phenotype)",0.0862,234,0.0498,"0.083",0.151930911135496
+"Parasitism (Parasitism)",0.13,0.29,"Cap. time Δ (Behavior)",-0.3442,2140,0.1959,"0.079",-0.0402089657690979
+"Parasitism (Parasitism)",0.13,0.29,"Climate (Environment)",-0.5978,2140,0.3133,"0.056",-0.244471159376121
+"Parasitism (Parasitism)",0.13,0.29,"Weather (Environment)",1.6846,2140,0.2381,"<0.001",0.166827104791229
+"Parasitism (Parasitism)",0.13,0.29,"Sex (Phenotype)",0.4551,2140,0.1021,"<0.001",0.100874942950011
+"Parasitism (Parasitism)",0.13,0.29,"Reproductive (Phenotype)",0.1513,2140,0.1166,"0.195",0.0294486593868001
+"Parasitism (Parasitism)",0.13,0.29,"Weight (Phenotype)",-0.006,2140,0.0137,"0.663",-0.0114319193668049
+"Reproductive (Phenotype)",0.01,0.12,"Climate (Environment)",-0.1281,23500,0.082,"0.118",-0.059828190721303
+"Reproductive (Phenotype)",0.01,0.12,"Weather (Environment)",0.5198,23500,0.0695,"<0.001",0.0593626583385372
+"Reproductive (Phenotype)",0.01,0.12,"Sex (Phenotype)",0.2061,23500,0.0278,"<0.001",0.0531610483480124
+"Weight (Phenotype)",0.2,0.31,"Weather (Environment)",-1.7378,18480,0.1456,"<0.001",-0.078889172265846
+"Weight (Phenotype)",0.2,0.31,"Sex (Phenotype)",-0.2674,19175,0.0594,"<0.001",-0.0273985860833669
+"Weight (Phenotype)",0.2,0.31,"Reproductive (Phenotype)",4.3953,19182,0.0619,"<0.001",0.448514460192541
