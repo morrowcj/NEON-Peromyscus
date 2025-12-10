@@ -564,16 +564,41 @@ naive_infect_preds <- predict(
 tick_preds_noboot <- predEff(
   modlist$ticks, newdata = pred_dat,
   type = "response",
-  data = Peros,
+  data = Peros %>% mutate(species = Species),
 )
 
 pred_dat$ticks_attached = tick_preds_noboot
+
+# tick_effs <- full_stats %>%
+#   filter(effect_type == "direct", Response == "ticks_attached") %>%
+#   select(Predictor, boot.eff, boot.eff.mean, boot.ci.low, boot.ci.up)
+#
+# tick_preds_ci <- lapply(
+#   2:ncol(tick_effs), function(i){
+#     effs = tick_effs[[i]]
+#     names(effs) <- tick_effs$Predictor
+#
+#     predEff(
+#       modlist$ticks, newdata = pred_dat, type = "response",
+#       effects = effs,
+#       data = Peros %>% mutate(species = Species)
+#     )
+#   }
+# )
+# names(tick_preds_ci) <- names(tick_effs)[2:ncol(tick_effs)]
+#
+# tick_pred_table <- tick_preds_ci %>%
+#   bind_cols() %>%
+#   mutate(scenario = LETTERS[row_number()]) %>%
+#   relocate(scenario, .before = 0)
+# ## Again this doesn't seem useful
+# tick_pred_table
 
 infect_preds_noboot <- predEff(
   modlist$infection,
   newdata = pred_dat,
   type = "response",
-  data = Peros
+  data = Peros %>% mutate(species = Species)
 )
 
 pred_dat$Bb_infected = infect_preds_noboot
