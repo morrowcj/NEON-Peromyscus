@@ -8,6 +8,7 @@
 # Load needed functions
 library(tidyverse)
 library(DiagrammeR)
+library(ggnetwork)
 source("infection-modeling/R/functions/diagram_psem.R")
 
 # create new save directory if it doesn't exist
@@ -182,7 +183,7 @@ render_graph(full_psem_plot)
 
 full_psem_plot %>%
   export_graph(
-    "infection-modeling/graphics/conceptual-SEM-full.png",
+    "infection-modeling/graphics/conceptual-SEM-full_OLD.png",
     width = 4.5*300, height = 4.5*300
   )
 
@@ -295,7 +296,7 @@ ggplot(data = long_bin, aes(x = pred_val, y = resp_val)) +
   guides(linetype = "none")
 
 ggsave(
-  filename =  "infection-modeling/graphics/parasitism-infection-fig.png",
+  filename =  "infection-modeling/graphics/parasitism-infection-fig_OLD.png",
   width = 6, height = 6*0.5, dpi = 300
 )
 
@@ -346,7 +347,7 @@ full_brkdwn %>%
   guides(linetype = "none")
 
 ggsave(
-  "infection-modeling/graphics/cumulative-effect-fig.png",
+  "infection-modeling/graphics/cumulative-effect-fig_OLD.png",
   width = 5, height = 1*5, dpi = 300
 )
 
@@ -567,11 +568,11 @@ full_coef_tab <- full_mod$coefficients %>%
 full_coef_tab
 
 saveRDS(
-  full_coef_tab, "infection-modeling/data/MS-tables/full-SEM-coef-tab.rds"
+  full_coef_tab, "infection-modeling/data/MS-tables/full-SEM-coef-tab_OLD.rds"
 )
 
 write.csv(
-  full_coef_tab, "infection-modeling/data/MS-tables/full-SEM-coef-tab.csv"
+  full_coef_tab, "infection-modeling/data/MS-tables/full-SEM-coef-tab_OLD.csv"
 )
 
 ## ---- Table S2 (full SEM fit stats)----
@@ -591,11 +592,11 @@ full_R2_tab <- full_mod$R2 %>%
 full_R2_tab
 
 saveRDS(
-  full_R2_tab, "infection-modeling/data/MS-tables/full-SEM-R2-tab.rds"
+  full_R2_tab, "infection-modeling/data/MS-tables/full-SEM-R2-tab_OLD.rds"
 )
 
 write.csv(
-  full_R2_tab, "infection-modeling/data/MS-tables/full-SEM-R2-tab.csv"
+  full_R2_tab, "infection-modeling/data/MS-tables/full-SEM-R2-tab_OLD.csv"
 )
 
 ## ---- Figure S1 (full SEM diagram) ----
@@ -648,12 +649,12 @@ species_coef_tab
 
 saveRDS(
   species_coef_tab,
-  "infection-modeling/data/MS-tables/species-SEM-coef-tab.rds"
+  "infection-modeling/data/MS-tables/species-SEM-coef-tab_OLD.rds"
 )
 
 write.csv(
   species_coef_tab,
-  "infection-modeling/data/MS-tables/species-SEM-coef-tab.csv"
+  "infection-modeling/data/MS-tables/species-SEM-coef-tab_OLD.csv"
 )
 
 ## ---- Table S4 (species SEM fit status) ----
@@ -849,7 +850,7 @@ plot_dat %>%
   )
 
 ggsave(
-  filename =  "infection-modeling/graphics/bootstrap_SEMcoefs.png",
+  filename =  "infection-modeling/graphics/bootstrap_SEMcoefs_OLD.png",
   width = 6*0.9, height = 6, dpi = 300
 )
 

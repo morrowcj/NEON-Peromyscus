@@ -112,6 +112,18 @@ species_stats <- readRDS(
   "infection-modeling/data/model-objects/SEM-statistics-species.rds"
 )
 
+species_stats <- species_stats %>%
+  mutate(
+    psem.sig = P.Value <= 0.1, # raw model stats
+    boot.sig = boot.p <= 0.1, # pseudo-p-value, using orig. coef. and boot SE
+    boot.sig.mean = boot.p.mean <= 0.1, # pseudo-P using boot coef. and SE
+    ci.sig = !(boot.ci.low < 0 & boot.ci.up > 0), # based on 90% CI
+    joint_sig = if_else(effect_type == "direct", psem.sig, ci.sig) # combined
+  ) %>%
+  group_by(Response, Predictor, Species) %>%
+  mutate(group.sig = any(joint_sig)) %>%
+  ungroup()
+
 ## ---- Lookup table and metadata ----
 
 # Create a lookup table for the variables
@@ -249,6 +261,54 @@ ggsave(
 
 warning("Fig. 2 may need to use labels instead of groups")
 
+
+## ---- Fig. X: Species infection and parasitism comparison ----
+
+species_stats %>%
+  filter(
+    Response %in% c("Bb_infected", "ticks_attached"),
+    effect_type == "total"
+  ) %>%
+  ggplot(
+    aes(
+      y = Predictor, x = boot.eff.mean, xmin = boot.ci.low, xmax = boot.ci.up,
+      shape = interaction(joint_sig, Species),
+      fill = interaction(joint_sig, Species),
+      col = interaction(joint_sig, Species),
+      linetype = interaction(joint_sig, Species)
+    )
+  ) +
+  facet_wrap(~Response, scales = "free_x") +
+  geom_vline(xintercept = 0, color = "black", linetype = "dashed") +
+  # geom_col(
+  #   position = position_dodge2(0.5)
+  # ) +
+  geom_pointrange(
+    position = position_dodge2(0.5), stroke = 1.5, size = 0.7,
+    linewidth = 1
+  ) +
+  theme_bw() +
+  theme(
+    legend.position = "inside", legend.position.inside = c(2/3, 0.9),
+    legend.justification = c(0.5, 1),
+    legend.background = element_rect(color = 'black'),
+    legend.key.width = unit(4, "lines"),
+    panel.grid.major.y = element_blank()
+
+  ) +
+  labs(
+    x = "Total effect (mean ± 90% CI)",
+    fill = NULL, shape = NULL, col = NULL, linetype = NULL
+  ) +
+  scale_shape_manual(values = c(21, 21, 24, 24)) +
+  scale_fill_manual(values = c("white", "orange", "white", "cornflowerblue")) +
+  scale_color_manual(
+    values = c("orange", "orange", "cornflowerblue", "cornflowerblue")
+  ) +
+  scale_linetype_manual(values = c("dashed", "solid", "dashed", "solid")) +
+  scale_x_continuous(breaks = seq(-.5, 0.5, by = 0.25)) +
+  scale_y_discrete(minor_breaks = seq(1.5, 5.5, by = 1))
+
 ## ---- Table S1: SEM stats ----
 
 # Build the table of SEM effects
@@ -345,9 +405,26 @@ tab_S2 %>%
       contains("Bias.str"), ~ifelse(is.na(.x), NA, convert_scinote(.x))
     )
   ) %>%
+  write.csv(
+    file = "infection-modeling/data/MS-tables/full-SEM-boot-tab.csv",
+    row.names = FALSE, quote = str_col_inx, fileEncoding = "UTF-8"
+  )
+
+## ---- Table SX: random effects table ----
+
+ranef_table <- lapply(names(modlist), function(x){
+  mod = modlist[[x]]
+  try(
+    data.frame(VarCorr(mod)) %>% select(-c(var1, var2)) %>%
+      mutate(Response = x)
+  )
+}) %>% bind_rows() %>%
+  relocate(Response, .before = 1)
+
 write.csv(
-  file = "infection-modeling/data/MS-tables/full-SEM-boot-tab.csv",
-  row.names = FALSE, quote = str_col_inx, fileEncoding = "UTF-8"
+  ranef_table,
+  file = "infection-modeling/data/MS-tables/SEM-random-effects-table.csv",
+  row.names = FALSE
 )
 
 ## ---- Figure 2: Logistic correlations ----
@@ -509,6 +586,25 @@ write.csv(
   tab_S3, "infection-modeling/data/MS-tables/species-SEM-coef-tab.csv",
   row.names = FALSE,
 )
+
+## ---- Figure SY ----
+
+Peros %>%
+  select(
+    site = siteID, year, species,
+    parasitism = ticks_attached, infection = Bb_infected,
+    sex = sex_male, reproductive = sex_mature, weight,
+    cap_time = cap_prop_night, cap_shift = capprop_shift,
+    resistance = expr_PC1, tolerance = expr_PC2
+  ) %>%
+  pivot_longer(
+    -c(site, year, species),
+    names_to = "variable", values_to = "value"
+  ) %>% filter(complete.cases(.)) %>%
+  ggplot(aes(x = species, y = value, color = species)) +
+  facet_wrap(~variable, scales = "free") +
+  stat_summary(fun.data = mean_cl_normal)
+
 
 ## ---- OLDER ----
 

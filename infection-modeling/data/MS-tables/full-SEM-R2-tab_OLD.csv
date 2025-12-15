@@ -1,0 +1,9 @@
+"","Response","Family","Marginal","Conditional"
+"1","Tolerance expression","gaussian",0.03,0.24
+"2","Infection status","binomial",0.13,0.58
+"3","Resistance expression","gaussian",0.04,0.31
+"4","Parasitism (ticks)","binomial",0.13,0.29
+"5","Capture time Δ","gaussian",0.27,0.31
+"6","Capture time","gaussian",0.02,0.1
+"7","Weight","gaussian",0.2,0.31
+"8","Reproductive maturity","binomial",0.01,0.12

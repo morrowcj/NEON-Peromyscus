@@ -48,7 +48,8 @@ saveRDS(
 simple_weight <- lmer(
   weight ~ sex_male + sex_mature +
     wthr_PC1 +
-    (1|year) + (1|plotID) + (1|species),
+    # (1|year) + (1|plotID) + (1|species),
+    (1|year) + (1|siteID) + (1|species),
   data = scaled_dat
 )
 
@@ -56,7 +57,8 @@ simple_weight <- lmer(
 simple_mature <- glmer(
   sex_mature ~ sex_male +
     wthr_PC1 + clim_PC1 +
-    (1|year) + (1|plotID) + (1|species),
+    # (1|year) + (1|plotID) + (1|species),
+    (1|year) + (1|siteID) + (1|species),
   data = scaled_dat, family = "binomial"
 )
 
