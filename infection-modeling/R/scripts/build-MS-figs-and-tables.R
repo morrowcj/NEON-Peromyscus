@@ -606,6 +606,8 @@ Peros %>%
   stat_summary(fun.data = mean_cl_normal)
 
 
+## ---- Species comparison
+
 ## ---- OLDER ----
 
 # group_lookup <- var_lookup %>%
