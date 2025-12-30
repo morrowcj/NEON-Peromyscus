@@ -197,7 +197,6 @@ complete_scenarios %>%
   geom_point(aes(col = factor(sex_male)))
 
 
-
 ## ---- Informed predictions ----
 
 ## TODO - This does not seem to be working...

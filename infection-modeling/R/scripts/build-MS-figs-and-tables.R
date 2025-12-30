@@ -587,26 +587,105 @@ write.csv(
   row.names = FALSE,
 )
 
-## ---- Figure SY ----
+## ---- Figure SY: Species trait comparison ----
 
-Peros %>%
+# subset data
+sp_trait_data <- Peros %>%
+  group_by(siteID) %>%
+  mutate(
+    has_both = all(c("PELE", "PEMA") %in% species)
+  ) %>% ungroup() %>%
   select(
     site = siteID, year, species,
     parasitism = ticks_attached, infection = Bb_infected,
     sex = sex_male, reproductive = sex_mature, weight,
     cap_time = cap_prop_night, cap_shift = capprop_shift,
-    resistance = expr_PC1, tolerance = expr_PC2
+    resistance = expr_PC1, tolerance = expr_PC2, has_both
+  )
+
+# list of traits
+traits = names(
+  sp_trait_data %>% select(-c(site, year, species, has_both))
+)
+
+# fit lmms to compare species across sites
+trait_mods <- lapply(traits, function(v){
+  formy = paste(v, "~ 0 + species + (1|site)")
+  lmer(formy, data = sp_trait_data %>% filter(has_both))
+})
+names(trait_mods) <- traits
+
+# Get estimated marginal means for each species x variable
+trait_EMMs <- lapply(traits,
+       function(x) {
+         mod = trait_mods[[x]]
+         emm <- emmeans::emmeans(mod, ~species)
+         prs <- pairs(emm)
+         p = prs %>% data.frame() %>% pull(p.value)
+         cld <- emmeans:::cld.emmGrid(emm)
+         cld %>% data.frame() %>% mutate(P = p, response = x)
+       }
+) %>% bind_rows() %>%
+  mutate(
+    CI_lwr = if_else(!is.na(asymp.LCL), asymp.LCL, lower.CL),
+    CI_upr = if_else(!is.na(asymp.UCL), asymp.UCL, upper.CL)
   ) %>%
+  select(-c(starts_with("asymp"), lower.CL, upper.CL))
+
+
+# get the long-form trait data for plotting
+sp_long_traits <- sp_trait_data %>%
+  filter(has_both) %>% select(-has_both) %>%
   pivot_longer(
     -c(site, year, species),
     names_to = "variable", values_to = "value"
-  ) %>% filter(complete.cases(.)) %>%
-  ggplot(aes(x = species, y = value, color = species)) +
+  ) %>% filter(complete.cases(.))
+
+# build a plot
+sp_long_traits %>%
+  ggplot(aes(y = site, x = value, color = species)) +
   facet_wrap(~variable, scales = "free") +
-  stat_summary(fun.data = mean_cl_normal)
+  stat_summary(
+    fun.data = mean_cl_normal,
+    position = position_dodge(0.4)
+  ) +
+  stat_summary(
+    fun.data = mean_cl_normal,
+    aes(group = species, y = "Avg."), shape = 17,
+    show.legend = FALSE
+  )
+  # geom_pointrange(
+  #   data = trait_EMMs %>% rename(variable = response),
+  #   aes(y = "Avg.", x = emmean, xmin = emmean - SE, xmax = emmean + SE,
+  #       color = species),
+  #   show.legend = FALSE
+  # )
 
+## ---- Lat Long comparison ----
 
-## ---- Species comparison
+## ---- Effect comparisons (within population) ----
+
+eff_props <- full_stats %>%
+  filter(Response == "Bb_infected", effect_type %in% c("total", "direct")) %>%
+  select(Predictor, effect_type, boot.eff) %>% group_by(effect_type) %>%
+  mutate(
+    abs_eff = abs(boot.eff),
+    eff_sum = sum(abs_eff),
+    eff_prop = abs_eff / eff_sum,
+    groupy = case_when(
+      Predictor %in% c("ticks_attached") ~ "parasitism",
+      Predictor %in% c("clim_PC1", "wthr_PC1") ~ "environment",
+      .default = "individual"
+    )
+  )
+
+(group_eff_props <- eff_props %>%
+  group_by(effect_type, groupy) %>%
+  summarize(effect_prop = sum(eff_prop, na.rm = TRUE)) %>%
+  pivot_wider(names_from = effect_type, values_from = effect_prop))
+
+group_eff_props %>%
+  mutate(direct = direct*0.13, total = total*0.13)
 
 ## ---- OLDER ----
 
