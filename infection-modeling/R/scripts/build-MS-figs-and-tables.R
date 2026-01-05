@@ -687,6 +687,59 @@ eff_props <- full_stats %>%
 group_eff_props %>%
   mutate(direct = direct*0.13, total = total*0.13)
 
+## ---- Look for dilution effects ----
+
+mammals <- readRDS("neon-data/data/eight_sites/mammal-trap-data.rds")
+mam.vars <- mammals$variables_10072
+mammals <- mammals$mam_pertrapnight
+
+(div.tab <-
+  mammals %>%
+  filter(!is.na(taxonID), siteID %in% unique(Peros$siteID)) %>%
+  select(plotID, siteID, trapCoordinate, collectDate, taxonID, tagID) %>%
+  mutate(
+    collectDate = lubridate::ymd(collectDate),
+    year = factor(lubridate::year(collectDate))
+  ) %>%
+  filter(year %in% c(2023, 2024)) %>%
+  group_by(siteID, year) %>%
+  mutate(
+    nCaps = n(), richness = length(unique(taxonID))
+  ) %>%
+  group_by(taxonID, .add = TRUE) %>%
+  mutate(
+    Species_n = n(), Species_prop = Species_n/nCaps
+  ) %>%
+  ungroup()
+)
+
+
+dil.tab <- div.tab %>% select(siteID, year, richness) %>% distinct() %>%
+  inner_join(
+    Peros %>%
+      filter(!is.na(Bb_infected)) %>%
+      group_by(siteID, year) %>%
+      summarize(
+        n = n(),
+        mean_inf = mean(Bb_infected, na.rm = TRUE),
+        sd_inf = sd(Bb_infected, na.rm = TRUE)
+      ),
+    by = c("siteID", "year")
+  )
+
+dil.fm <- lm(mean_inf ~ richness + year, data = dil.tab)
+car::Anova(dil.fm) # no significant dilution effects.
+
+cor(dil.tab %>% select(richness, mean_inf))
+
+  dil.tab %>%
+    ggplot(aes(x = richness, y = mean_inf, col = siteID, shape = year)) +
+    geom_point(size = 3) +
+    geom_smooth(
+      method = "lm", linetype = "dashed", fill = "grey80", aes(group = 1)
+    ) +
+    theme_bw() +
+    labs(x = "Species richness", y = "Infection rate")
 ## ---- OLDER ----
 
 # group_lookup <- var_lookup %>%
