@@ -41,9 +41,9 @@ infection-modeling/graphical-models
 infection-modeling/graphics
 infection-modeling/data/raw-data/Data-for-Clay_copy
 meeting-notes/
-neon-data/data/eight_sites/biological-temperatures/
-neon-data/data/eight_sites/relative-humidity/
-neon-data/data/eight_sites/precipitation/
+#neon-data/data/eight_sites/biological-temperatures/
+#neon-data/data/eight_sites/relative-humidity/
+#neon-data/data/eight_sites/precipitation/
 
 infection-modeling/R/scripts/Alli-DFA/
 
