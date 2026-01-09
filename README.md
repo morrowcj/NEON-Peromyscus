@@ -4,8 +4,8 @@ This repository houses the data, code, and related documents associated with
 our project wherein we investigate the impacts of individual *Peromyscus* and
 environmental variation on Lyme disease (*Borrelia burgdorferi*) risk.
 
-To download this project locally, click the green "<> Code" dropdown and select
-"Download ZIP".
+To download this project locally from GitHub, click the green "<> Code" 
+drop down and select "Download ZIP" or clone the git repo.
 
 ## Project structure
 
