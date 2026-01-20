@@ -19,7 +19,8 @@ source("infection-modeling/R/functions/diagram_psem.R")
 # Read and clean the data
 Peros <- readRDS("infection-modeling/data/peromyscus-model-data.rds") %>%
   mutate(
-    Species = updated_taxa, species = Species
+    Species = updated_taxa, species = Species,
+    # clim_PC1 = -1*clim_PC1 # reverse for increase with temp
   ) %>% filter(!is.na(Species)) %>%
   mutate(
     across(c(siteID, plotID, year, iid, Species), ~as.factor(.x)) # factor vars
@@ -42,57 +43,41 @@ modlist <- fullSEM_model_objects$component_mods
 # extract the fit object
 full_psem <- fullSEM_model_objects$sem_mod$fit
 
-# clean the d-seperation table
-full_psem$dTable <- full_psem$dTable %>%
-  data.frame() %>% rename(sig = "Var.6") %>% tibble()
-
-# clean the coefficient table
-full_psem$coefficients <- full_psem$coefficients %>%
-  data.frame() %>% rename(sig = "Var.9") %>% tibble()
+# # clean the d-seperation table (not used)
+# full_psem$dTable <- full_psem$dTable %>%
+#   data.frame() %>% rename(sig = "Var.6") %>% tibble()
+#
+# # clean the coefficient table
+# full_psem$coefficients <- full_psem$coefficients %>%
+#   data.frame() %>% rename(sig = "Var.9") %>% tibble()
 
 species_SEM_objects <- readRDS(
   "infection-modeling/data/model-objects/unscaled-species_SEM-objects.rds"
 )
-
-# Species effects table
-species_stats <- readRDS(
-  "infection-modeling/data/model-objects/SEM-statistics-species.rds"
-)
-
-# # load the cummulative effect table (psem)
-# full_brkdwn <- readRDS(
-#   file.path("infection-modeling/data/model-objects",
-#             "cumulative-effects-table_simplified-SEM.rds")
-# )
-#
-# # load PELE model objects
-# pele_model_objects <- readRDS(
-#   "infection-modeling/data/model-objects/PELE-SEM-objects.rds"
-# )
-#
-# # extract the PELE SEM
-# pele_psem <- pele_model_objects$sem_mod$fit
-#
-# # load PEMA model objects
-# pema_model_objects <- readRDS(
-#   "infection-modeling/data/model-objects/PEMA-SEM-objects.rds"
-# )
-#
-# # extract PEMA SEM
-# pele_psem <- pema_model_objects$sem_mod$fit
-#
-# # load the joint species coefficients table
-# spec_coefs <- readRDS(
-#   "infection-modeling/data/model-objects/joint-species-coefficients_SEM.rds"
-# ) %>%
-#   rename(Species = Species)
 
 ## semEFF ##
 
 # load full model statistics (semEff)
 full_stats <- readRDS(
   "infection-modeling/data/model-objects/SEM-statistics-all.rds"
-)
+) %>%
+  # reverse all clim_PC1 effects to be more intuitive (+ is warm and wet)
+  mutate(
+    boot.upr.diff = abs(boot.ci.up - boot.eff),
+    boot.lwr.diff = abs(boot.eff - boot.ci.low),
+    boot.eff = if_else(Predictor == "clim_PC1", boot.eff*(-1), boot.eff),
+    boot.bias = if_else(Predictor == "clim_PC1", boot.bias*(-1), boot.bias),
+    boot.ci.low = if_else(
+      Predictor == "clim_PC1", boot.eff - boot.upr.diff, boot.ci.low
+    ),
+    boot.ci.up = if_else(
+      Predictor == "clim_PC1", boot.eff + boot.lwr.diff, boot.ci.up
+    ),
+    Estimate = if_else(Predictor == "clim_PC1", Estimate*(-1), Estimate),
+    boot.eff.mean = if_else(
+      Predictor == "clim_PC1", boot.eff.mean*(-1), boot.eff.mean
+    )
+  ) %>% select(-any_of(c("boot.upr.diff", "boot.lwr.diff")))
 
 # Flag significance based on various methods
 full_stats <- full_stats %>%
@@ -110,7 +95,24 @@ full_stats <- full_stats %>%
 # species effects table (semEff)
 species_stats <- readRDS(
   "infection-modeling/data/model-objects/SEM-statistics-species.rds"
-)
+) %>%
+  # reverse all clim_PC1 effects to be more intuitive (+ is warm and wet)
+  mutate(
+    boot.upr.diff = abs(boot.ci.up - boot.eff),
+    boot.lwr.diff = abs(boot.eff - boot.ci.low),
+    boot.eff = if_else(Predictor == "clim_PC1", boot.eff*(-1), boot.eff),
+    boot.bias = if_else(Predictor == "clim_PC1", boot.bias*(-1), boot.bias),
+    boot.ci.low = if_else(
+      Predictor == "clim_PC1", boot.eff - boot.upr.diff, boot.ci.low
+    ),
+    boot.ci.up = if_else(
+      Predictor == "clim_PC1", boot.eff + boot.lwr.diff, boot.ci.up
+    ),
+    Estimate = if_else(Predictor == "clim_PC1", Estimate*(-1), Estimate),
+    boot.eff.mean = if_else(
+      Predictor == "clim_PC1", boot.eff.mean*(-1), boot.eff.mean
+    )
+  ) %>% select(-any_of(c("boot.upr.diff", "boot.lwr.diff")))
 
 species_stats <- species_stats %>%
   mutate(
@@ -131,11 +133,11 @@ var_lookup <- tribble(
   ~ID, ~var, ~clean_name, ~label,
   ~group, ~grp_lab,
   1, "expr_PC2", "Tolerance", "Tolerance\nexpression",
-  "Expression", "Immune\nexpression",
+  "Expression", "Immunity",
   2, "Bb_infected", "Infection", "Infection\nstatus",
   "Infection", "Infection",
   3, "expr_PC1", "Resistance", "Resistance\nexpression",
-  "Expression", "Immune\nexpression",
+  "Expression", "Immunity",
   4, "ticks_attached", "Parasitism", "Parasitism\n(ticks)",
   "Parasitism", "Parasitism\n(ticks)",
   5,"capprop_shift", "Cap. time \U0394", "Capture\ntime \U0394",
@@ -143,11 +145,11 @@ var_lookup <- tribble(
   6, "cap_prop_night", "Cap. time", "Capture\ntime",
   "Behavior", "Behavior\n(timing)",
   7, "weight", "Weight", "Weight",
-  "Phenotype", "Phenotype\n(morphology)",
+  "Phenotype", "Individual\nstate",
   8, "sex_mature", "Reproductive", "Reproductive\nmaturity",
-  "Phenotype", "Phenotype\n(morphology)",
+  "Phenotype", "Individual\nstate",
   9, "sex_male", "Sex", "Sex",
-  "Phenotype", "Phenotype\n(morphology)",
+  "Phenotype", "Individual\nstate",
   10, "wthr_PC1", "Weather", "Weather\n(PC)",
   "Environment", "Environment",
   11, "clim_PC1", "Climate", "Climate\n(PC)",
@@ -231,17 +233,17 @@ var_lookup %>%
         linewidth = abs(boot.eff),
         col = boot.eff > 0
     ),
-    resect_head = 11.5, length_head = 2, stroke_color = "black",
+    resect_head = 10, length_head = 2, stroke_color = "black",
     arrow_head = triangle) +
   geom_arrow_segment(
     data = missing_paths, inherit.aes = FALSE,
     aes(x = pred.grp.x, y = pred.grp.y, xend = resp.grp.x, yend = resp.grp.y),
-    color = "grey80", resect_head = 13.5, length_head = 2,
-    linewidth = 1, linetype = "solid", arrow_head = triangle,
-    stroke_color = "black"
+    color = "grey65", resect_head = 12, length_head = NULL,
+    linewidth = 1, linetype = "longdash", arrow_head = triangle,
+    # stroke_color = NULL
   ) +
-  geom_point(size = 30, shape = 21, fill = "white", color = "black") +
-  geom_text(size = 3.3) +
+  geom_point(size = 25, shape = 21, fill = "white", color = "black") +
+  geom_text(size = 3) +
   theme_classic() +
   ggnetwork::theme_blank() +
   theme(
@@ -261,6 +263,160 @@ ggsave(
 
 warning("Fig. 2 may need to use labels instead of groups")
 
+## ---- Fig. 3 ----
+
+nudge_factor = 0.125
+point_stroke = 1.3
+point_size = 1.8
+eb_end_width = 0.2
+eb_stroke = 0.8
+
+full_stats %>%
+  mutate(Species = "both") %>%
+  filter(
+    Response %in% c("Bb_infected", "ticks_attached", "expr_PC1", "expr_PC2"),
+    effect_type %in% c("total")
+  ) %>%
+  bind_rows(
+    species_stats %>%
+      filter(
+        effect_type == "total",
+        Response %in% c("Bb_infected", "ticks_attached", "expr_PC1", "expr_PC2")
+      )
+  ) %>%
+  # complete(Species, Response, Predictor, effect_type) %>%
+  mutate(
+    Species = factor(Species, levels = c("PELE", "both", "PEMA"))
+  ) %>%
+  ggplot(
+    aes(
+      y = Predictor, x = boot.eff, xmin = boot.ci.low, xmax = boot.ci.up,
+      color = Species
+    )
+  ) +
+  facet_wrap(~Response, nrow = 1, scales = "free_x") +
+  geom_vline(xintercept = 0, color = "grey50", linetype = "longdash") +
+  geom_pointrange(
+    aes(
+      shape = interaction(Species, joint_sig), linetype = joint_sig
+      ), fill = "white", stroke = point_stroke, linewidth = eb_stroke,
+    size = 0.7, position = position_dodge(0.6)
+  ) +
+  theme_bw() +
+  scale_shape_manual(
+    breaks = c(
+      "PELE.TRUE", "PELE.FALSE",
+      "both.TRUE", "both.FALSE",
+      "PEMA.TRUE", "PEMA.FALSE"
+    ),
+    values = c(
+      17, 24,
+      16, 21,
+      15, 22
+    )
+  ) +
+  scale_color_manual(
+    breaks = c("PELE", "both", "PEMA"),
+    labels = c("PELE (spec.)", "both (full)", "PEMA (spec.)"),
+    values = c("orange", "black", "cornflowerblue")
+  ) +
+  scale_linetype_manual(
+    breaks = c(TRUE, FALSE), values = c("solid", "longdash")
+  ) +
+  # scale_x_continuous(breaks = c(-0.5, -0.25, 0, 0.25, 0.5)) +
+  scale_x_continuous(breaks = c(-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6)) +
+  labs(
+    x = "Total standardized effect (± 90% CI)",
+    shape = "Group", linetype = "Group", color = "Species (model)"
+  )
+
+
+# full_stats %>%
+#   mutate(Species = "both") %>%
+#   filter(
+#     Response %in% c("Bb_infected", "ticks_attached", "expr_PC1", "expr_PC2"),
+#     effect_type %in% c("direct", "total")
+#   ) %>%
+#   complete(Response, Predictor, effect_type) %>%
+#   pivot_wider(
+#     names_from = effect_type,
+#     values_from = c(boot.eff, boot.ci.low, boot.ci.up, boot.eff.mean, joint_sig)
+#   ) %>%
+#   mutate(
+#     boot.eff_direct = if_else(
+#       is.na(boot.eff_direct) & !is.na(boot.eff_total), 0, boot.eff_direct
+#     )
+#     # boot.eff_total = if_else(
+#     #   is.na(boot.eff_total) & !is.na(boot.eff_direct), 0, boot.eff_total
+#     # )
+#   ) %>%
+#   ggplot(aes(y = Predictor)) +
+#   facet_wrap(~Response, nrow = 1) +
+#   geom_vline(xintercept = 0, color = "grey50", linetype = "longdash") +
+#   ## Total effects
+#   geom_errorbar(
+#     aes(
+#       xmin = boot.ci.low_total, xmax = boot.ci.up_total, width = eb_end_width,
+#       color = "total", linetype = joint_sig_total
+#     ), linewidth = eb_stroke,
+#     position = position_nudge(y = nudge_factor)
+#   ) +
+#   geom_point(
+#     aes(
+#       x = boot.eff_total, shape = interaction(Species, joint_sig_total),
+#       color = "total"), fill = "white", stroke = point_stroke,
+#     size = point_size, position = position_nudge(y = nudge_factor)
+#   ) +
+#   ## Direct effects
+#   geom_errorbar(
+#     aes(
+#       xmin = boot.ci.low_direct, xmax = boot.ci.up_direct, width = eb_end_width,
+#       color = "direct", linetype = joint_sig_direct
+#     ), linewidth = eb_stroke,
+#     position = position_nudge(y = -nudge_factor)
+#   ) +
+#   geom_point(
+#     aes(
+#       x = boot.eff_direct, shape = interaction(Species, joint_sig_direct),
+#       color = "direct"), fill = "white", stroke = point_stroke,
+#     size = point_size, position = position_nudge(y = -nudge_factor)
+#   ) +
+#   ## aesthetics
+#   theme_bw() +
+#   labs(
+#     linetype = "Significance", shape = "Species",
+#     color = "Effect type"
+#   ) +
+#   scale_linetype_manual(
+#     values = c("solid", "longdash"), breaks = c(TRUE, FALSE),
+#     labels = c("P ≤ 0.1", "n.s.")
+#   ) +
+#   scale_shape_manual(
+#     values = c(19, 21), breaks = c("both.TRUE", "both.FALSE"),
+#     labels = rep("both", 2)
+#   )
+
+# full_stats %>%
+#   mutate(Species = "both") %>%
+#   filter(
+#     Response %in% c("Bb_infected", "ticks_attached", "expr_PC1", "expr_PC2"),
+#     effect_type %in% c("direct", "total")
+#   ) %>%
+#   complete(Response, Predictor, effect_type) %>%
+#   ggplot(
+#     aes(
+#       x = boot.eff, xmin = boot.ci.low, xmax = boot.ci.up, y = Predictor,
+#       shape = interaction(joint_sig, Species),
+#       fill = interaction(joint_sig, Species, effect_type),
+#       col = interaction(Species, effect_type),
+#       linetype = interaction(joint_sig, Species)
+#     )
+#   ) +
+#   facet_wrap(~Response) +
+#   geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+#   geom_point() +
+#   geom_errorbar(width = 1/3, , position = position_dodge(0.5)) +
+#   theme_bw()
 
 ## ---- Fig. X: Species infection and parasitism comparison ----
 
@@ -289,7 +445,7 @@ species_stats %>%
   ) +
   theme_bw() +
   theme(
-    legend.position = "inside", legend.position.inside = c(2/3, 0.9),
+    legend.position = "outside", legend.position.inside = c(2/3, 0.9),
     legend.justification = c(0.5, 1),
     legend.background = element_rect(color = 'black'),
     legend.key.width = unit(4, "lines"),
@@ -308,6 +464,9 @@ species_stats %>%
   scale_linetype_manual(values = c("dashed", "solid", "dashed", "solid")) +
   scale_x_continuous(breaks = seq(-.5, 0.5, by = 0.25)) +
   scale_y_discrete(minor_breaks = seq(1.5, 5.5, by = 1))
+
+
+
 
 ## ---- Table S1: SEM stats ----
 
