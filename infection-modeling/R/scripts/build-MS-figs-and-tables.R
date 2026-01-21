@@ -6,6 +6,7 @@
 ## ---- Packages and functions ----
 
 # Load needed functions
+library(ggimage)
 library(tidyverse)
 library(DiagrammeR)
 library(ggarrow)
@@ -132,11 +133,11 @@ species_stats <- species_stats %>%
 var_lookup <- tribble(
   ~ID, ~var, ~clean_name, ~label,
   ~group, ~grp_lab,
-  1, "expr_PC2", "Tolerance", "Tolerance\nexpression",
+  1, "expr_PC2", "Tolerance", "Tolerance\n(gene expr.)",
   "Expression", "Immunity",
   2, "Bb_infected", "Infection", "Infection\nstatus",
   "Infection", "Infection",
-  3, "expr_PC1", "Resistance", "Resistance\nexpression",
+  3, "expr_PC1", "Resistance", "Resistance\n(gene expr.)",
   "Expression", "Immunity",
   4, "ticks_attached", "Parasitism", "Parasitism\n(ticks)",
   "Parasitism", "Parasitism\n(ticks)",
@@ -150,9 +151,9 @@ var_lookup <- tribble(
   "Phenotype", "Individual\nstate",
   9, "sex_male", "Sex", "Sex",
   "Phenotype", "Individual\nstate",
-  10, "wthr_PC1", "Weather", "Weather\n(PC)",
+  10, "wthr_PC1", "Weather", "Weather\n(warm, wet)",
   "Environment", "Environment",
-  11, "clim_PC1", "Climate", "Climate\n(PC)",
+  11, "clim_PC1", "Climate", "Climate\n(warm, wet)",
   "Environment", "Environment",
 ) %>%
   mutate(across(-c(ID), ~factor(.x, levels = unique(.x))))
@@ -196,6 +197,46 @@ species_stats <- species_stats %>%
   left_join(resp_lookup, by = "Response") %>%
   right_join(pred_lookup, by = "Predictor")
 
+# Create a lookup table to the icon images.
+icon_lookup <- tribble(
+  ~name, ~path, ~group,
+  "clock", "clock icon.png", "Behavior",
+  "cell", "immune cell icon.png", "Expression",
+  "mouse", "mouse silhouette.png", "Phenotype",
+  "bacteria", "spirochete icon.png", "Infection",
+  "thermometer", "thermometer icon.png", "Environment",
+  "tick", "tick icon.png", "Parasitism"
+) %>%
+  mutate(path = file.path("infection-modeling/graphics/icons", path)) %>%
+  left_join(coords_tab, by = "group")
+
+# Create a color lookup table for the colors that Sarah provided
+color_lookup <- tribble(
+  ~hex, ~from,
+  "3c354a", "night_sky",
+  "47599d", "blue_sky",
+  "e36e46", "sunset",
+  "d04e46", "immune_nucleus",
+  "d96552", "immune_cell",
+  "f8ec32", "borellia",
+  "a9bb95", "immunity",
+  "a7c37a", "grass",
+  "535947", "night_ground",
+  "7a6452", "mouse_fur"
+) %>%
+  mutate(
+    hex = paste0("#", hex),
+    gradient_rank = row_number(),
+    discrete_rank = case_when(
+      from == "blue_sky" ~ 1,
+      from == "sunset" ~ 2,
+      from == "grass" ~ 3,
+      from == "mouse_fur" ~ 4,
+      from == "night_sky" ~ 5,
+      .default = NA
+    )
+  )
+
 ## ---- Fig 1: Extreme scenarios (conceptual) ----
 
 warning("Fig. 1 diagram not available")
@@ -224,6 +265,29 @@ missing_paths <- tibble(resp.group = "Infection", pred.group = "Expression") %>%
   right_join(pred_lookup) %>%
   mutate(across(c(pred.grp.x, pred.grp.y, resp.grp.x, resp.grp.y), ~.x*1.1))
 
+## nudge x and y of the icons
+icon_lookup <- icon_lookup %>%
+  mutate(
+    nudge_x = case_when(
+      name == "mouse" ~ 0.08,
+      name == "clock" ~ 0.22,
+      name == "cell" ~ 0.25,
+      name == "thermometer" ~ 0.25,
+      name == "bacteria" ~ 0.02,
+      name == "tick" ~ 0.18,
+      .default = 0
+    ),
+    nudge_y = case_when(
+      name == "mouse" ~ 0.22,
+      name == "clock" ~ -0.12,
+      name == "cell" ~ 0,
+      name == "thermometer" ~ -0.1,
+      name == "bacteria" ~ 0.26,
+      name == "tick" ~ -0.15,
+      .default = 0
+    )
+  )
+
 # build the conceptual diagram
 var_lookup %>%
   ggplot(aes(x = grp.x, y = grp.y, label = grp_lab)) +
@@ -238,11 +302,23 @@ var_lookup %>%
   geom_arrow_segment(
     data = missing_paths, inherit.aes = FALSE,
     aes(x = pred.grp.x, y = pred.grp.y, xend = resp.grp.x, yend = resp.grp.y),
-    color = "grey65", resect_head = 12, length_head = NULL,
+    color = with(color_lookup, hex[from == "mouse_fur"]),
+    resect_head = 12, length_head = NULL,
     linewidth = 1, linetype = "longdash", arrow_head = triangle,
     # stroke_color = NULL
   ) +
-  geom_point(size = 25, shape = 21, fill = "white", color = "black") +
+  geom_point(
+    size = 25, shape = 21,
+    # fill = "white",
+    fill = with(color_lookup, hex[from == "immunity"]) %>%
+      colorspace::lighten(0.25),
+    color = "black"
+  ) +
+  ## Add the icons
+  geom_image(
+    data = icon_lookup, inherit.aes = FALSE, size = 0.1,
+    aes(image = path, x = x + nudge_x, y = y + nudge_y),
+  ) +
   geom_text(size = 3) +
   theme_classic() +
   ggnetwork::theme_blank() +
@@ -254,7 +330,10 @@ var_lookup %>%
   scale_x_continuous(expand = c(0.1, 0)) +
   scale_y_continuous(expand = c(0.1, 0)) +
   scale_linewidth_continuous(range = c(1, 9)) +
-  scale_color_manual(values = c("indianred1", "cornflowerblue"))
+  scale_color_discrete(
+    palette = color_lookup %>% filter(discrete_rank <= 2) %>% pull(hex) %>%
+      rev() %>% colorspace::lighten(0.25)
+  )
 
 ggsave(
   filename = "infection-modeling/graphics/conceptual-SEM-full.png",
@@ -265,12 +344,99 @@ warning("Fig. 2 may need to use labels instead of groups")
 
 ## ---- Fig. 3 ----
 
+# TODO: need to make the indirect effects = 0, but only for variables where
+## there are total effects...
+
+# table for plotting just the total effects
+tot_stats <- full_stats %>%
+  complete(Response, Predictor, resp.label, pred.label) %>%
+  filter(
+    effect_type %in% c("total"),
+    Response %in% c("Bb_infected", "ticks_attached", "expr_PC1", "expr_PC2"),
+  ) %>%
+  mutate(
+    Species = "both",
+    resp.label = forcats::fct_rev(resp.label),
+    pred.label = forcats::fct_rev(pred.label)
+  ) %>%
+  filter(
+    !(
+      Response == "ticks_attached" &
+        Predictor %in% c("Bb_infected", "expr_PC1", "ticks_attached")
+    ),
+    !(Response == "expr_PC1" & Predictor %in% c("Bb_infected", "expr_PC1")),
+    !(Response == "Bb_infected" & Predictor %in% c("Bb_infected"))
+  )
+
+# table for plotting just the indirect effects
+ind_stats <- inner_join(
+  x = full_stats %>%
+    complete(Response, Predictor, resp.label, pred.label, effect_type) %>%
+    filter(effect_type == "indirect"),
+  y = tot_stats %>% select(Predictor, Response, resp.label, pred.label),
+  by = c("Predictor", "Response", "resp.label", "pred.label")
+) %>%
+  mutate(
+    Species = "both",
+    resp.label = forcats::fct_rev(resp.label),
+    pred.label = forcats::fct_rev(pred.label),
+    across(c(boot.eff, boot.eff.mean), ~replace_na(.x, 0)),
+    joint_sig = replace_na(FALSE)
+  )
+
+# plot parameters
 nudge_factor = 0.125
 point_stroke = 1.3
-point_size = 1.8
-eb_end_width = 0.2
-eb_stroke = 0.8
+point_size = 2
+eb_end_width = 0.22
+eb_stroke = 0.9
 
+# Build the plot
+tot_stats %>%
+  ggplot(
+    aes(
+      y = pred.label, x = boot.eff, xmin = boot.ci.low, xmax = boot.ci.up,
+      col = effect_type, shape = joint_sig, linetype = joint_sig
+    )
+  ) +
+  facet_wrap(~resp.label, nrow = 1, scales = "free_x") +
+  geom_vline(xintercept = 0, color = "grey50", linetype = "longdash") +
+  geom_errorbar(
+    width = eb_end_width, linewidth = eb_stroke,
+    position = position_nudge(y = nudge_factor)
+  ) +
+  geom_point(
+    position = position_nudge(y = nudge_factor),
+    fill = "white", stroke = point_stroke, size = point_size,
+  ) +
+  # now add the indirect effects
+  geom_errorbar(
+    data = ind_stats, width = eb_end_width, linewidth = eb_stroke,
+    position = position_nudge(y = -nudge_factor)
+  ) +
+  geom_point(
+    data = ind_stats, fill = "white", stroke = point_stroke, size = point_size,
+    position = position_nudge(y = -nudge_factor)
+  ) +
+  theme_bw() +
+  labs(
+    color = "Effect type",
+    linetype = NULL, shape = NULL
+  ) +
+  scale_color_manual(values = c("cornflowerblue", "orange")) +
+  scale_linetype_manual(
+    values = c("solid", "longdash"), breaks = c(TRUE, FALSE),
+    labels = c("P ≤ 0.1", "n.s.")
+  ) +
+  scale_shape_manual(
+    values = c(19, 21), breaks = c("TRUE", "FALSE"),
+    labels = c("P ≤ 0.1", "n.s.")
+  ) +
+  scale_x_continuous(breaks = c(-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6))
+
+
+
+# Alternative: Total effects (full model vs species)
 full_stats %>%
   mutate(Species = "both") %>%
   filter(
@@ -299,7 +465,7 @@ full_stats %>%
   geom_pointrange(
     aes(
       shape = interaction(Species, joint_sig), linetype = joint_sig
-      ), fill = "white", stroke = point_stroke, linewidth = eb_stroke,
+    ), fill = "white", stroke = point_stroke, linewidth = eb_stroke,
     size = 0.7, position = position_dodge(0.6)
   ) +
   theme_bw() +
@@ -329,72 +495,6 @@ full_stats %>%
     x = "Total standardized effect (± 90% CI)",
     shape = "Group", linetype = "Group", color = "Species (model)"
   )
-
-
-# full_stats %>%
-#   mutate(Species = "both") %>%
-#   filter(
-#     Response %in% c("Bb_infected", "ticks_attached", "expr_PC1", "expr_PC2"),
-#     effect_type %in% c("direct", "total")
-#   ) %>%
-#   complete(Response, Predictor, effect_type) %>%
-#   pivot_wider(
-#     names_from = effect_type,
-#     values_from = c(boot.eff, boot.ci.low, boot.ci.up, boot.eff.mean, joint_sig)
-#   ) %>%
-#   mutate(
-#     boot.eff_direct = if_else(
-#       is.na(boot.eff_direct) & !is.na(boot.eff_total), 0, boot.eff_direct
-#     )
-#     # boot.eff_total = if_else(
-#     #   is.na(boot.eff_total) & !is.na(boot.eff_direct), 0, boot.eff_total
-#     # )
-#   ) %>%
-#   ggplot(aes(y = Predictor)) +
-#   facet_wrap(~Response, nrow = 1) +
-#   geom_vline(xintercept = 0, color = "grey50", linetype = "longdash") +
-#   ## Total effects
-#   geom_errorbar(
-#     aes(
-#       xmin = boot.ci.low_total, xmax = boot.ci.up_total, width = eb_end_width,
-#       color = "total", linetype = joint_sig_total
-#     ), linewidth = eb_stroke,
-#     position = position_nudge(y = nudge_factor)
-#   ) +
-#   geom_point(
-#     aes(
-#       x = boot.eff_total, shape = interaction(Species, joint_sig_total),
-#       color = "total"), fill = "white", stroke = point_stroke,
-#     size = point_size, position = position_nudge(y = nudge_factor)
-#   ) +
-#   ## Direct effects
-#   geom_errorbar(
-#     aes(
-#       xmin = boot.ci.low_direct, xmax = boot.ci.up_direct, width = eb_end_width,
-#       color = "direct", linetype = joint_sig_direct
-#     ), linewidth = eb_stroke,
-#     position = position_nudge(y = -nudge_factor)
-#   ) +
-#   geom_point(
-#     aes(
-#       x = boot.eff_direct, shape = interaction(Species, joint_sig_direct),
-#       color = "direct"), fill = "white", stroke = point_stroke,
-#     size = point_size, position = position_nudge(y = -nudge_factor)
-#   ) +
-#   ## aesthetics
-#   theme_bw() +
-#   labs(
-#     linetype = "Significance", shape = "Species",
-#     color = "Effect type"
-#   ) +
-#   scale_linetype_manual(
-#     values = c("solid", "longdash"), breaks = c(TRUE, FALSE),
-#     labels = c("P ≤ 0.1", "n.s.")
-#   ) +
-#   scale_shape_manual(
-#     values = c(19, 21), breaks = c("both.TRUE", "both.FALSE"),
-#     labels = rep("both", 2)
-#   )
 
 # full_stats %>%
 #   mutate(Species = "both") %>%
@@ -776,14 +876,14 @@ names(trait_mods) <- traits
 
 # Get estimated marginal means for each species x variable
 trait_EMMs <- lapply(traits,
-       function(x) {
-         mod = trait_mods[[x]]
-         emm <- emmeans::emmeans(mod, ~species)
-         prs <- pairs(emm)
-         p = prs %>% data.frame() %>% pull(p.value)
-         cld <- emmeans:::cld.emmGrid(emm)
-         cld %>% data.frame() %>% mutate(P = p, response = x)
-       }
+                     function(x) {
+                       mod = trait_mods[[x]]
+                       emm <- emmeans::emmeans(mod, ~species)
+                       prs <- pairs(emm)
+                       p = prs %>% data.frame() %>% pull(p.value)
+                       cld <- emmeans:::cld.emmGrid(emm)
+                       cld %>% data.frame() %>% mutate(P = p, response = x)
+                     }
 ) %>% bind_rows() %>%
   mutate(
     CI_lwr = if_else(!is.na(asymp.LCL), asymp.LCL, lower.CL),
@@ -813,12 +913,12 @@ sp_long_traits %>%
     aes(group = species, y = "Avg."), shape = 17,
     show.legend = FALSE
   )
-  # geom_pointrange(
-  #   data = trait_EMMs %>% rename(variable = response),
-  #   aes(y = "Avg.", x = emmean, xmin = emmean - SE, xmax = emmean + SE,
-  #       color = species),
-  #   show.legend = FALSE
-  # )
+# geom_pointrange(
+#   data = trait_EMMs %>% rename(variable = response),
+#   aes(y = "Avg.", x = emmean, xmin = emmean - SE, xmax = emmean + SE,
+#       color = species),
+#   show.legend = FALSE
+# )
 
 ## ---- Lat Long comparison ----
 
@@ -839,9 +939,9 @@ eff_props <- full_stats %>%
   )
 
 (group_eff_props <- eff_props %>%
-  group_by(effect_type, groupy) %>%
-  summarize(effect_prop = sum(eff_prop, na.rm = TRUE)) %>%
-  pivot_wider(names_from = effect_type, values_from = effect_prop))
+    group_by(effect_type, groupy) %>%
+    summarize(effect_prop = sum(eff_prop, na.rm = TRUE)) %>%
+    pivot_wider(names_from = effect_type, values_from = effect_prop))
 
 group_eff_props %>%
   mutate(direct = direct*0.13, total = total*0.13)
@@ -853,23 +953,23 @@ mam.vars <- mammals$variables_10072
 mammals <- mammals$mam_pertrapnight
 
 (div.tab <-
-  mammals %>%
-  filter(!is.na(taxonID), siteID %in% unique(Peros$siteID)) %>%
-  select(plotID, siteID, trapCoordinate, collectDate, taxonID, tagID) %>%
-  mutate(
-    collectDate = lubridate::ymd(collectDate),
-    year = factor(lubridate::year(collectDate))
-  ) %>%
-  filter(year %in% c(2023, 2024)) %>%
-  group_by(siteID, year) %>%
-  mutate(
-    nCaps = n(), richness = length(unique(taxonID))
-  ) %>%
-  group_by(taxonID, .add = TRUE) %>%
-  mutate(
-    Species_n = n(), Species_prop = Species_n/nCaps
-  ) %>%
-  ungroup()
+    mammals %>%
+    filter(!is.na(taxonID), siteID %in% unique(Peros$siteID)) %>%
+    select(plotID, siteID, trapCoordinate, collectDate, taxonID, tagID) %>%
+    mutate(
+      collectDate = lubridate::ymd(collectDate),
+      year = factor(lubridate::year(collectDate))
+    ) %>%
+    filter(year %in% c(2023, 2024)) %>%
+    group_by(siteID, year) %>%
+    mutate(
+      nCaps = n(), richness = length(unique(taxonID))
+    ) %>%
+    group_by(taxonID, .add = TRUE) %>%
+    mutate(
+      Species_n = n(), Species_prop = Species_n/nCaps
+    ) %>%
+    ungroup()
 )
 
 
@@ -891,14 +991,14 @@ car::Anova(dil.fm) # no significant dilution effects.
 
 cor(dil.tab %>% select(richness, mean_inf))
 
-  dil.tab %>%
-    ggplot(aes(x = richness, y = mean_inf, col = siteID, shape = year)) +
-    geom_point(size = 3) +
-    geom_smooth(
-      method = "lm", linetype = "dashed", fill = "grey80", aes(group = 1)
-    ) +
-    theme_bw() +
-    labs(x = "Species richness", y = "Infection rate")
+dil.tab %>%
+  ggplot(aes(x = richness, y = mean_inf, col = siteID, shape = year)) +
+  geom_point(size = 3) +
+  geom_smooth(
+    method = "lm", linetype = "dashed", fill = "grey80", aes(group = 1)
+  ) +
+  theme_bw() +
+  labs(x = "Species richness", y = "Infection rate")
 ## ---- OLDER ----
 
 # group_lookup <- var_lookup %>%
