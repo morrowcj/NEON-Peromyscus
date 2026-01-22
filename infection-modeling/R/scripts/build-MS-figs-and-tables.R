@@ -7,6 +7,7 @@
 
 # Load needed functions
 library(ggimage)
+library(ggtext)
 library(tidyverse)
 library(DiagrammeR)
 library(ggarrow)
@@ -141,13 +142,13 @@ var_lookup <- tribble(
   "Expression", "Immunity",
   4, "ticks_attached", "Parasitism", "Parasitism\n(ticks)",
   "Parasitism", "Parasitism\n(ticks)",
-  5,"capprop_shift", "Cap. time \U0394", "Capture\ntime \U0394",
+  5, "capprop_shift", "Cap. time \U0394", "Capture\ntime \U0394",
   "Behavior", "Behavior\n(timing)",
   6, "cap_prop_night", "Cap. time", "Capture\ntime",
   "Behavior", "Behavior\n(timing)",
   7, "weight", "Weight", "Weight",
   "Phenotype", "Individual\nstate",
-  8, "sex_mature", "Reproductive", "Reproductive\nmaturity",
+  8, "sex_mature", "Reproductive", "Repro.\nstatus",
   "Phenotype", "Individual\nstate",
   9, "sex_male", "Sex", "Sex",
   "Phenotype", "Individual\nstate",
@@ -200,12 +201,12 @@ species_stats <- species_stats %>%
 # Create a lookup table to the icon images.
 icon_lookup <- tribble(
   ~name, ~path, ~group,
-  "clock", "clock icon.png", "Behavior",
-  "cell", "immune cell icon.png", "Expression",
-  "mouse", "mouse silhouette.png", "Phenotype",
-  "bacteria", "spirochete icon.png", "Infection",
-  "thermometer", "thermometer icon.png", "Environment",
-  "tick", "tick icon.png", "Parasitism"
+  "clock", "clock.png", "Behavior",
+  "cell", "immune-cell.png", "Expression",
+  "mouse", "mouse-silhouette.png", "Phenotype",
+  "bacteria", "spirochete.png", "Infection",
+  "thermometer", "thermometer.png", "Environment",
+  "tick", "tick.png", "Parasitism"
 ) %>%
   mutate(path = file.path("infection-modeling/graphics/icons", path)) %>%
   left_join(coords_tab, by = "group")
@@ -236,6 +237,31 @@ color_lookup <- tribble(
       .default = NA
     )
   )
+
+# add in icons to the axis labels
+full_stats <- full_stats %>%
+  # add icon to y-label
+  left_join(
+    icon_lookup %>% select(pred_icon_path = path, pred.group = group),
+    by = "pred.group"
+  ) %>%
+  left_join(
+    icon_lookup %>% select(resp_icon_path = path, resp.group = group),
+    by = "resp.group"
+  ) %>%
+  mutate(
+    # resplab_md = gsub("\\n", "<br>", resp.label),
+    # predlab_md = gsub("\\n", "<br>", pred.label),
+    resp_icon_label = glue::glue(
+      "<img src='{resp_icon_path}' height=12 />",
+      " {resp.label}"
+    ) %>% fct_reorder(as.numeric(resp.label)),
+    pred_icon_label = glue::glue(
+      "<img src='{pred_icon_path}' height=12 style='transform: translate(0px,-120px);' />",
+      " {pred.label}"
+    ) %>% fct_reorder(as.numeric(pred.label)),
+  )
+
 
 ## ---- Fig 1: Extreme scenarios (conceptual) ----
 
@@ -349,15 +375,10 @@ warning("Fig. 2 may need to use labels instead of groups")
 
 # table for plotting just the total effects
 tot_stats <- full_stats %>%
-  complete(Response, Predictor, resp.label, pred.label) %>%
+  complete(Response, Predictor, resp.label, pred.label, pred_icon_path) %>%
   filter(
     effect_type %in% c("total"),
     Response %in% c("Bb_infected", "ticks_attached", "expr_PC1", "expr_PC2"),
-  ) %>%
-  mutate(
-    Species = "both",
-    resp.label = forcats::fct_rev(resp.label),
-    pred.label = forcats::fct_rev(pred.label)
   ) %>%
   filter(
     !(
@@ -368,62 +389,113 @@ tot_stats <- full_stats %>%
     !(Response == "Bb_infected" & Predictor %in% c("Bb_infected"))
   )
 
+
 # table for plotting just the indirect effects
 ind_stats <- inner_join(
   x = full_stats %>%
-    complete(Response, Predictor, resp.label, pred.label, effect_type) %>%
+    complete(
+      Response, Predictor, resp.label, pred.label, effect_type,
+      pred_icon_label, resp_icon_label
+    ) %>%
     filter(effect_type == "indirect"),
-  y = tot_stats %>% select(Predictor, Response, resp.label, pred.label),
-  by = c("Predictor", "Response", "resp.label", "pred.label")
+  y = tot_stats %>%
+    select(
+      Predictor, Response, resp.label, pred.label, pred_icon_label,
+      resp_icon_label
+    ),
+  by = c(
+    "Predictor", "Response", "resp.label", "pred.label",
+    "pred_icon_label", "resp_icon_label")
 ) %>%
   mutate(
-    Species = "both",
-    resp.label = forcats::fct_rev(resp.label),
-    pred.label = forcats::fct_rev(pred.label),
     across(c(boot.eff, boot.eff.mean), ~replace_na(.x, 0)),
-    joint_sig = replace_na(FALSE)
+    joint_sig = replace_na(joint_sig, FALSE),
+    ci.sig = replace_na(ci.sig, FALSE)
   )
+
 
 # plot parameters
 nudge_factor = 0.125
-point_stroke = 1.3
-point_size = 2
+point_stroke = 1
+point_size = 1
 eb_end_width = 0.22
-eb_stroke = 0.9
+eb_stroke = 0.7
+# bg_color = with(color_lookup, hex[from == "immunity"]) %>%
+#   colorspace::lighten(0.25)
+bg_color = "white"
 
 # Build the plot
-tot_stats %>%
-  ggplot(
-    aes(
-      y = pred.label, x = boot.eff, xmin = boot.ci.low, xmax = boot.ci.up,
-      col = effect_type, shape = joint_sig, linetype = joint_sig
-    )
+tot_stats %>% ggplot(
+  aes(
+    # y = pred.label,
+    y = pred_icon_label %>% forcats::fct_rev(),
+    x = boot.eff, xmin = boot.ci.low, xmax = boot.ci.up,
+    col = effect_type,
+    # shape = ci.sig, linetype = ci.sig
+    shape = joint_sig, linetype = joint_sig
+  )
+) +
+  facet_wrap(
+    ~forcats::fct_reorder(resp_icon_label, as.numeric(Response)) %>%
+      forcats::fct_rev(),
+    nrow = 1, scales = "free_x",
+    labeller = as_labeller(function(s){gsub("\\n", "<br>",s)})
   ) +
-  facet_wrap(~resp.label, nrow = 1, scales = "free_x") +
-  geom_vline(xintercept = 0, color = "grey50", linetype = "longdash") +
+  geom_vline(
+    xintercept = 0, linetype = "longdash",
+    color = with(color_lookup, hex[from == "mouse_fur"])
+  ) +
+  # add the indirect effects
+  geom_errorbar(
+    data = ind_stats, width = eb_end_width, linewidth = eb_stroke,
+    position = position_nudge(y = -nudge_factor)
+  ) +
+  geom_point(
+    data = ind_stats,
+    fill = bg_color,
+    stroke = point_stroke,
+    size = point_size,
+    position = position_nudge(y = -nudge_factor)
+  ) +
+  # add total effects
   geom_errorbar(
     width = eb_end_width, linewidth = eb_stroke,
     position = position_nudge(y = nudge_factor)
   ) +
   geom_point(
     position = position_nudge(y = nudge_factor),
-    fill = "white", stroke = point_stroke, size = point_size,
-  ) +
-  # now add the indirect effects
-  geom_errorbar(
-    data = ind_stats, width = eb_end_width, linewidth = eb_stroke,
-    position = position_nudge(y = -nudge_factor)
-  ) +
-  geom_point(
-    data = ind_stats, fill = "white", stroke = point_stroke, size = point_size,
-    position = position_nudge(y = -nudge_factor)
+    fill = bg_color, stroke = point_stroke, size = point_size,
   ) +
   theme_bw() +
-  labs(
-    color = "Effect type",
-    linetype = NULL, shape = NULL
+  theme(
+    legend.position = "bottom",
+    legend.margin = margin(t = -10, b = 0),
+    legend.spacing.x = unit(2, "lines"),
+    legend.key.width = unit(1.5, "lines"),
+    legend.key.spacing = unit(0.25, "lines"),
+    strip.background = element_blank(),
+    text = element_text(color = "black"),
+    axis.text.y = ggtext::element_markdown(
+      hjust = 1, vjust = 0.3, color="black"
+    ),
+    panel.background = element_rect(fill = bg_color),
+    legend.key = element_rect(fill = NA),
+    strip.text = ggtext::element_markdown(hjust = 1, color = "black"),
+    axis.title.y = element_text(margin = margin(r = -0.5, unit = "lines")),
+    panel.spacing.x = unit(0.2, "lines")
   ) +
-  scale_color_manual(values = c("cornflowerblue", "orange")) +
+  labs(
+    x = "Standardized effect (± 90% CI)",
+    y = "Predictor",
+    # color = "Effect type",
+    linetype = NULL, shape = NULL, color = NULL
+  ) +
+  scale_color_manual(
+    values = with(arrange(color_lookup, discrete_rank), hex[1:2]) %>%
+      colorspace::lighten(0.25) %>% rev(),
+    breaks = c("total", "indirect"),
+    labels = c("total eff.", "indirect eff.")
+  ) +
   scale_linetype_manual(
     values = c("solid", "longdash"), breaks = c(TRUE, FALSE),
     labels = c("P ≤ 0.1", "n.s.")
@@ -432,69 +504,75 @@ tot_stats %>%
     values = c(19, 21), breaks = c("TRUE", "FALSE"),
     labels = c("P ≤ 0.1", "n.s.")
   ) +
-  scale_x_continuous(breaks = c(-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6))
-
-
-
-# Alternative: Total effects (full model vs species)
-full_stats %>%
-  mutate(Species = "both") %>%
-  filter(
-    Response %in% c("Bb_infected", "ticks_attached", "expr_PC1", "expr_PC2"),
-    effect_type %in% c("total")
-  ) %>%
-  bind_rows(
-    species_stats %>%
-      filter(
-        effect_type == "total",
-        Response %in% c("Bb_infected", "ticks_attached", "expr_PC1", "expr_PC2")
-      )
-  ) %>%
-  # complete(Species, Response, Predictor, effect_type) %>%
-  mutate(
-    Species = factor(Species, levels = c("PELE", "both", "PEMA"))
-  ) %>%
-  ggplot(
-    aes(
-      y = Predictor, x = boot.eff, xmin = boot.ci.low, xmax = boot.ci.up,
-      color = Species
-    )
-  ) +
-  facet_wrap(~Response, nrow = 1, scales = "free_x") +
-  geom_vline(xintercept = 0, color = "grey50", linetype = "longdash") +
-  geom_pointrange(
-    aes(
-      shape = interaction(Species, joint_sig), linetype = joint_sig
-    ), fill = "white", stroke = point_stroke, linewidth = eb_stroke,
-    size = 0.7, position = position_dodge(0.6)
-  ) +
-  theme_bw() +
-  scale_shape_manual(
-    breaks = c(
-      "PELE.TRUE", "PELE.FALSE",
-      "both.TRUE", "both.FALSE",
-      "PEMA.TRUE", "PEMA.FALSE"
-    ),
-    values = c(
-      17, 24,
-      16, 21,
-      15, 22
-    )
-  ) +
-  scale_color_manual(
-    breaks = c("PELE", "both", "PEMA"),
-    labels = c("PELE (spec.)", "both (full)", "PEMA (spec.)"),
-    values = c("orange", "black", "cornflowerblue")
-  ) +
-  scale_linetype_manual(
-    breaks = c(TRUE, FALSE), values = c("solid", "longdash")
-  ) +
-  # scale_x_continuous(breaks = c(-0.5, -0.25, 0, 0.25, 0.5)) +
-  scale_x_continuous(breaks = c(-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6)) +
-  labs(
-    x = "Total standardized effect (± 90% CI)",
-    shape = "Group", linetype = "Group", color = "Species (model)"
+  scale_x_continuous(breaks = c(-0.4, -0.2, 0, 0.2, 0.4)) +
+  guides(
+    color = guide_legend(order = 1)
   )
+
+ggsave(
+  filename =  "infection-modeling/graphics/SEM-effect_coef-plot.png",
+  width = 6, height = 6*0.5, dpi = 300
+)
+
+# # Alternative: Total effects (full model vs species)
+# full_stats %>%
+#   mutate(Species = "both") %>%
+#   filter(
+#     Response %in% c("Bb_infected", "ticks_attached", "expr_PC1", "expr_PC2"),
+#     effect_type %in% c("total")
+#   ) %>%
+#   bind_rows(
+#     species_stats %>%
+#       filter(
+#         effect_type == "total",
+#         Response %in% c("Bb_infected", "ticks_attached", "expr_PC1", "expr_PC2")
+#       )
+#   ) %>%
+#   # complete(Species, Response, Predictor, effect_type) %>%
+#   mutate(
+#     Species = factor(Species, levels = c("PELE", "both", "PEMA"))
+#   ) %>%
+#   ggplot(
+#     aes(
+#       y = Predictor, x = boot.eff, xmin = boot.ci.low, xmax = boot.ci.up,
+#       color = Species
+#     )
+#   ) +
+#   facet_wrap(~Response, nrow = 1, scales = "free_x") +
+#   geom_vline(xintercept = 0, color = "grey50", linetype = "longdash") +
+#   geom_pointrange(
+#     aes(
+#       shape = interaction(Species, joint_sig), linetype = joint_sig
+#     ), fill = "white", stroke = point_stroke, linewidth = eb_stroke,
+#     size = 0.7, position = position_dodge(0.6)
+#   ) +
+#   theme_bw() +
+#   scale_shape_manual(
+#     breaks = c(
+#       "PELE.TRUE", "PELE.FALSE",
+#       "both.TRUE", "both.FALSE",
+#       "PEMA.TRUE", "PEMA.FALSE"
+#     ),
+#     values = c(
+#       17, 24,
+#       16, 21,
+#       15, 22
+#     )
+#   ) +
+#   scale_color_manual(
+#     breaks = c("PELE", "both", "PEMA"),
+#     labels = c("PELE (spec.)", "both (full)", "PEMA (spec.)"),
+#     values = c("orange", "black", "cornflowerblue")
+#   ) +
+#   scale_linetype_manual(
+#     breaks = c(TRUE, FALSE), values = c("solid", "longdash")
+#   ) +
+#   # scale_x_continuous(breaks = c(-0.5, -0.25, 0, 0.25, 0.5)) +
+#   scale_x_continuous(breaks = c(-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6)) +
+#   labs(
+#     x = "Total standardized effect (± 90% CI)",
+#     shape = "Group", linetype = "Group", color = "Species (model)"
+#   )
 
 # full_stats %>%
 #   mutate(Species = "both") %>%
