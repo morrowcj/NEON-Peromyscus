@@ -1,3 +1,12 @@
+## This file bootstraps an SEM from the component models build in the
+## previous file "07-SEMs-continued.R" to produce the final statistics
+## used by the manuscript.
+
+## It is essential to re-run the code by setting force_run=TRUE if/when those
+## models change.
+
+## Re-running all the bootstrapping will likely take at least a day to finish.
+
 ## ---- Load Packages ----
 library(optparse)
 library(tidyverse)
@@ -7,6 +16,17 @@ library(piecewiseSEM)
 library(semEff)
 
 ## ---- Parse arguments ----
+
+## This section is used to setup the ability to run this script from a
+## terminal (without Rstudio), to save a bit of resources and speed up
+## the process. By default, the script runs with "force" set to FALSE to
+## prevent re-running slow blocks of code. including the -f flag switches
+## force to TRUE. Alternatively, you can simply set "force_run" to TRUE/FALSE
+## manually.
+
+## terminal usage: Rscript 08-bootstrap_SEMS.R (-f|--force)
+
+# Construct the argument parser, with one optional flag
 parser <- OptionParser()
 parser <- add_option(
   parser, c("-f", "--force"),
@@ -18,6 +38,7 @@ parser <- add_option(
 opt <- parse_args(parser)
 
 ## ---- Parameters ----
+# pass the value of the force argument to the variable
 force_run = opt$force
 
 ## ---- Load objects ----
@@ -40,6 +61,7 @@ simple_model_objects <- readRDS(
 
 ## ---- Bootstraps ----
 
+# get the component models from the SEM objects
 modlist <- simple_model_objects$component_mods
 
 # path to save the unscaled model fit
@@ -48,13 +70,17 @@ unscaled_psem_file <- file.path(
   "unscaled-peros_SEM-objects.rds"
 )
 
-# refit the model to the completely unscaled data
+# refit the model to the completely unscaled data (or load just load it)
 if (force_run || !file.exists(unscaled_psem_file)) {
 
-  # refit with unscaled data
+  # # refit with un-scaled data
   unscaled_modlist <- lapply(
     modlist, function(x) update(x, data = model_data_list$mod_data)
   )
+  # # Alternatively:
+  # unscaled_modlist <- readRDS(
+  #   "infection-modeling/data/model-objects/simplified-SEM-objects.rds"
+  # )
 
   # fit the psem
   unscaled_psem.spec <- as.psem(unscaled_modlist)
@@ -81,7 +107,7 @@ if (force_run || !file.exists(unscaled_psem_file)) {
   unscaled_psem.spec <- out_list$sem_mod$spec
   unscaled_psem.fit <- out_list$sem_mod$fit
 
-  # remove the list copy
+  # remove the old copy to free up memory
   rm(out_list)
 }
 

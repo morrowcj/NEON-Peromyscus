@@ -1,0 +1,21 @@
+John,
+
+If, for whatever reason, I'm unavailable and you need to update the SEMs of
+figures, follow these instructions:
+
+1) change the models: infection-modeling/R/scripts/07-SEMs-continued.R
+is the file that constructs all of the component models that make up the SEM
+and build the pre-bootstrapped SEM. So change these models as needed.
+
+2) bootstrap the updated models: run
+infection-modeling/R/scripts/08-bootstrap_SEM.R **after** updating force_run to
+TRUE (line 42). This will perform the bootstrapping of the SEM and collect the
+results. This process is compute-intensive and will take a long time.
+
+3) update figures and tables: re-run
+infection-modeling/R/scripts/build-MS-figs-and-tables.R with the updated
+output.
+
+That should be it! Fingers crossed that nothing broke!
+
+-C

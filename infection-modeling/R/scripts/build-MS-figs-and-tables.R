@@ -991,12 +991,6 @@ sp_long_traits %>%
     aes(group = species, y = "Avg."), shape = 17,
     show.legend = FALSE
   )
-# geom_pointrange(
-#   data = trait_EMMs %>% rename(variable = response),
-#   aes(y = "Avg.", x = emmean, xmin = emmean - SE, xmax = emmean + SE,
-#       color = species),
-#   show.legend = FALSE
-# )
 
 ## ---- Lat Long comparison ----
 

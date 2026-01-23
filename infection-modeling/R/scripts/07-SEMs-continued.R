@@ -1,6 +1,6 @@
 ## The models fit in this document are the ones used by the model.
-## They differ from those found in 06-fit-SEMs.R
-
+## They differ from those found in 06-fit-SEMs.R by considering fewer
+## unnecessary interaction terms, which made the models difficult to fit.
 
 ## ---- Load packages ----
 
@@ -50,7 +50,12 @@ saveRDS(
 
 # ---- Simplified SEM (no interactions) ----
 
-## Weight
+## These models are fitted here with the "scaled" data, which only affects
+## the interpretation of weight. However, we will also save an "unscaled"
+## version of each model at the end of this section, which are used
+## in the next file "08-bootstrap_SEMs.R"
+
+## Weight model
 simple_weight <- lmer(
   weight ~ sex_male + sex_mature +
     wthr_PC1 +
@@ -59,7 +64,7 @@ simple_weight <- lmer(
   data = scaled_dat
 )
 
-## Maturity
+## Reproductivity model
 simple_mature <- glmer(
   sex_mature ~ sex_male +
     wthr_PC1 + clim_PC1 +
@@ -68,7 +73,7 @@ simple_mature <- glmer(
   data = scaled_dat, family = "binomial"
 )
 
-## Capture time
+## Capture time model
 simple_captime <- lmer(
   cap_prop_night ~ sex_male + sex_mature + weight +
     wthr_PC1 +
@@ -76,21 +81,21 @@ simple_captime <- lmer(
   data = scaled_dat
 )
 
-## Capture time shift
+## Capture time shift model
 simple_shift <- lmer(
   capprop_shift ~ sex_male + sex_mature + weight + cap_prop_night +
     (1|siteID) + (1|year) + (1|species),
   data = scaled_dat
 )
 
-## Tolerance
+## Tolerance model
 simple_tol <- lmer(
   expr_PC2 ~ sex_mature + Bb_infected + ticks_attached +
     (1|siteID) + (1|year) + (1|species),
   data = scaled_dat
 )
 
-## Burden (not used)
+## Burden (not used) model
 simple_burden <- lmer(
   log_burden ~ sex_male + sex_mature + weight +
     ticks_attached +
@@ -101,7 +106,7 @@ simple_burden <- lmer(
   data = scaled_dat
 )
 
-## Infection
+## Infection model
 simple_inf <- glmer(
   Bb_infected ~ sex_male + sex_mature + weight + ticks_attached +
     capprop_shift +
@@ -111,7 +116,7 @@ simple_inf <- glmer(
   data = scaled_dat, family = "binomial"
 )
 
-## Resistance
+## Resistance model
 simple_res <- lmer(
   expr_PC1 ~ sex_male + sex_mature + weight + ticks_attached +
     wthr_PC1 +
@@ -119,7 +124,7 @@ simple_res <- lmer(
   data = scaled_dat
 )
 
-## Ticks
+## Ticks model
 simple_tick <- glmer(
   ticks_attached ~ sex_male + sex_mature + weight +
     capprop_shift +
@@ -128,13 +133,28 @@ simple_tick <- glmer(
   data = scaled_dat, family = "binomial"
 )
 
-# ---- Full simple SEM ----
-
+## Collect the models that we will use for the SEM (i.e., exclude burden)
 simple_modlist = list(
   tolerance = simple_tol, infection = simple_inf, resistance = simple_res,
   ticks = simple_tick, captime_shift = simple_shift, captime = simple_captime,
   weight = simple_weight, maturity = simple_mature
 )
+
+## refit all these models with the un-scaled data to use later (next file)
+### Note that all of the above code will also work with unscaled data by
+### replacing "simple_modlist" with "unscaled_modlist" - though it is not
+### recommended to save the output of those results without updating the output
+### file names.
+unscaled_modlist <- lapply(
+  simple_modlist, function(x) update(x, data = mod_dat)
+)
+## save the un-scaled models (scaled models are saved in next section)
+saveRDS(
+  object = unscaled_modlist,
+  file = "infection-modeling/data/model-objects/simplified-SEM-objects.rds"
+)
+
+# ---- Full SEM ----
 
 ## Full model
 simple_sem <- as.psem(
@@ -142,7 +162,7 @@ simple_sem <- as.psem(
 )
 simple_out <- summary(simple_sem)
 
-## save the results to a file
+## save all the results to a file
 simple_model_objects <- list(
   component_mods = simple_modlist,
   sem_mod = list(spec = simple_sem, fit = simple_out)
@@ -165,12 +185,14 @@ simple_out$dTable %>% filter(P.Value <= 0.5)
 
 ## Calculate cumulative effects
 
+## load my custom functions for plotting psems
 source("infection-modeling/R/functions/diagram_psem.R")
 
+## use the functions to build node and edge dfs
 frame_list <- build_nodes_edges(simple_out$coefficients)
 base_plot <- build_psem_plot(frame_list)
 
-# build the table to fill
+# build output the table to fill
 cumulative_tab <- expand_grid(
   To = unique(frame_list$edges$To),
   From = unique(frame_list$edges$From)
@@ -224,6 +246,7 @@ cum_eff_tab <- cumulative_tab %>%
     To, From, P.Value,  direct, new_direct, indirect, total
   )
 
+# save
 saveRDS(
   cum_eff_tab,
   file = file.path(
