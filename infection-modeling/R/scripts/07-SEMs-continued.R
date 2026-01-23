@@ -1,3 +1,7 @@
+## The models fit in this document are the ones used by the model.
+## They differ from those found in 06-fit-SEMs.R
+
+
 ## ---- Load packages ----
 
 library(tidyverse)
@@ -20,12 +24,13 @@ Peros <- readRDS("infection-modeling/data/peromyscus-model-data.rds") %>%
     species = updated_taxa
   ) %>% filter(!is.na(species))
 
-# get only the complete cases for variables to use
+# rename the data and convert some variables to factors
 mod_dat <- Peros %>%
   mutate(
     across(c(siteID, plotID, year, iid, species), ~as.factor(.x)) # factor vars
   )
 
+# get a version of the data where continuous variables are z-scaled
 scaled_dat <- mod_dat %>%
   mutate(
     across(
@@ -37,6 +42,7 @@ scaled_dat <- mod_dat %>%
     )
   )
 
+# save these model objects
 saveRDS(
   list(mod_data = mod_dat, scaled_dat = scaled_dat),
   file = "infection-modeling/data/model-objects/peromyscus-model-dataframes.rds"
@@ -66,7 +72,7 @@ simple_mature <- glmer(
 simple_captime <- lmer(
   cap_prop_night ~ sex_male + sex_mature + weight +
     wthr_PC1 +
-    (1|siteID) + (1|species),
+    (1|year) + (1|siteID) + (1|species),
   data = scaled_dat
 )
 
@@ -226,50 +232,9 @@ saveRDS(
     )
 )
 
-## ---- Use the semEff package to bootstrap ----
-# library(semEff)
-# ## TODO
-# ## This takes a long time to run
-# run_bootstrap = TRUE
-# if (run_bootstrap){
-#   simple_boot <- bootEff(
-#     simple_modlist, R = 10, type = 'parametric',
-#     parallel = "snow", ncpus = parallel::detectCores() - 4
-#     # .progress = "txt"
-#   )
-#
-#   simple_effs <- semEff(simple_boot)
-# }
-#
-# dir_effs <- semEff::getDirEff(simple_effs)
-#
-# tmp_boot = bootMer(
-#   simple_modlist$weight,
-#   FUN = function(x){
-#     fixef(x)
-#   }
-# )
-# summary(tmp_boot)
-#
-# tmp_effs <- stdEff(
-#   simple_modlist, unique.eff = TRUE,
-#   incl.raw = FALSE, refit.x = TRUE,
-#   cen.x = TRUE, std.x = TRUE,
-#   cen.y = TRUE, std.y = TRUE
-# )
-# tmp_effs$weight
-#
-# # Not the same...
-# simple_model_objects$sem_mod$fit$coefficients %>%
-#   data.frame() %>% filter(Response == "weight")
-#
-# fixef(simple_modlist$infection)
-#
-# tmp_effs
-
 ## ---- Collect random effects ----
 
-warning("Random effects collection has not yet been implemented.")
+# TODO
 
 ## ---- Species-specific models ----
 
@@ -448,35 +413,7 @@ spec_coefs <- spec_coefs %>%
   mutate(
     CI_overlap = first(lower_CL) <= last(upper_CL) &
       last(lower_CL) <= first(upper_CL)
-  ) # %>%
-  # ggplot(aes(x = Predictor, y = Estimate, col = species)) +
-  # facet_wrap(~Response, scales = "free_y") +
-  # geom_hline(yintercept = 0, col = "black", linetype = "dotted") +
-  # geom_errorbar(
-  #   aes(ymin = lower_CL, ymax = upper_CL, linetype = CI_overlap),
-  #   width = 0.2, linewidth = 1,
-  #   position = position_dodge(.2)
-  # ) +
-  # geom_point(
-  #   size = 4, aes(shape = P.Value > 0.1), stroke = 2, fill = "grey",
-  #   position = position_dodge(.2)
-  # ) +
-  # theme_bw() +
-  # scale_linetype_manual(values = c("solid", "dashed")) +
-  # scale_shape_manual(values = c(16, 21))
-
-# spec_coefs <- spec_coefs %>% arrange(Response, Predictor, species) %>%
-#   group_by(Response, Predictor) %>%
-#   mutate(
-#     larger = which.max(Estimate),
-#     smaller = which.min(Estimate),
-#     upper_low = Estimate[unique(larger)] - (z_crit*Std.Error[unique(larger)]),
-#     lower_high = Estimate[unique(smaller)] + (z_crit*Std.Error[unique(smaller)]),
-#     CI_overlap = upper_low < lower_high,
-#   ) %>%
-#   select(
-#     -larger, -smaller
-#   )
+  )
 
 saveRDS(
   spec_coefs,

@@ -35,7 +35,7 @@ if (params$run_scripts){
   source("infection-modeling/R/scripts/05_prepare-model-data.R")
   
   # Model fits
-  source("infection-modeling/R/scripts/06_fit-SEMs.R")
+  source("infection-modeling/R/scripts/06_fit-initial-SEMs.R")
   source("infection-modeling/R/scripts/07-SEMs-continued.R")
   source("infection-modeling/R/scripts/08-bootstrap_SEMs.R")
   source("infection-modeling/R/scripts/manuscript-figures-tables.R")
