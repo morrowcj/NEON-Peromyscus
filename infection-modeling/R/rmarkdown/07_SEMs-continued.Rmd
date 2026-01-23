@@ -248,7 +248,7 @@ col_names <- case_when(
 full_tab %>% 
   mutate(
     DF = round(DF), 
-    P = Hmisc::format.pval(round(P, 3), nsmall = 3, eps = 0.001)
+    # P = Hmisc::format.pval(round(P, 3), nsmall = 3, eps = 0.001)
   ) %>% 
   knitr::kable(
     col.names = col_names, digits = 2, align = c(rep("l", 2), rep("r", ncol(full_tab) - 2)),
@@ -781,7 +781,7 @@ through to infection differed between *P. leucopus* and *P. maniculatus*
 whereas *none* of the environmental effects differed.
 
 
-```{r spCoefTab}
+```{r spCoefTab, eval = FALSE}
 # spec_coefs %>% 
 #   select(-c(upper_low, lower_high, CI_overlap)) %>% 
 #   arrange(Response, Predictor, species) %>% 

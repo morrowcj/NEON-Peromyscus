@@ -23,12 +23,12 @@
 "Infection (Infection)",0.13,0.58,"Reproductive (Phenotype)",0.9311,234,0.4073,"0.022",0.169967111966068
 "Infection (Infection)",0.13,0.58,"Weight (Phenotype)",0.0862,234,0.0498,"0.083",0.151930911135496
 "Parasitism (Parasitism)",0.13,0.29,"Cap. time Δ (Behavior)",-0.3442,2140,0.1959,"0.079",-0.0402089657690979
-"Parasitism (Parasitism)",0.13,0.29,"Climate (Environment)",-0.5978,2140,0.3133,"0.056",-0.244471159376121
+"Parasitism (Parasitism)",0.13,0.29,"Climate (Environment)",0.5978,2140,0.3133,"0.056",0.244471159376121
 "Parasitism (Parasitism)",0.13,0.29,"Weather (Environment)",1.6846,2140,0.2381,"<0.001",0.166827104791229
 "Parasitism (Parasitism)",0.13,0.29,"Sex (Phenotype)",0.4551,2140,0.1021,"<0.001",0.100874942950011
 "Parasitism (Parasitism)",0.13,0.29,"Reproductive (Phenotype)",0.1513,2140,0.1166,"0.195",0.0294486593868001
 "Parasitism (Parasitism)",0.13,0.29,"Weight (Phenotype)",-0.006,2140,0.0137,"0.663",-0.0114319193668049
-"Reproductive (Phenotype)",0.01,0.12,"Climate (Environment)",-0.1281,23500,0.082,"0.118",-0.059828190721303
+"Reproductive (Phenotype)",0.01,0.12,"Climate (Environment)",0.1281,23500,0.082,"0.118",0.059828190721303
 "Reproductive (Phenotype)",0.01,0.12,"Weather (Environment)",0.5198,23500,0.0695,"<0.001",0.0593626583385372
 "Reproductive (Phenotype)",0.01,0.12,"Sex (Phenotype)",0.2061,23500,0.0278,"<0.001",0.0531610483480124
 "Weight (Phenotype)",0.2,0.31,"Weather (Environment)",-1.7378,18480,0.1456,"<0.001",-0.078889172265846
