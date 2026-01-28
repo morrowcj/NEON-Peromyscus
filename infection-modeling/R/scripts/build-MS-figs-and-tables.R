@@ -265,9 +265,16 @@ full_stats <- full_stats %>%
 
 ## ---- Fig 1: Extreme scenarios (conceptual) ----
 
-warning("Fig. 1 diagram not available")
+fig_path = file.path(
+  "infection-modeling/graphics/icons",
+  "lyme risk figure-draft-2026-01-20.png"
+)
+magick::image_read(fig_path) # large
 
 ## ---- Fig 2: SEM network diagram (conceptual) ----
+
+## TODO: make this a multi-panel figure, where the second panel
+## is a host-range + NEON site map.
 
 # filter the data into the rows needed for the conceptual model
 concept_data <- full_stats %>%
@@ -366,12 +373,145 @@ ggsave(
   width = 4.5, height = 4.5, dpi = 300
 )
 
-warning("Fig. 2 may need to use labels instead of groups")
+## ---- Fig 3: Logistic regressions ----
 
-## ---- Fig. 3 ----
+# elongate the data for multi-panel plotting
+long_peros <- Peros %>%
+  filter(sex_male != 0.5, weight <= 50) %>% # remove ambiguous sex
+  select(
+    iid, cap_num, siteID, year, Bb_infected, ticks_attached,
+    sex_male, sex_mature, weight, cap_prop_night, capprop_shift
+  ) %>% distinct() %>%
+  pivot_longer(
+    cols = c(Bb_infected, ticks_attached), names_to = "Response",
+    values_to = "resp_val"
+  ) %>%
+  pivot_longer(
+    cols = c(sex_male:capprop_shift), names_to = "Predictor",
+    values_to = "pred_val"
+  ) %>%
+  left_join(resp_lookup, by = "Response") %>%
+  left_join(pred_lookup, by = "Predictor") %>%
+  mutate(
+    new_predlab = fct_rev(pred.label),
+    sig_line = case_when(
+      Response == "Bb_infected" & Predictor == "capprop_shift" ~ FALSE,
+      resp.clean_name == "Infection" & pred.clean_name == "Sex" ~ FALSE,
+      .default = TRUE),
+    prob_resp = paste0("P(", resp.clean_name, ")") %>%
+      factor(levels = paste0("P(", levels(resp.clean_name), ")"))
+  )
 
-# TODO: need to make the indirect effects = 0, but only for variables where
-## there are total effects...
+# Add GLM p values
+long_peros <- long_peros %>%
+  group_by(Response, Predictor) %>%
+  mutate(
+    glm.pval = anova(
+      glm(resp_val ~ pred_val, family = "binomial")
+    )$`Pr(>Chi)`[2], glm.sig = glm.pval <= 0.05
+  )
+
+# break data into continuous and binary predictor variables
+
+## continuous
+long_cont <- long_peros %>%
+  filter(!Predictor %in% c("sex_male", "sex_mature"))
+
+## binary (summaries)
+long_bin <- long_peros %>%
+  filter(Predictor %in% c("sex_male", "sex_mature"))
+
+# Panel data
+panel_dat <- long_peros %>%
+  select(prob_resp, new_predlab) %>% distinct() %>%
+  arrange(prob_resp, new_predlab) %>%
+  ungroup() %>%
+  mutate(panel_lab = LETTERS[row_number()])
+
+# Create the plot
+
+
+ggplot(
+  data = long_bin,
+  aes(x = pred_val, y = resp_val)
+) +
+  facet_grid(
+    prob_resp ~ new_predlab, scales = "free_x", switch = "both",
+    labeller = as_labeller(function(s){gsub("\\n", " ",s)})
+  ) +
+  geom_smooth(
+    data = long_bin, method = "glm", method.args = list(family = "binomial"),
+    formula = "y ~ x",
+    aes(col = "logistic reg.", linetype = glm.sig), se = TRUE, col = "black",
+    fill = with(color_lookup, hex[from == "grass"]) %>%
+      colorspace::lighten(0.25)
+  ) +
+  stat_summary(
+    data = long_bin, fun.data = mean_cl_normal, geom = "errorbar", width = 0.05,
+    size = 1/4, linewidth = 0.7,
+    aes(col = "mean\n(\U00B1 95% CI)")
+  ) +
+  stat_summary(
+    data = long_bin, fun.data = mean_cl_normal, geom = "point",
+    size = 1.6,
+    aes(col = "mean\n(\U00B1 95% CI)")
+  ) +
+  geom_smooth(
+    data = long_cont,
+    method = "glm", method.args = list(family = "binomial"),
+    formula = "y ~ x",
+    aes(col = "logistic reg.", linetype = glm.sig), se = TRUE, col = "black",
+    fill = with(color_lookup, hex[from == "grass"]) %>%
+      colorspace::lighten(0.25)
+  ) +
+  geom_point(
+    data = long_cont,
+    aes(col = "raw data"), size = 0.8
+  ) +
+  geom_label(
+    data = panel_dat, size = 3, fontface = "bold",
+    fill = NA, col = "black", label.size = NA,
+    aes(x = -Inf, y = Inf, label = panel_lab), hjust = -0.1, vjust = 1.5
+  ) +
+  theme_bw() +
+  theme(
+    strip.placement = "outside", strip.background = element_blank(),
+    panel.spacing.y = unit(0.1, "lines"),
+    panel.spacing.x = unit(0.1, "lines"),
+    legend.position = "inside",
+    legend.position.inside = c(0.10, 0.62),
+    legend.justification = c(0.5, 0.5),
+    legend.key = element_blank(),
+    legend.key.width = unit(1, "lines"),
+    legend.background = element_rect(color = "black", linewidth = 1/3),
+    legend.margin = margin(l = 0, r = 3, t = 0, b = 0),
+    strip.text.x = element_text(vjust = 1),
+    strip.clip = "on",
+    strip.switch.pad.grid = unit(-0.05, "lines")
+  ) +
+  labs(x = NULL, y = NULL, col = NULL) +
+  scale_x_continuous(breaks = c(0, 0.5, 1, 10, 25, 40),
+                     minor_breaks = c(-0.5, 0.5, 17.5, 32.5)) +
+  scale_color_manual(
+    breaks = c("mean\n(\U00B1 95% CI)", "raw data"),
+    # values = c("cornflowerblue", "grey50")
+    values = with(
+      color_lookup, hex[from %in% c("blue_sky", "sunset")]
+    ) %>% rev() %>%
+      colorspace::lighten(0.25)
+  ) +
+  scale_linetype_manual(
+    breaks = c(TRUE, FALSE), values = c("solid", "dashed")
+  ) +
+  guides(linetype = "none")
+
+# save the file
+ggsave(
+  filename =  "infection-modeling/graphics/parasitism-infection-fig.png",
+  width = 6, height = 6*0.5, dpi = 300
+)
+
+## ---- Fig 4: SEM effects breakdown ----
 
 # table for plotting just the total effects
 tot_stats <- full_stats %>%
@@ -388,7 +528,6 @@ tot_stats <- full_stats %>%
     !(Response == "expr_PC1" & Predictor %in% c("Bb_infected", "expr_PC1")),
     !(Response == "Bb_infected" & Predictor %in% c("Bb_infected"))
   )
-
 
 # table for plotting just the indirect effects
 ind_stats <- inner_join(
@@ -412,7 +551,6 @@ ind_stats <- inner_join(
     joint_sig = replace_na(joint_sig, FALSE),
     ci.sig = replace_na(ci.sig, FALSE)
   )
-
 
 # plot parameters
 nudge_factor = 0.125
@@ -596,6 +734,129 @@ ggsave(
 #   geom_errorbar(width = 1/3, , position = position_dodge(0.5)) +
 #   theme_bw()
 
+## ---- Fig 5: Species effect comparison ----
+
+# add colors to the variable lookup for plotting this figure
+spvar_lookup <- var_lookup %>%
+  mutate(
+    used = group %in% c("Expression", "Behavior"),
+    point_col = c("black", "grey40")[used + 1],
+    point_fill = c(
+      colorspace::lighten(with(color_lookup, hex[from %in% c("grass")]), 0.25),
+      "grey80"
+    )[used + 1]
+  )
+
+# Summarize the species data for path arrows
+spec_conc_dat <- species_stats %>%
+  filter(effect_type == "total") %>%
+  select(
+    Species, Response, Predictor,
+    boot.eff, boot.ci.low, boot.ci.up,
+  ) %>%
+  pivot_wider(
+    names_from = Species,
+    id_cols = c(Response, Predictor),
+    values_from = c(boot.eff, boot.ci.low, boot.ci.up)
+  ) %>%
+  mutate(
+    PELE_PEMA_diff = boot.eff_PELE - boot.eff_PEMA,
+    overlap = boot.ci.low_PELE <= boot.ci.up_PEMA &
+      boot.ci.low_PEMA <= boot.ci.up_PELE
+  ) %>% select(
+    Response, Predictor, PELE_PEMA_diff, overlap
+  ) %>% right_join(
+    species_stats, by = c("Response", "Predictor")
+  ) %>%
+  group_by(Species, pred.group, resp.group) %>%
+  mutate(
+    any_sig = any(joint_sig), # any variables in the group are sig for spec.
+  ) %>%
+  ungroup() %>%
+  mutate(
+    PELE_sig = any_sig & Species == "PELE",
+    PEMA_sig = any_sig & Species == "PEMA"
+  ) %>%
+  group_by(
+    pred.group, pred.grp_lab, resp.group, resp.grp_lab,
+    pick(ends_with(".x")), pick(ends_with(".y"))
+  ) %>%
+  summarise(
+    mean_diff = mean(PELE_PEMA_diff, na.rm=TRUE),
+    sig_group = case_when(
+      any(PELE_sig) & any(PEMA_sig) ~ "both",
+      any(PELE_sig) ~ "PELE",
+      any(PEMA_sig) ~ "PEMA",
+      .default = "neither"
+    ),
+    all_overlap = all(overlap),
+    .groups = "drop"
+  ) %>%
+  filter(complete.cases(.)) %>%
+  mutate(
+    sig_path = !(all_overlap & sig_group == "both"),
+    path_col_group = case_when(
+      !sig_path ~ "n.s.",
+      mean_diff <= 0 ~ "negDiff",
+      mean_diff > 0 ~ "posDiff"
+    )
+  )
+
+spvar_lookup %>%
+  ggplot(aes(x = grp.x, y = grp.y, label = grp_lab)) +
+  geom_arrow_segment(
+    data = spec_conc_dat, inherit.aes = FALSE,
+    aes(
+      x = pred.grp.x, y = pred.grp.y, xend = resp.grp.x, yend = resp.grp.y,
+      linewidth = abs(mean_diff),
+      col = path_col_group,
+    ),
+    resect_head = 10, length_head = 2, stroke_color = "black",
+    arrow_head = triangle) +
+  geom_point(
+    col = spvar_lookup$point_col,
+    fill = spvar_lookup$point_fill,
+    shape = 21, size = 25
+  ) +
+  geom_image(
+    data = icon_lookup, inherit.aes = FALSE, size = 0.1,
+    aes(image = path, x = x + nudge_x, y = y + nudge_y),
+  ) +
+  geom_text(size = 3, color = spvar_lookup$point_col) +
+  ggnetwork::theme_blank() +
+  theme(
+    axis.line = element_blank(),
+    legend.position = "inside",
+    legend.position.inside = c(1, .165),
+    legend.justification = c(1, 0),
+    legend.background = element_rect(
+      fill = NA, color = "black", linewidth = 1/3
+    ),
+    legend.margin = margin(l = 2, b = 1, r = 2)
+  ) +
+  scale_x_continuous(expand = c(0.11, 0)) +
+  scale_y_continuous(expand = c(0.11, 0)) +
+  scale_linewidth_continuous(range = c(1, 5)) +
+  scale_color_manual(
+    breaks = c("n.s.", "negDiff", "posDiff"),
+    labels = c("PELE = PEMA", "PEMA > PELE", "PELE > PEMA"),
+    values = c(
+      "grey80",
+      colorspace::lighten(
+        with(color_lookup, hex[from %in% c("blue_sky", "sunset")])
+      )
+    )
+  ) +
+  guides(
+    colour = guide_legend(title = "Effect comparison"),
+    linewidth = "none"
+  )
+
+ggsave(
+  filename = "infection-modeling/graphics/species-SEM-comparison.png",
+  width = 4.5, height = 4.5, dpi = 300
+)
+
 ## ---- Fig. X: Species infection and parasitism comparison ----
 
 species_stats %>%
@@ -642,9 +903,6 @@ species_stats %>%
   scale_linetype_manual(values = c("dashed", "solid", "dashed", "solid")) +
   scale_x_continuous(breaks = seq(-.5, 0.5, by = 0.25)) +
   scale_y_discrete(minor_breaks = seq(1.5, 5.5, by = 1))
-
-
-
 
 ## ---- Table S1: SEM stats ----
 
@@ -763,124 +1021,6 @@ write.csv(
   file = "infection-modeling/data/MS-tables/SEM-random-effects-table.csv",
   row.names = FALSE
 )
-
-## ---- Figure 2: Logistic correlations ----
-
-# elongate the data for multi-panel plotting
-long_peros <- Peros %>%
-  filter(sex_male != 0.5, weight <= 50) %>% # remove ambiguous sex
-  select(
-    iid, cap_num, siteID, year, Bb_infected, ticks_attached,
-    sex_male, sex_mature, weight, cap_prop_night, capprop_shift
-  ) %>% distinct() %>%
-  pivot_longer(
-    cols = c(Bb_infected, ticks_attached), names_to = "Response",
-    values_to = "resp_val"
-  ) %>%
-  pivot_longer(
-    cols = c(sex_male:capprop_shift), names_to = "Predictor",
-    values_to = "pred_val"
-  ) %>%
-  left_join(resp_lookup, by = "Response") %>%
-  left_join(pred_lookup, by = "Predictor") %>%
-  mutate(
-    new_predlab = fct_rev(pred.label),
-    sig_line = case_when(
-      Response == "Bb_infected" & Predictor == "capprop_shift" ~ FALSE,
-      resp.clean_name == "Infection" & pred.clean_name == "Sex" ~ FALSE,
-      .default = TRUE),
-    prob_resp = paste0("P(", resp.clean_name, ")") %>%
-      factor(levels = paste0("P(", levels(resp.clean_name), ")"))
-  )
-
-# Add GLM p values
-long_peros <- long_peros %>%
-  group_by(Response, Predictor) %>%
-  mutate(
-    glm.pval = anova(
-      glm(resp_val ~ pred_val, family = "binomial")
-    )$`Pr(>Chi)`[2], glm.sig = glm.pval <= 0.05
-  )
-
-# break data into continuous and binary predictor variables
-
-## continuous
-long_cont <- long_peros %>%
-  filter(!Predictor %in% c("sex_male", "sex_mature"))
-
-## binary (summaries)
-long_bin <- long_peros %>%
-  filter(Predictor %in% c("sex_male", "sex_mature"))
-
-# Panel data
-panel_dat <- long_peros %>%
-  select(prob_resp, new_predlab) %>% distinct() %>%
-  arrange(prob_resp, new_predlab) %>%
-  ungroup() %>%
-  mutate(panel_lab = LETTERS[row_number()])
-
-# Create the plot
-ggplot(data = long_bin, aes(x = pred_val, y = resp_val)) +
-  facet_grid(prob_resp ~ new_predlab, scales = "free_x", switch = "both") +
-  geom_smooth(
-    data = long_bin, method = "glm", method.args = list(family = "binomial"),
-    aes(col = "logistic reg.", linetype = glm.sig), se = TRUE, col = "black",
-    fill = "khaki3"
-  ) +
-  stat_summary(
-    data = long_bin, fun.data = mean_cl_normal, geom = "pointrange",
-    size = 1/4, linewidth = 0.75,
-    aes(col = "mean\n(\U00B1 95% CI)")
-  ) +
-  geom_smooth(
-    data = long_cont,
-    method = "glm", method.args = list(family = "binomial"),
-    aes(col = "logistic reg.", linetype = glm.sig), se = TRUE, col = "black",
-    fill = "khaki3"
-  ) +
-  geom_point(
-    data = long_cont,
-    aes(col = "raw data"), size = 0.8
-  ) +
-  geom_label(
-    data = panel_dat, size = 3, fontface = "bold",
-    fill = NA, col = "black", label.size = NA,
-    aes(x = -Inf, y = Inf, label = panel_lab), hjust = -0.1, vjust = 1.5
-  ) +
-  theme_bw() +
-  theme(
-    strip.placement = "outside", strip.background = element_blank(),
-    panel.spacing.y = unit(0.1, "lines"),
-    panel.spacing.x = unit(0.1, "lines"),
-    legend.position = "inside",
-    legend.position.inside = c(0.3, 0.58),
-    legend.justification = c(0.5, 0.5),
-    legend.key = element_blank(),
-    legend.key.width = unit(0.75, "lines"),
-    legend.background = element_rect(color = "black"),
-    legend.margin = margin(l = 0, r = 3, t = 0, b = 0),
-    strip.text.x = element_text(vjust = 1),
-    strip.clip = "on",
-    strip.switch.pad.grid = unit(-0.05, "lines")
-  ) +
-  labs(x = NULL, y = NULL, col = NULL) +
-  scale_x_continuous(breaks = c(0, 1, 10, 25, 40),
-                     minor_breaks = c(-0.5, 0.5, 17.5, 32.5)) +
-  scale_color_manual(
-    breaks = c("mean\n(\U00B1 95% CI)", "raw data"),
-    values = c("cornflowerblue", "grey50")
-  ) +
-  scale_linetype_manual(
-    breaks = c(TRUE, FALSE), values = c("solid", "dashed")
-  ) +
-  guides(linetype = "none")
-
-# save the file
-ggsave(
-  filename =  "infection-modeling/graphics/parasitism-infection-fig.png",
-  width = 6, height = 6*0.5, dpi = 300
-)
-
 
 ## ---- Table S3: Species SEM ----
 
