@@ -353,6 +353,10 @@ var_lookup %>%
     aes(image = path, x = x + nudge_x, y = y + nudge_y),
   ) +
   geom_text(size = 3) +
+  annotate(
+    geom = "text", label = "A", fontface = "bold", size = 5,
+    x = -Inf, y = Inf, vjust = 1, hjust = -1
+  ) +
   theme_classic() +
   ggnetwork::theme_blank() +
   theme(
@@ -364,7 +368,8 @@ var_lookup %>%
   scale_y_continuous(expand = c(0.1, 0)) +
   scale_linewidth_continuous(range = c(1, 9)) +
   scale_color_discrete(
-    palette = color_lookup %>% filter(discrete_rank <= 2) %>% pull(hex) %>%
+    palette = color_lookup %>% filter(from %in% c("sunset", "blue_sky")) %>%
+      pull(hex) %>%
       rev() %>% colorspace::lighten(0.25)
   )
 
@@ -430,7 +435,6 @@ panel_dat <- long_peros %>%
 
 # Create the plot
 
-
 ggplot(
   data = long_bin,
   aes(x = pred_val, y = resp_val)
@@ -442,7 +446,10 @@ ggplot(
   geom_smooth(
     data = long_bin, method = "glm", method.args = list(family = "binomial"),
     formula = "y ~ x",
-    aes(col = "logistic reg.", linetype = glm.sig), se = TRUE, col = "black",
+    aes(col = "logistic reg.", linetype = glm.sig), se = TRUE,
+    # col = "black",
+    col = with(color_lookup, hex[from == "night_sky"]) %>%
+      colorspace::lighten(0.25),
     fill = with(color_lookup, hex[from == "grass"]) %>%
       colorspace::lighten(0.25)
   ) +
@@ -460,7 +467,10 @@ ggplot(
     data = long_cont,
     method = "glm", method.args = list(family = "binomial"),
     formula = "y ~ x",
-    aes(col = "logistic reg.", linetype = glm.sig), se = TRUE, col = "black",
+    aes(col = "logistic reg.", linetype = glm.sig), se = TRUE,
+    # col = "black",
+    col = with(color_lookup, hex[from == "night_sky"]) %>%
+      colorspace::lighten(0.25),
     fill = with(color_lookup, hex[from == "grass"]) %>%
       colorspace::lighten(0.25)
   ) +
@@ -490,7 +500,7 @@ ggplot(
     strip.switch.pad.grid = unit(-0.05, "lines")
   ) +
   labs(x = NULL, y = NULL, col = NULL) +
-  scale_x_continuous(breaks = c(0, 0.5, 1, 10, 25, 40),
+  scale_x_continuous(breaks = c(0, 1, 10, 25, 40),
                      minor_breaks = c(-0.5, 0.5, 17.5, 32.5)) +
   scale_color_manual(
     breaks = c("mean\n(\U00B1 95% CI)", "raw data"),
@@ -629,7 +639,7 @@ tot_stats %>% ggplot(
     linetype = NULL, shape = NULL, color = NULL
   ) +
   scale_color_manual(
-    values = with(arrange(color_lookup, discrete_rank), hex[1:2]) %>%
+    values = with(color_lookup, hex[from %in% c("blue_sky", "sunset")]) %>%
       colorspace::lighten(0.25) %>% rev(),
     breaks = c("total", "indirect"),
     labels = c("total eff.", "indirect eff.")
