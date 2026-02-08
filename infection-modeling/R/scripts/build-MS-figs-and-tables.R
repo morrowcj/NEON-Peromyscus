@@ -1221,6 +1221,95 @@ dil.tab %>%
   ) +
   theme_bw() +
   labs(x = "Species richness", y = "Infection rate")
+
+## --- Compare models without traits ----
+
+# get infection model dataframe
+inf_dat <- model.frame(modlist$infection) %>%
+  group_by(siteID, year, species) %>%
+  mutate(
+    group_sex = mean(sex_male == 1, na.rm = TRUE),
+    group_mat = mean(sex_mature == 1, na.rm = TRUE),
+    group_weight = mean(weight, na.rm = TRUE),
+    group_shift = mean(capprop_shift, na.rm = TRUE),
+    group_ticks = mean(ticks_attached == 1, na.rm = TRUE)
+  )
+
+# copy the model with this new dataframe
+full_inf <- modlist$infection %>%
+  update(data = inf_dat)
+
+# refit without traits
+simple_inf <- modlist$infection %>%
+  update(
+    . ~ . - sex_male - sex_mature - weight - capprop_shift,
+    data = inf_dat
+  )
+
+# refit with population average traits
+group_inf <- simple_inf %>%
+  update(
+    . ~ . + group_sex + group_mat + group_weight + group_shift,
+    data = inf_dat
+  )
+
+# calculate R-squred for tick model
+inf_r2 <- piecewiseSEM:::rsquared(list(full_inf, simple_inf, group_inf)) %>%
+  mutate(mod = c("full", "simple", "group")) %>%
+  relocate(mod, .before = 0)
+
+# show r-squared table
+inf_r2 %>%
+  select(Response, mod, Marginal, Conditional) %>%
+  mutate(across(-c(mod, Response), ~round(.x, 3)))
+
+# Compare the infection models
+anova(full_inf, simple_inf, group_inf) # full wins P = 0.0016
+
+# extract tick model data
+tick_dat <- model.frame(modlist$ticks) %>%
+  group_by(siteID, year, species) %>%
+  mutate(
+    group_sex = mean(sex_male == 1, na.rm = TRUE),
+    group_mat = mean(sex_mature == 1, na.rm = TRUE),
+    group_weight = mean(weight, na.rm = TRUE),
+    group_shift = mean(capprop_shift, na.rm = TRUE),
+    group_ticks = mean(ticks_attached == 1, na.rm = TRUE)
+  )
+
+# refit original model
+full_tick <- modlist$ticks %>%
+  update(data = tick_dat)
+
+# refit without traits
+simple_tick <- modlist$ticks %>%
+  update(
+    . ~ . - sex_male - sex_mature - weight - capprop_shift,
+    data = tick_dat
+  )
+
+# refit with population average traits
+group_tick <- simple_tick %>%
+  update(
+    . ~ . + group_sex + group_mat + group_weight + group_shift,
+    data = tick_dat
+  )
+
+# compare tick models
+anova(full_tick, simple_tick, group_tick) # full wins P = 1.343e-5
+
+# calculate R-squared for tick models:
+tick_r2 <- piecewiseSEM:::rsquared(list(full_tick, simple_tick, group_tick)) %>%
+  mutate(mod = c("full", "simple", "group")) %>%
+  relocate(mod, .before = 0)
+
+# show r-squared
+tick_r2 %>%
+  select(Response, mod, Marginal, Conditional) %>%
+  mutate(across(-c(mod, Response), ~round(.x, 3)))
+
+# compare the models
+
 ## ---- OLDER ----
 
 # group_lookup <- var_lookup %>%
