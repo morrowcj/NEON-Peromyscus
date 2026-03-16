@@ -271,7 +271,7 @@ fig_path = file.path(
 )
 magick::image_read(fig_path) # large
 
-## ---- Fig 2: SEM network diagram (conceptual) ----
+## ---- Fig 2A: SEM network diagram (conceptual) ----
 
 ## TODO: make this a multi-panel figure, where the second panel
 ## is a host-range + NEON site map.
@@ -322,7 +322,8 @@ icon_lookup <- icon_lookup %>%
   )
 
 # build the conceptual diagram
-var_lookup %>%
+(SEM_dgrm <- (
+  var_lookup %>%
   ggplot(aes(x = grp.x, y = grp.y, label = grp_lab)) +
   geom_arrow_segment(
     data = concept_data, inherit.aes = FALSE,
@@ -353,10 +354,10 @@ var_lookup %>%
     aes(image = path, x = x + nudge_x, y = y + nudge_y),
   ) +
   geom_text(size = 3) +
-  annotate(
-    geom = "text", label = "A", fontface = "bold", size = 5,
-    x = -Inf, y = Inf, vjust = 1, hjust = -1
-  ) +
+  # annotate(
+  #   geom = "text", label = "A", fontface = "bold", size = 5,
+  #   x = -Inf, y = Inf, vjust = 1, hjust = -1
+  # ) +
   theme_classic() +
   ggnetwork::theme_blank() +
   theme(
@@ -372,10 +373,33 @@ var_lookup %>%
       pull(hex) %>%
       rev() %>% colorspace::lighten(0.25)
   )
+))
 
 ggsave(
+  plot = SEM_dgrm,
   filename = "infection-modeling/graphics/conceptual-SEM-full.png",
   width = 4.5, height = 4.5, dpi = 300
+)
+
+## ---- Fig 2B, map panel (host range map) ----
+
+pero_map <- readRDS("infection-modeling/data/peromyscus-range-neon.rds")
+
+# show the map
+pero_map
+
+library(ggpubr)
+
+
+fig_2 <- ggarrange(
+  SEM_dgrm, pero_map, nrow = 1,
+  labels = c("A", "B")
+)
+
+ggsave( 
+  plot = fig_2,
+  filename = "infection-modeling/graphics/full-figure-2.png",
+  width = 8, height = 8/2
 )
 
 ## ---- Fig 3: Logistic regressions ----
