@@ -1,0 +1,223 @@
+---
+title: "Additional NEON Peromyscus models"
+execute:
+  echo: true
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    colorlinks: true
+---
+
+## John's Email
+
+Hey Clay,
+
+Good to zoom just now – I feel like we’ve got a solid plan and I’m looking forward to getting this finished!
+
+Here are a list of my quick stats thoughts – I might send along some more by Friday, but wanted to send you this initial list just to get a sense of what we might want to check out.
+
+1. Pele model – not sure if it’ll become our primary model for the ms, but I think we’ll definitely want to develop one to the same extent we’ve developed the current Pele/pema model. Do we have a pele-only model that also has the bootstrapped estimates? 
+2. In Marty’s comments, he mentioned the Bb burden data – I vaguely recall talking about this, but did we ever explore using it in the model (presumably as a response variable, possibly in a hurdle-like fashion?).  For example, it would be interesting if ticks were positively associated with infection, but size (or reproductive status) was correlated with Bb burden after infection
+
+3. Small tidbit – in Table 1, the infection model looks like we might want to check it out since the parameter estimates look strange for resistance (coeff=0, p=1).  Maybe there was a conversion issue, something strange about the input data, something funky with variable standardization, or something else that will help us resolve the funky parameter estimates?
+
+4. Can we check on the models where we tried the space-use data (avg distance moved, trap diversity, etc.) to see what the results looked like (just to provide more details on why we don’t include them)?  In the Brehm et al. 2025 paper, the metric that really stood out was average distance moved (in explaining parasitism), so I want to make sure we feel like we’re solid in terms of exploring it in the current pSEM analysis.  In case it’s useful to have it in one spot, I’ll paste the description of how Alli and I calculated the metrics below just so it’s easy to find.
+
+5. I know it’ll complicate our figure legends/labels, but I think it’ll be useful to have a label for climate that reminds readers that it (unlike weather) also includes variability.  And, as a final triple-check, can you send along the values that we’re using for climate just so we can confirm that they are the same as in the other papers (this will also be important because we’ll probably have a few sentences discussing those papers)?
+
+Let me know what you think about how long those things might take – in the meantime, I’ll devote more thought to any other statistical things we might want to consider!
+
+Sincerely,
+
+John
+
+## Setup
+
+```{r}
+#| results: "hide"
+library(tidyverse)
+library(lme4)
+library(lmerTest)
+library(piecewiseSEM)
+```
+
+
+```{r}
+# construct path to model data ojects
+model_path = file.path(
+  "infection-modeling/data/model-objects/unscaled-peros_SEM-objects.rds"
+)
+
+# read the objects
+fullSEM_model_objects <- readRDS(model_path)
+
+# extract list of component modles
+modlist <- fullSEM_model_objects$component_mods
+
+# extract the fit object
+full_psem <- fullSEM_model_objects$sem_mod$fit
+
+# Load raw data
+Peros <- readRDS("infection-modeling/data/peromyscus-model-data.rds") %>%
+  mutate(species = updated_taxa) %>% 
+  filter(!is.na(species)) %>% 
+  mutate(
+    across(c(siteID, plotID, year, iid, species), ~as.factor(.x)) # factor vars
+  )
+```
+
+## 1. PELE Only
+
+As we've discussed before, the PELE-only model is extremely similar to the 
+model that includes PEMA. This is entirely unsurprising, since the `species`
+random effect accounts for the between-species variation and one of the reasons
+we decided to use the full model that included them both. @tbl-PELE-Cstat shows
+the adequate goodness-of-fit statistic, @tab-PELE-sem shows the coefficients,
+and @tbl-PELE-R2 shows the $R^2$ values. @fig-PELE-full-compare shows a compact
+comparison of the two models.
+
+I can run the bootstrap on the PELE-only model, if this is the one you'd like
+to use.
+
+```{r}
+#| results: "hide"
+
+# Update each component mod by removing the random effect os species and
+## filtering the data to only include PELE
+pele_mods <- lapply(modlist, function(x){
+  update(x, . ~ . -(1|species), data = Peros %>% filter(species == "PELE"))
+})
+
+PELE_semSpec <- piecewiseSEM::as.psem(pele_mods)
+PELE_psem <- summary(PELE_semSpec)
+```
+
+```{r}
+#| label: "tbl-PELE-Cstat"
+PELE_psem$Cstat
+```
+
+```{r}
+#| label: "tbl-PELE-sem"
+PELE_psem$coefficients %>% data.frame() %>% select(-Var.9) %>% 
+  mutate(sig = ifelse(P.Value <= 0.1, "*", ""))
+```
+
+```{r}
+#| label: "tbl-PELE-R2"
+PELE_psem$R2
+```
+
+```{r}
+#| echo: false
+#| label: "fig-PELE-full-compare"
+#| fig-cap: "Comparison of PELE/PEMA model to PELE-only model coefficients."
+#| fig-width: 6.5
+#| fig-asp: 0.8
+PELE_psem$coefficients %>% data.frame() %>% 
+  mutate(mod = "pele-only") %>% 
+  full_join(
+    full_psem$coefficients %>% data.frame() %>% mutate(mod = "both-spec")
+  ) %>% 
+  mutate(
+    sig = P.Value <= 0.1, group = interaction(Response,Predictor),
+    group = forcats::fct_reorder(group, Std.Estimate)
+  ) %>% 
+  ggplot(aes(x = group, y = Std.Estimate, shape = sig, col = mod)) +
+  geom_hline(yintercept = 0, linetype = "dashed", col = "grey50") + 
+  geom_point(size = 3) + geom_line(aes(group = mod)) +
+  theme_bw() +
+  theme(
+    legend.position.inside = c(0.1, .9), legend.position = "inside",
+    legend.justification = c(0, 1), legend.direction = "horizontal",
+    axis.text.x = element_text(angle = 90)
+  ) +
+  labs(
+    x = "Ordered coefficient (Response.Predictor)", y = "Coefficient Value",
+    color = "Model", shape = "P < 0.1"
+  ) +
+  scale_shape_manual(values = c(1, 16))
+```
+
+
+## 2. Burden / Hurdle
+
+As we've discussed before, burden was excluded because it added very little to the
+model, while making interpretation more difficult (hurdle SEMs don't work).
+@tlb-burden-fit shows the coefficients table for the effects on log-burden 
+(PELE-only here, but true for both models). Note that burden only
+differs by reproductive maturity. Similarly, @fig-tol-burd shows that 
+tolerance is even less affected by burden than by infection status.
+
+If you want me to add burden it to the SEM, we have to include infection
+status as a predictor of burden for the model to fit (interpretation is more
+difficult).
+
+```{r}
+#| label: "tbl-burden-fit"
+burden_pele <- modlist$infection %>% formula() %>% 
+  update(log_burden ~ . + cap_prop_night - (1|species)) %>% 
+  lmer(data = Peros %>% filter(Bb_infected == 1, species == "PELE"))
+
+summary(burden_pele)$coefficients
+```
+
+```{r}
+#| label: "fig-tol-burd"
+tol_burd <- modlist$tolerance %>% 
+  update(
+    . ~ . + log_burden - (1|species), 
+    data = Peros %>% filter(species == "PELE")
+  )
+
+summary(tol_burd)$coefficient
+```
+
+```{r}
+burden_inf = burden_pele %>% 
+  update(
+    . ~ Bb_infected + ., 
+    data = Peros %>% filter(species == "PELE")
+  )
+
+summary(burden_inf)$coefficients
+```
+
+
+```{r}
+#| results: "hide"
+add_burden_spec = piecewiseSEM::as.psem(
+  append(pele_mods, list(burden = burden_inf)),
+)
+sem_with_burden = summary(add_burden_spec)
+```
+
+```{r}
+sem_with_burden$coefficients %>% data.frame() %>% select(-Var.9) %>% 
+  mutate(sig = ifelse(P.Value <= 0.1, "*", ""))
+```
+
+
+## 3. Infection model resistance parameters
+
+The values for the effect of resistance (expr_PC1) on infection status that you
+reference (β = 0, P = 1) from Table 1 are correct but subject to 
+rounding and the significant digits of that table. The true values are 
+β = 0.0002 and P = 0.9997 (@tbl-resinf-coef).
+
+```{r}
+#| label: tbl-resinf-coef
+summary(modlist$infection)$coefficients
+```
+
+
+## 4. Space use data
+
+## 5. Climate PCA
+
+```{r}
+Peros %>% group_by(siteID) %>% 
+  select(siteID, clim_PC1, clim_PC2) %>% distinct()
+```
+
