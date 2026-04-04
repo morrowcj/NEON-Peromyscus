@@ -18,6 +18,7 @@ Good to zoom just now – I feel like we’ve got a solid plan and I’m looking
 Here are a list of my quick stats thoughts – I might send along some more by Friday, but wanted to send you this initial list just to get a sense of what we might want to check out.
 
 1. Pele model – not sure if it’ll become our primary model for the ms, but I think we’ll definitely want to develop one to the same extent we’ve developed the current Pele/pema model. Do we have a pele-only model that also has the bootstrapped estimates? 
+
 2. In Marty’s comments, he mentioned the Bb burden data – I vaguely recall talking about this, but did we ever explore using it in the model (presumably as a response variable, possibly in a hurdle-like fashion?).  For example, it would be interesting if ticks were positively associated with infection, but size (or reproductive status) was correlated with Bb burden after infection
 
 3. Small tidbit – in Table 1, the infection model looks like we might want to check it out since the parameter estimates look strange for resistance (coeff=0, p=1).  Maybe there was a conversion issue, something strange about the input data, something funky with variable standardization, or something else that will help us resolve the funky parameter estimates?
@@ -71,7 +72,7 @@ Peros <- readRDS("infection-modeling/data/peromyscus-model-data.rds") %>%
 
 As we've discussed before, the PELE-only model is extremely similar to the 
 model that includes PEMA. This is entirely unsurprising, since the `species`
-random effect accounts for the between-species variation and one of the reasons
+random effect accounts for the between-species variation and is one of the reasons
 we decided to use the full model that included them both. @tbl-PELE-Cstat shows
 the adequate goodness-of-fit statistic, @tab-PELE-sem shows the coefficients,
 and @tbl-PELE-R2 shows the $R^2$ values. @fig-PELE-full-compare shows a compact
@@ -214,10 +215,108 @@ summary(modlist$infection)$coefficients
 
 ## 4. Space use data
 
-## 5. Climate PCA
+The reason we decided to not use our 3 space-use metrics (weighted trap 
+diversity, weighted trapability, and average move distance between 
+recaptures) was because they were not important for *Borrelia*
+infections (or burden). @tble-space-use shows that the only things affected
+by these space-use metrics were tolerance (`expr_PC2`) and capture time 
+(`cap_prop_night`). Additionally, inclusion of space-use metrics obscured the
+effects of weight on infection status 
+(fig-space-infect vs. fig-original-infect).
+
+Note that these results that contain space-use are from an older version of the 
+full PELE/PEMA that has slightly different parameteterization, 
+but if you decide you want these added to the PELE-only model, that can 
+be accommodated. Because these models are so similar, I don't expect any 
+different conclusions to arise.
 
 ```{r}
-Peros %>% group_by(siteID) %>% 
+#| label: "tbl-space-use"
+#| fig-cap: >- 
+#|   Effects of space use in Peromyscus SEM (PELE and PEMA). This is a subset
+#|   of the SEM coefficient table that only includes rows where the predictor
+#|   variable is a space-use term.
+
+space_sem = readRDS(
+  "infection-modeling/data/model-objects/full-infection-SEM_maximal-cases.rds"
+)
+
+space_sem$coefficients %>% data.frame() %>% select(-Var.9) %>% 
+  mutate(sig = ifelse(P.Value <= 0.1, "*", "")) %>% 
+  filter(
+    grepl("trap|move", Predictor), 
+    # P.Value <= 0.1
+  )
+```
+
+```{r}
+#| label: "fig-space-infect"
+space_sem$coefficients %>% data.frame() %>% select(-Var.9) %>% 
+  mutate(sig = ifelse(P.Value <= 0.1, "*", "")) %>% 
+  filter(Response == "Bb_infected")
+```
+
+```{r}
+#| label: "fig-original-infect"
+full_psem$coefficients %>% data.frame() %>% select(-Var.9) %>% 
+  mutate(sig = ifelse(P.Value <= 0.1, "*", "")) %>% 
+  filter(Response == "Bb_infected")
+```
+
+## 5. Climate PCA
+
+I'm happy to amend any of the figures with whatever details you'd like. Just
+let me know the specifics. As for climate PCA, they were constructed 
+with average monthly temperature, precipitation, and relative humidity; 
+coefficients of variation on those monthly averages; and the average 
+proportion of days in a month on which some precipitation occurred (this 
+variable is novel compared to Brehm 2025 and was included to better capture
+whether precip. tended to be temporally concentrated see @fig-rainday-compare
+for the comparisons). @tbl-clim-pc shows the PC loadings for each site based
+on these climate values and @fig-clim-pca shows the variables in PC space.
+Note that we use the inverse of the first PC in our
+models, to align it with the interpretation of the weather PC (i.e., 
+positive = warmer and wetter).
+
+```{r}
+#| label: "tbl-clim-pca-data"
+clim_pca <- readRDS("infection-modeling/data/climate-PCA.rds")
+
+clim_pca$data
+```
+
+```{r}
+#| fig-asp: 1
+#| fig-width: 3.5 
+#| layout-ncol: 2
+#| label: "fig-rainday-compare"
+clim_pca$data %>% 
+  ggplot(
+    aes(x = site_pct_monthly_raindays, y = site_CV_monthly_precip, col = siteID)
+  ) +
+  geom_point(size = 3, show.legend = FALSE) + theme_bw()
+
+clim_pca$data %>% 
+  ggplot(
+    aes(x = site_pct_monthly_raindays, y = site_avg_monthly_precip, col = siteID)
+  ) +
+  geom_point(size = 3) + theme_bw() +
+  theme(
+    legend.position = "inside", legend.position.inside = c(0.99, 0.01), 
+    legend.justification = c(1, 0), legend.background = 
+      element_rect(color = "grey50")
+  )
+```
+
+```{r}
+#| label: "tbl-clim-pc"
+Peros %>% 
+  group_by(siteID) %>% 
   select(siteID, clim_PC1, clim_PC2) %>% distinct()
+```
+
+```{r}
+#| label: "fig-clim-pca"
+ordiplot(clim_pca$pca_obj, type = "text", display = "sp")
 ```
 
