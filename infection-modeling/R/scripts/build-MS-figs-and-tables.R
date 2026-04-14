@@ -324,55 +324,55 @@ icon_lookup <- icon_lookup %>%
 # build the conceptual diagram
 (SEM_dgrm <- (
   var_lookup %>%
-  ggplot(aes(x = grp.x, y = grp.y, label = grp_lab)) +
-  geom_arrow_segment(
-    data = concept_data, inherit.aes = FALSE,
-    aes(x = pred.grp.x, y = pred.grp.y, xend = resp.grp.x, yend = resp.grp.y,
-        linewidth = abs(boot.eff),
-        col = boot.eff > 0
-    ),
-    resect_head = 10, length_head = 2, stroke_color = "black",
-    arrow_head = triangle) +
-  geom_arrow_segment(
-    data = missing_paths, inherit.aes = FALSE,
-    aes(x = pred.grp.x, y = pred.grp.y, xend = resp.grp.x, yend = resp.grp.y),
-    color = with(color_lookup, hex[from == "mouse_fur"]),
-    resect_head = 12, length_head = NULL,
-    linewidth = 1, linetype = "longdash", arrow_head = triangle,
-    # stroke_color = NULL
-  ) +
-  geom_point(
-    size = 25, shape = 21,
-    # fill = "white",
-    fill = with(color_lookup, hex[from == "immunity"]) %>%
-      colorspace::lighten(0.25),
-    color = "black"
-  ) +
-  ## Add the icons
-  geom_image(
-    data = icon_lookup, inherit.aes = FALSE, size = 0.1,
-    aes(image = path, x = x + nudge_x, y = y + nudge_y),
-  ) +
-  geom_text(size = 3) +
-  # annotate(
-  #   geom = "text", label = "A", fontface = "bold", size = 5,
-  #   x = -Inf, y = Inf, vjust = 1, hjust = -1
-  # ) +
-  theme_classic() +
-  ggnetwork::theme_blank() +
-  theme(
-    axis.line = element_blank(),
-    legend.position = "none"
-  ) +
-  labs(x = NULL, y = NULL) +
-  scale_x_continuous(expand = c(0.1, 0)) +
-  scale_y_continuous(expand = c(0.1, 0)) +
-  scale_linewidth_continuous(range = c(1, 9)) +
-  scale_color_discrete(
-    palette = color_lookup %>% filter(from %in% c("sunset", "blue_sky")) %>%
-      pull(hex) %>%
-      rev() %>% colorspace::lighten(0.25)
-  )
+    ggplot(aes(x = grp.x, y = grp.y, label = grp_lab)) +
+    geom_arrow_segment(
+      data = concept_data, inherit.aes = FALSE,
+      aes(x = pred.grp.x, y = pred.grp.y, xend = resp.grp.x, yend = resp.grp.y,
+          linewidth = abs(boot.eff),
+          col = boot.eff > 0
+      ),
+      resect_head = 10, length_head = 2, stroke_color = "black",
+      arrow_head = triangle) +
+    geom_arrow_segment(
+      data = missing_paths, inherit.aes = FALSE,
+      aes(x = pred.grp.x, y = pred.grp.y, xend = resp.grp.x, yend = resp.grp.y),
+      color = with(color_lookup, hex[from == "mouse_fur"]),
+      resect_head = 12, length_head = NULL,
+      linewidth = 1, linetype = "longdash", arrow_head = triangle,
+      # stroke_color = NULL
+    ) +
+    geom_point(
+      size = 25, shape = 21,
+      # fill = "white",
+      fill = with(color_lookup, hex[from == "immunity"]) %>%
+        colorspace::lighten(0.25),
+      color = "black"
+    ) +
+    ## Add the icons
+    geom_image(
+      data = icon_lookup, inherit.aes = FALSE, size = 0.1,
+      aes(image = path, x = x + nudge_x, y = y + nudge_y),
+    ) +
+    geom_text(size = 3) +
+    # annotate(
+    #   geom = "text", label = "A", fontface = "bold", size = 5,
+    #   x = -Inf, y = Inf, vjust = 1, hjust = -1
+    # ) +
+    theme_classic() +
+    ggnetwork::theme_blank() +
+    theme(
+      axis.line = element_blank(),
+      legend.position = "none"
+    ) +
+    labs(x = NULL, y = NULL) +
+    scale_x_continuous(expand = c(0.1, 0)) +
+    scale_y_continuous(expand = c(0.1, 0)) +
+    scale_linewidth_continuous(range = c(1, 9)) +
+    scale_color_discrete(
+      palette = color_lookup %>% filter(from %in% c("sunset", "blue_sky")) %>%
+        pull(hex) %>%
+        rev() %>% colorspace::lighten(0.25)
+    )
 ))
 
 ggsave(
@@ -396,7 +396,7 @@ fig_2 <- ggarrange(
   labels = c("A", "B")
 )
 
-ggsave( 
+ggsave(
   plot = fig_2,
   filename = "infection-modeling/graphics/full-figure-2.png",
   width = 8, height = 8/2
@@ -1127,15 +1127,16 @@ trait_mods <- lapply(traits, function(v){
 names(trait_mods) <- traits
 
 # Get estimated marginal means for each species x variable
-trait_EMMs <- lapply(traits,
-                     function(x) {
-                       mod = trait_mods[[x]]
-                       emm <- emmeans::emmeans(mod, ~species)
-                       prs <- pairs(emm)
-                       p = prs %>% data.frame() %>% pull(p.value)
-                       cld <- emmeans:::cld.emmGrid(emm)
-                       cld %>% data.frame() %>% mutate(P = p, response = x)
-                     }
+trait_EMMs <- lapply(
+  traits,
+  function(x) {
+    mod = trait_mods[[x]]
+    emm <- emmeans::emmeans(mod, ~species)
+    prs <- pairs(emm)
+    p = prs %>% data.frame() %>% pull(p.value)
+    cld <- emmeans:::cld.emmGrid(emm)
+    cld %>% data.frame() %>% mutate(P = p, response = x)
+  }
 ) %>% bind_rows() %>%
   mutate(
     CI_lwr = if_else(!is.na(asymp.LCL), asymp.LCL, lower.CL),
@@ -1165,6 +1166,12 @@ sp_long_traits %>%
     aes(group = species, y = "Avg."), shape = 17,
     show.legend = FALSE
   )
+# geom_pointrange(
+#   data = trait_EMMs %>% rename(variable = response),
+#   aes(y = "Avg.", x = emmean, xmin = emmean - SE, xmax = emmean + SE,
+#       color = species),
+#   show.legend = FALSE
+# )
 
 ## ---- Lat Long comparison ----
 
@@ -1185,9 +1192,9 @@ eff_props <- full_stats %>%
   )
 
 (group_eff_props <- eff_props %>%
-    group_by(effect_type, groupy) %>%
-    summarize(effect_prop = sum(eff_prop, na.rm = TRUE)) %>%
-    pivot_wider(names_from = effect_type, values_from = effect_prop))
+  group_by(effect_type, groupy) %>%
+  summarize(effect_prop = sum(eff_prop, na.rm = TRUE)) %>%
+  pivot_wider(names_from = effect_type, values_from = effect_prop))
 
 group_eff_props %>%
   mutate(direct = direct*0.13, total = total*0.13)
@@ -1334,6 +1341,19 @@ tick_r2 %>%
 
 # compare the models
 
+dil.fm <- lm(mean_inf ~ richness + year, data = dil.tab)
+car::Anova(dil.fm) # no significant dilution effects.
+
+cor(dil.tab %>% select(richness, mean_inf))
+
+dil.tab %>%
+  ggplot(aes(x = richness, y = mean_inf, col = siteID, shape = year)) +
+  geom_point(size = 3) +
+  geom_smooth(
+    method = "lm", linetype = "dashed", fill = "grey80", aes(group = 1)
+  ) +
+  theme_bw() +
+  labs(x = "Species richness", y = "Infection rate")
 ## ---- OLDER ----
 
 # group_lookup <- var_lookup %>%

@@ -83,7 +83,7 @@ Peros %>%
   ggplot(aes(x = capprop_shift, fill = factor(cap_num > 1))) +
   geom_histogram(color = "black") +
   labs(
-    fill = "first capture?",
+    fill = "recapture?",
     title = "Shift in capture time (all observations)"
   ) +
   theme_bw() +
@@ -98,5 +98,52 @@ Peros %>%
 ggsave(
   file.path(out_dir, "capshift-distro_all-obs.jpg"),
   width = 5, height = 0.8*5,
+  dpi = 300
+)
+
+
+## ---- Additional figures for space use ----
+
+Peros %>%
+  filter(species == "PELE") %>%
+  select(
+    cap_num, avg_move_dist, weighted_trapability, weighted_trap_diversity
+  ) %>%
+  pivot_longer(-cap_num, names_to = "variable") %>%
+  ggplot(aes(x = value, fill = cap_num > 1)) +
+  facet_wrap(~variable, scales = "free") +
+  geom_histogram(color = "black", bins = 20) +
+  theme_bw() +
+  theme(
+    legend.position = "inside",
+    legend.position.inside = c(0.99, 0.99),
+    legend.justification = c(1, 1)
+  ) +
+  labs(fill = "recapture?") +
+  scale_fill_manual(values = c("cornflowerblue", "orange"))
+
+ggsave(
+  file.path(out_dir, "pele_movement_distro.jpg"),
+  width = 7, height = (1/3)*7,
+  dpi = 300
+)
+
+
+Peros %>%
+  filter(species == "PELE") %>%
+  select(
+    cap_num, avg_move_dist, weighted_trapability, weighted_trap_diversity
+  ) %>%
+  pivot_longer(-cap_num, names_to = "variable") %>%
+  ggplot(aes(x = log(value + 1), fill = cap_num > 1)) +
+  facet_wrap(~variable, scales = "free") +
+  geom_histogram(color = "black", bins = 20) +
+  theme_bw() +
+  labs(fill = "recapture?") +
+  scale_fill_manual(values = c("cornflowerblue", "orange"))
+
+ggsave(
+  file.path(out_dir, "pele_log-transformed_movement-distro.jpg"),
+  width = 7, height = (1/3)*7,
   dpi = 300
 )
