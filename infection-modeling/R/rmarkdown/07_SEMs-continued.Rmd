@@ -733,7 +733,7 @@ build_psem_plot(pele_fp) %>%
   set_node_attrs("width", 1.1) %>%
   set_node_attrs("height", 0.5) %>%
   export_graph(
-    file_name = "C:/Users/morrow5/Downloads/Species-comparison-sem.png", 
+    file_name = "~/Downloads/Species-comparison-sem.png", 
     file_type = "png", width = 5*300, height = 5*300*1.35
   )
 ```
