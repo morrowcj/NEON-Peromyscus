@@ -1,22 +1,3 @@
-## ---- Script options ----
-library(optparse)
-
-## terminal usage: Rscript 08-bootstrap_SEMS.R (-f|--force)
-
-# Construct the argument parser, with one optional flag
-parser <- OptionParser()
-parser <- add_option(
-  parser, c("-f", "--force"),
-  action = "store_true",
-  default = FALSE,
-  dest = "force",
-  help = "Force long-running code to execute [FALSE]"
-)
-opt <- parse_args(parser)
-
-# pass the value of the force argument to the variable
-force_run = opt$force
-
 ## ---- Setup ----
 
 library(tidyverse)
@@ -68,8 +49,6 @@ format_coef_tab <- function(tab, type = c("lmer", "glmer")){
     tibble()
 }
 
-space_use_differences <- list()
-
 ## ---- PELE SEM ----
 
 # Update each component mod by removing random species effect, only keep PELE
@@ -80,6 +59,20 @@ pele_mods <- lapply(modlist, function(x){
 # construct and fit pSEM
 PELE_semSpec <- piecewiseSEM::as.psem(pele_mods)
 PELE_psem <- summary(PELE_semSpec)
+
+# Gather and save the pele mods:
+pele_sem_obs = list(
+  component_mods = pele_mods,
+  sem_mod = list(
+    spec = PELE_semSpec,
+    fit = PELE_psem
+  )
+)
+
+saveRDS(
+  pele_sem_obs,
+  "infection-modeling/data/model-objects/pele_2026_full-sem-objects.rds"
+)
 
 ## ---- Add space use ----
 
@@ -199,35 +192,4 @@ space_comp_tab %>%
   setNames(c(
     "Response", "Predictor", "Est. (log space)", "Est. (with space)",
     "P (log space)", "P (with space)"
-  )) # no rows
-
-# # updatchanged# # update tolerance model with space use
-# new_tol_mod <-    pele_mods[["tolerance"]] %>%
-#   update(. ~ . + avg_move_dist + weighted_trapability + weighted_trap_diversity)
-#
-# # compare against model without space use
-#
-# ## tolerance
-# summary(pele_mods[['tolerance']])$coefficients %>%
-#   format_coef_tab() %>%
-#   filter(P <= 0.1) # sex_mature, Bb_infected
-# summary(new_tol_mod)$coefficients %>%
-#   format_coef_tab() %>%
-#   filter(P <= 0.1) # sex_mature, avg_move_dist, weighted_trap_diversity
-#
-# # get list of significant effects... (better applied to whole list?)
-# lapply(
-#   list("pele" = pele_mods[["tolerance"]], "pele_space" = new_tol_mod),
-#   function(x){
-#     summary(x)$coefficients %>%
-#       format_coef_tab() %>%
-#       filter(P<=0.1) %>%
-#       pull(Source) %>% sort()
-#   }
-# )
-#
-# space_use_differences[["tolerance"]] <-  paste(
-#   "The PELE tolerance model that includes space use has new significant",
-#   "of avg_move_dist and weighted_trap_diversity, but loses the significant",
-#   "effect of Bb_infected. sex_mature is significant in both variants."
-# )
+  ))

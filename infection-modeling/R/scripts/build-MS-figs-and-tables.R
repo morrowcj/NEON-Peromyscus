@@ -1354,86 +1354,448 @@ dil.tab %>%
   ) +
   theme_bw() +
   labs(x = "Species richness", y = "Infection rate")
-## ---- OLDER ----
 
-# group_lookup <- var_lookup %>%
-#   select(group, grp_lab) %>% distinct() %>%
-#   mutate(
-#     coords = case_when(
-#       grepl("expression", group, ignore.case = TRUE) ~ tibble(x = -1, y = 2),
-#       grepl("Infection", group) ~ tibble(x = 2, y = 1),
-#       grepl("Parasitism", group) ~ tibble(x = 0, y = 0.1),
-#       grepl("Phenotype", group) ~ tibble(x = -1, y = -2),
-#       grepl("Behavior", group) ~ tibble(x = -2, y = 0),
-#       grepl("Environment", group) ~ tibble(x = 2, y = -1),
-#       .default = tibble(x = NA, y = NA)
-#     )
-#   ) %>% unnest(coords)
+## ---- Update Fig data (PELE only) ----
 
-# # create new save directory if it doesn't exist
-# if (!dir.exists("infection-modeling/data/MS-tables/")) {
-#   dir.create("infection-modeling/data/MS-tables/", recursive = TRUE)
-# }
-#
-# # Read and clean the mouse data
-# Peros <- readRDS("infection-modeling/data/peromyscus-model-data.rds") %>%
-#   mutate(Species = updated_taxa) %>%
-#   filter(!is.na(Species)) %>%
-#   mutate(
-#     across(c(siteID, plotID, year, iid, Species),
-#            ~as.factor(.x)) # factor vars
-#   )
-#
-# # Read and reformat SEM objects
-# fullSEM_model_objects <- readRDS(
-#   "infection-modeling/data/model-objects/simplified-SEM-objects.rds"
-# )
-#
-# # extract the fit object
-# full_psem <- fullSEM_model_objects$sem_mod$fit
-#
-# # reformat the tables
-# full_psem$dTable <- full_psem$dTable %>%
-#   data.frame() %>% rename(sig = "Var.6") %>% tibble()
-# full_psem$coefficients <- full_psem$coefficients %>%
-#   data.frame() %>% rename(sig = "Var.9") %>% tibble()
+# Load PELE data
+Peros <- readRDS("infection-modeling/data/peromyscus-model-data.rds") %>%
+  mutate(species = updated_taxa) %>%
+  filter(!is.na(species)) %>%
+  mutate(
+    across(c(siteID, plotID, year, iid, species), ~as.factor(.x)) # factor vars
+  ) %>% 
+  filter(species == "PELE")
 
-# # join these alternate variable names into the coefficient table
-# full_psem$coefficients <- full_psem$coefficients %>%
-#   left_join(
-#     var_lookup %>%
-#       select(
-#         Response = var, clean_resp = clean_name, resp_lab = label,
-#         resp_grp = group, resp_grplab = grp_lab
-#       ), by = "Response"
-#   ) %>%
-#   left_join(
-#     var_lookup %>%
-#       select(
-#         Predictor = var, clean_pred = clean_name, pred_lab = label,
-#         pred_grp = group, pred_grplab = grp_lab
-#       ), by = "Predictor"
-#   )
+# Sem objects
+sem_objects <- readRDS(
+  "infection-modeling/data/model-objects/pele_2026_full-sem-objects.rds"
+)
 
-# # Construct the cumulative effects table
-# full_brkdwn <- readRDS(
-#   file.path(
-#     "infection-modeling/data/model-objects",
-#     "cumulative-effects-table_simplified-SEM.rds"
-#   )
-# ) %>%
-#   rename(Response = To, Predictor = From) %>%
-#   left_join(
-#     var_lookup %>%
-#       select(
-#         Response = var, clean_resp = clean_name, resp_lab = label,
-#         resp_grp = group, resp_grplab = grp_lab
-#       ), by = "Response"
-#   ) %>%
-#   left_join(
-#     var_lookup %>%
-#       select(
-#         Predictor = var, clean_pred = clean_name, pred_lab = label,
-#         pred_grp = group, pred_grplab = grp_lab
-#       ), by = "Predictor"
-#   )
+modlist = sem_objects$component_mods
+modlist = lapply(modlist, function(fm){update(fm, data = Peros)})
+semfit = sem_objects$sem_mod$fit
+
+# Boostrap statistics - with some cleaning
+full_stats <- readRDS(
+  "infection-modeling/data/model-objects/pele-SEM-2026_boot-statistics-all.rds"
+) %>% 
+  mutate(
+    boot.upr.diff = abs(boot.ci.up - boot.eff),
+    boot.lwr.diff = abs(boot.eff - boot.ci.low),
+    boot.eff = if_else(Predictor == "clim_PC1", boot.eff*(-1), boot.eff),
+    boot.bias = if_else(Predictor == "clim_PC1", boot.bias*(-1), boot.bias),
+    boot.ci.low = if_else(
+      Predictor == "clim_PC1", boot.eff - boot.upr.diff, boot.ci.low
+    ),
+    boot.ci.up = if_else(
+      Predictor == "clim_PC1", boot.eff + boot.lwr.diff, boot.ci.up
+    ),
+    Estimate = if_else(Predictor == "clim_PC1", Estimate*(-1), Estimate),
+    boot.eff.mean = if_else(
+      Predictor == "clim_PC1", boot.eff.mean*(-1), boot.eff.mean
+    )
+  ) %>% select(-any_of(c("boot.upr.diff", "boot.lwr.diff"))) %>% 
+  mutate(
+    psem.sig = P.Value <= 0.1, # raw model stats
+    boot.sig = boot.p <= 0.1, # pseudo-p-value, using orig. coef. and boot SE
+    boot.sig.mean = boot.p.mean <= 0.1, # pseudo-P using boot coef. and SE
+    ci.sig = !(boot.ci.low < 0 & boot.ci.up > 0), # based on 90% CI
+    joint_sig = if_else(effect_type == "direct", psem.sig, ci.sig) # combined
+  ) %>%
+  group_by(Response, Predictor) %>%
+  mutate(group.sig = any(joint_sig)) %>%
+  ungroup() %>% 
+  left_join(resp_lookup, by = "Response") %>%
+  left_join(pred_lookup, by = "Predictor") %>% 
+  # add icon to y-label
+  left_join(
+    icon_lookup %>% select(pred_icon_path = path, pred.group = group),
+    by = "pred.group"
+  ) %>%
+  left_join(
+    icon_lookup %>% select(resp_icon_path = path, resp.group = group),
+    by = "resp.group"
+  ) %>%
+  mutate(
+    # resplab_md = gsub("\\n", "<br>", resp.label),
+    # predlab_md = gsub("\\n", "<br>", pred.label),
+    resp_icon_label = glue::glue(
+      "<img src='{resp_icon_path}' height=12 />",
+      " {resp.label}"
+    ) %>% fct_reorder(as.numeric(resp.label)),
+    pred_icon_label = glue::glue(
+      "<img src='{pred_icon_path}' height=12 style='transform: translate(0px,-120px);' />",
+      " {pred.label}"
+    ) %>% fct_reorder(as.numeric(pred.label)),
+  )
+
+
+## ---- Updated Fig 3 ----
+
+# elongate the data for multi-panel plotting
+long_peros <- Peros %>%
+  filter(sex_male != 0.5, weight <= 50) %>% # remove ambiguous sex
+  select(
+    iid, cap_num, siteID, year, Bb_infected, ticks_attached,
+    sex_male, sex_mature, weight, cap_prop_night, capprop_shift
+  ) %>% distinct() %>%
+  pivot_longer(
+    cols = c(Bb_infected, ticks_attached), names_to = "Response",
+    values_to = "resp_val"
+  ) %>%
+  pivot_longer(
+    cols = c(sex_male:capprop_shift), names_to = "Predictor",
+    values_to = "pred_val"
+  ) %>%
+  left_join(resp_lookup, by = "Response") %>%
+  left_join(pred_lookup, by = "Predictor") %>%
+  mutate(
+    new_predlab = fct_rev(pred.label),
+    sig_line = case_when(
+      Response == "Bb_infected" & Predictor == "capprop_shift" ~ FALSE,
+      resp.clean_name == "Infection" & pred.clean_name == "Sex" ~ FALSE,
+      .default = TRUE),
+    prob_resp = paste0("P(", resp.clean_name, ")") %>%
+      factor(levels = paste0("P(", levels(resp.clean_name), ")"))
+  ) %>% 
+  group_by(Response, Predictor) %>%
+  mutate(
+    glm.pval = anova(
+      glm(resp_val ~ pred_val, family = "binomial")
+    )$`Pr(>Chi)`[2], glm.sig = glm.pval <= 0.05
+  )
+
+# break data into continuous and binary predictor variables
+
+## continuous
+long_cont <- long_peros %>%
+  filter(!Predictor %in% c("sex_male", "sex_mature"))
+
+## binary (summaries)
+long_bin <- long_peros %>%
+  filter(Predictor %in% c("sex_male", "sex_mature"))
+
+# Panel data
+panel_dat <- long_peros %>%
+  select(prob_resp, new_predlab) %>% distinct() %>%
+  arrange(prob_resp, new_predlab) %>%
+  ungroup() %>%
+  mutate(panel_lab = LETTERS[row_number()])
+
+# Create the plot
+
+ggplot(
+  data = long_bin,
+  aes(x = pred_val, y = resp_val)
+) +
+  facet_grid(
+    prob_resp ~ new_predlab, scales = "free_x", switch = "both",
+    labeller = as_labeller(function(s){gsub("\\n", " ",s)})
+  ) +
+  geom_smooth(
+    data = long_bin, method = "glm", method.args = list(family = "binomial"),
+    formula = "y ~ x",
+    aes(col = "logistic reg.", linetype = glm.sig), se = TRUE,
+    # col = "black",
+    col = with(color_lookup, hex[from == "night_sky"]) %>%
+      colorspace::lighten(0.25),
+    fill = with(color_lookup, hex[from == "grass"]) %>%
+      colorspace::lighten(0.25)
+  ) +
+  stat_summary(
+    data = long_bin, fun.data = mean_cl_normal, geom = "errorbar", width = 0.05,
+    size = 1/4, linewidth = 0.7,
+    aes(col = "mean\n(\U00B1 95% CI)")
+  ) +
+  stat_summary(
+    data = long_bin, fun.data = mean_cl_normal, geom = "point",
+    size = 1.6,
+    aes(col = "mean\n(\U00B1 95% CI)")
+  ) +
+  geom_smooth(
+    data = long_cont,
+    method = "glm", method.args = list(family = "binomial"),
+    formula = "y ~ x",
+    aes(col = "logistic reg.", linetype = glm.sig), se = TRUE,
+    # col = "black",
+    col = with(color_lookup, hex[from == "night_sky"]) %>%
+      colorspace::lighten(0.25),
+    fill = with(color_lookup, hex[from == "grass"]) %>%
+      colorspace::lighten(0.25)
+  ) +
+  geom_point(
+    data = long_cont,
+    aes(col = "raw data"), size = 0.8
+  ) +
+  geom_label(
+    data = panel_dat, size = 3, fontface = "bold",
+    fill = NA, col = "black", label.size = NA,
+    aes(x = -Inf, y = Inf, label = panel_lab), hjust = -0.1, vjust = 1.5
+  ) +
+  theme_bw() +
+  theme(
+    strip.placement = "outside", strip.background = element_blank(),
+    panel.spacing.y = unit(0.1, "lines"),
+    panel.spacing.x = unit(0.1, "lines"),
+    legend.position = "inside",
+    legend.position.inside = c(0.10, 0.62),
+    legend.justification = c(0.5, 0.5),
+    legend.key = element_blank(),
+    legend.key.width = unit(1, "lines"),
+    legend.background = element_rect(color = "black", linewidth = 1/3),
+    legend.margin = margin(l = 0, r = 3, t = 0, b = 0),
+    strip.text.x = element_text(vjust = 1),
+    strip.clip = "on",
+    strip.switch.pad.grid = unit(-0.05, "lines")
+  ) +
+  labs(x = NULL, y = NULL, col = NULL) +
+  scale_x_continuous(breaks = c(0, 1, 10, 25, 40),
+                     minor_breaks = c(-0.5, 0.5, 17.5, 32.5)) +
+  scale_color_manual(
+    breaks = c("mean\n(\U00B1 95% CI)", "raw data"),
+    # values = c("cornflowerblue", "grey50")
+    values = with(
+      color_lookup, hex[from %in% c("blue_sky", "sunset")]
+    ) %>% rev() %>%
+      colorspace::lighten(0.25)
+  ) +
+  scale_linetype_manual(
+    breaks = c(TRUE, FALSE), values = c("solid", "dashed")
+  ) +
+  guides(linetype = "none")
+
+# save the file
+ggsave(
+  filename =  "infection-modeling/graphics/PELE_parasitism-infection-fig.png",
+  width = 6, height = 6*0.5, dpi = 300
+)
+
+## ---- Updated Fig 4 ----
+
+
+stat_plot_dat <- full_stats %>% 
+  filter(
+    Response %in% c("Bb_infected", "ticks_attached", "expr_PC1", "expr_PC2"),
+    !is.na(resp_icon_label), effect_type != "mediators"
+  ) %>% 
+  complete(
+    effect_type, 
+    nesting(
+      Response, Predictor, resp.label, pred.label, pred_icon_label, 
+      resp_icon_label
+    )
+  ) %>% 
+  filter(!is.na(resp_icon_label)) %>% 
+  replace_na(list(boot.eff = 0, joint_sig = FALSE)) %>% 
+  mutate(effect_type = fct_relevel(effect_type, "direct", after = 1)) %>% 
+  group_by(Response, Predictor) %>% 
+  mutate(biggest = max(abs(boot.eff), na.rm = TRUE)) %>% ungroup()
+
+dodge_width = 2/3
+
+stat_plot_dat %>% 
+  ggplot(
+    aes(
+      y = pred_icon_label %>% forcats::fct_rev(),
+      x = boot.eff,
+      xmin = boot.ci.low, xmax = boot.ci.up, col = effect_type,
+      shape = joint_sig, linetype = joint_sig
+    )
+  ) + 
+  facet_wrap(
+    ~forcats::fct_reorder(resp_icon_label, as.numeric(Response)) %>%
+      forcats::fct_rev(),
+    nrow = 1, scales = "free_x",
+    labeller = as_labeller(function(s){gsub("\\n", "<br>",s)})
+  ) +
+  geom_vline(
+    xintercept = 0, linetype = "solid",
+    linewidth = 0.2,
+    color = with(color_lookup, hex[from == "mouse_fur"])
+  ) +
+  geom_col(
+    aes(fill = effect_type),
+    width = dodge_width, # alpha = 0.2,
+    col = NA,
+    show.legend = FALSE,
+    position = position_dodge(dodge_width)
+  ) +
+  geom_errorbar(
+    width = eb_end_width, linewidth = eb_stroke,
+    position = position_dodge(dodge_width)
+  ) + 
+  geom_point(
+    fill = bg_color,
+    stroke = point_stroke,
+    size = point_size*0.9,
+    position = position_dodge(dodge_width)
+  ) + 
+  theme_bw() +
+  theme(
+    legend.position = "bottom",
+    legend.margin = margin(t = -10, b = 0),
+    legend.spacing.x = unit(2, "lines"),
+    legend.key.width = unit(1.5, "lines"),
+    legend.key.spacing = unit(0.25, "lines"),
+    strip.background = element_blank(),
+    text = element_text(color = "black"),
+    axis.text.y = ggtext::element_markdown(
+      hjust = 1, vjust = 0.3, color="black"
+    ),
+    panel.background = element_rect(fill = bg_color),
+    legend.key = element_rect(fill = NA),
+    strip.text = ggtext::element_markdown(hjust = 1, color = "black"),
+    axis.title.y = element_text(margin = margin(r = -0.5, unit = "lines")),
+    panel.spacing.x = unit(0.05, "lines")
+  ) +
+  labs(
+    x = "Standardized effect (± 90% CI)",
+    y = "Predictor",
+    linetype = NULL, shape = NULL, color = NULL
+  ) +
+  scale_color_manual(
+    values = with(
+      color_lookup, hex[match(c("blue_sky", "sunset", "grass"), from)]
+    ) %>%
+      colorspace::lighten(0),
+    breaks = c("total", "direct", "indirect"),
+    labels = c("total eff.", "direct eff.", "indirect eff.")
+  ) +
+  scale_fill_manual(
+    values = with(
+      color_lookup, hex[match(c("blue_sky", "sunset", "grass"), from)]
+    ) %>%
+      colorspace::lighten(0.5),
+    breaks = c("total", "direct", "indirect"),
+    labels = c("total eff.", "direct eff.", "indirect eff.")
+  ) +
+  scale_linetype_manual(
+    values = c("solid", "longdash"), breaks = c(TRUE, FALSE),
+    labels = c("P ≤ 0.1", "n.s.")
+  ) +
+  scale_shape_manual(
+    values = c(19, 21), breaks = c("TRUE", "FALSE"),
+    labels = c("P ≤ 0.1", "n.s.")
+  ) +
+  scale_x_continuous(breaks = c(-0.4, -0.2, 0, 0.2, 0.4)) +
+  guides(
+    color = guide_legend(order = 1)
+  )
+
+ggsave(
+  filename =  "infection-modeling/graphics/PELE_SEM-effect_coef-plot.png",
+  width = 6.5, height = 6.5*0.65, dpi = 300
+)
+
+# save raw table
+stat_plot_dat %>% 
+  select(
+    Response, Predictor, effect_type, 
+    boot.eff, boot.eff.mean, boot.bias,
+    boot.SE, boot.ci.low, boot.ci.up,
+    boot.z, boot.p, psem.sig, ci.sig, joint_sig
+  ) %>% 
+  write.csv(
+    file = "infection-modeling/data/pele-sem-boot-results_uncleaned.csv", 
+    row.names = FALSE
+  )
+
+## ---- Updated Tab S1 ----
+
+tab_S1 <- full_stats %>% filter(effect_type == "direct") %>%
+  left_join(
+    full_psem$R2 %>%
+      select(Response, R2.marg = Marginal, R2.cond = Conditional),
+    by = "Response"
+  ) %>%
+  arrange(resp.group, Response, pred.group, Predictor) %>%
+  mutate(
+    new_resp = paste0(resp.clean_name, " (", resp.group, ")"),
+    new_pred = paste0(pred.clean_name, " (", pred.group, ")"),
+    DF = round(DF),
+    P = Hmisc::format.pval(P.Value, digits = 3, eps = 0.001),
+    # across(c(Estimate, boot.eff, Std.Error),
+    #        ~sprintf("%.3f", round(.x, digits = 3)))
+  ) %>%
+  select(
+    Response = new_resp, R2.marg, R2.cond,
+    Predictor = new_pred,
+    Estimate,
+    DF, SE = Std.Error, P,
+    Std.Estimate = boot.eff
+  )
+
+tab_S1
+
+# save as a csv
+write.csv(
+  tab_S1, "infection-modeling/data/MS-tables/PELE_full-SEM-coef-tab.csv",
+  row.names = FALSE,
+)
+
+## ---- Updated Tab S2 ----
+# build the table of bootstrap statistics
+tab_S2 <- full_stats %>%
+  filter(!effect_type %in% c("mediators")) %>%
+  arrange(resp.group, Response, pred.group, Predictor, effect_type) %>%
+  mutate(
+    pm_val = boot.ci.up - boot.eff.mean,
+    # across( ## rounding (needed?)
+    #   c(boot.eff.mean, boot.SE, boot.ci.low, boot.ci.up, pm_val),
+    #   ~sprintf("%.3f", round(.x, 3))
+    # ),
+    boot.bias.str = sprintf("%.1e", boot.bias),
+    CI = paste0("(", boot.ci.low, ", ", boot.ci.up, ")")
+  ) %>%
+  select(
+    Response = resp.clean_name, Predictor = pred.clean_name,
+    Type = effect_type, Mean = boot.eff.mean, SE = boot.SE,
+    CI_pm = pm_val, Bias = boot.bias, Bias.str = boot.bias.str
+  )  %>%
+  pivot_wider(
+    names_from = Type, values_from = -c(Response, Predictor, Type),
+    names_glue = "{Type}.{.value}"
+  ) %>%
+  relocate(
+    c(starts_with("direct."), starts_with("indirect"), starts_with("total")),
+    .after = -1
+  )
+
+# index of columns with scientific notation to preserve ast strings
+str_col_inx <- grep(".*\\.str", names(tab_S2))
+
+tab_S2 %>% select(all_of(str_col_inx)) %>% head()
+
+str = "4.3e-04"
+
+# save as a csv
+tab_S2 %>%
+  mutate(
+    across(
+      contains("Bias.str"), ~ifelse(is.na(.x), NA, convert_scinote(.x))
+    )
+  ) %>%
+  write.csv(
+    file = "infection-modeling/data/MS-tables/PELE_full-SEM-boot-tab.csv",
+    row.names = FALSE, quote = str_col_inx, fileEncoding = "UTF-8"
+  )
+
+
+## ---- Updated Tab S4 ----
+modlist[["captime"]] = modlist[["captime"]] %>% update(. ~ . + (1|year))
+
+
+ranef_table <- lapply(names(modlist), function(x){
+  mod = modlist[[x]]
+  try(
+    data.frame(VarCorr(mod)) %>% select(-c(var1, var2)) %>%
+      mutate(Response = x)
+  )
+}) %>% bind_rows() %>%
+  relocate(Response, .before = 1)
+
+write.csv(
+  ranef_table,
+  file = "infection-modeling/data/MS-tables/PELE_SEM-random-effects-table.csv",
+  row.names = FALSE
+)
