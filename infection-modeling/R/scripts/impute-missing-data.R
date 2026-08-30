@@ -263,7 +263,7 @@ impute_data <- impute_data %>%
 saveRDS(impute_data, "infection-modeling/data/model-objects/imputed-PELE-data.rds")
 
 # write a csv file
-write.csv(impute_data, "infection-modeling/data/model-objects/imputed-PELE-data.csv")
+# write.csv(impute_data, "infection-modeling/data/model-objects/imputed-PELE-data.csv")
 
 ## ---- Visualizations ----
 
