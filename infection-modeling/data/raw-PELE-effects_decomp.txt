@@ -1,3 +1,9 @@
+
+> for (i in seq_len(length(full_effs$Summary))) {
++   if (i == 1) {
++     cat("Variables table:\n")
++   } else {
++     cat("Response:", names(full_eff .... [TRUNCATED] 
 Variables table:
                   Category   Predictor Mediator Response   Dir. Eff. Ind. Eff.  
                   --------   --------- -------- --------   --------- ---------  
@@ -237,3 +243,5 @@ Response: sex.mature
  MEDIATORS: -        |      - |     - |         - |        -        - |  
 
 
+
+> sink()

@@ -6,7 +6,7 @@
 "5","avg_move_dist","wthr_PC1",NA,-0.0097,NA,0.1827
 "6","Bb_infected","avg_move_dist",NA,0.4085,NA,0.7269
 "7","Bb_infected","weighted_trap_diversity",NA,0.2078,NA,0.7271
-"8","Bb_infected","weighted_trapability",NA,-0.1586,NA,0.5422
+"8","Bb_infected","weighted_trapability",NA,-0.1586,NA,0.5423
 "9","expr_PC1","avg_move_dist",NA,-0.1016,NA,0.5621
 "10","expr_PC1","weighted_trap_diversity",NA,0.4327,NA,0.0477
 "11","expr_PC1","weighted_trapability",NA,-0.2179,NA,0.1646
@@ -15,7 +15,7 @@
 "14","expr_PC2","weighted_trap_diversity",NA,0.6396,NA,0.0678
 "15","expr_PC2","weighted_trapability",NA,-0.2466,NA,0.2114
 "16","ticks_attached","avg_move_dist",NA,0.2122,NA,0.4994
-"17","ticks_attached","weighted_trap_diversity",NA,-0.0668,NA,0.4381
+"17","ticks_attached","weighted_trap_diversity",NA,-0.0668,NA,0.438
 "18","ticks_attached","weighted_trapability",NA,0.0012,NA,0.9864
 "19","weighted_trap_diversity","avg_move_dist",NA,-0.003,NA,0.5385
 "20","weighted_trap_diversity","clim_PC1",NA,0.0348,NA,0.3575
